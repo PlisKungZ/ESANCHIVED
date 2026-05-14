@@ -43,7 +43,9 @@ local __bundle_require, __bundle_loaded, __bundle_register, __bundle_modules = (
 	return require, loaded, register, modules
 end)(require)
 __bundle_register("__root", function(require, _LOADED, __bundle_register, __bundle_modules)
-
+getfenv().LPH_NO_VIRTUALIZE = function(f)
+	return f
+end
 
 if not game:IsLoaded() then
 	repeat
@@ -165,7 +167,7 @@ local AutomationTab = require("Menu/Automation")
 local RemovalTab = require("Menu/Removal")
 local TrollTab = require("Menu/Troll")
 local TeleportationTab = require("Menu/Teleportation")
-
+--[[ 
 local api = loadstring(game:HttpGet("https://sdkapi-public.luarmor.net/library.lua"))()
 
 api.script_id = "567b6e2c33ab5dd588a8a6b7016eec74"
@@ -181,8 +183,8 @@ elseif status.code == "KEY_INCORRECT" then
 	return
 else
 	game.Players.LocalPlayer:Kick("Key check failed:" .. status.message .. " Code: " .. status.code)
-	return
-end
+	return 
+end]]
 LPH_NO_VIRTUALIZE(function()
 	local Window = GUI:CreateWindow({
 		Title = "Telepathy Overload - Paid Edition",
@@ -477,7 +479,6 @@ function KillAura.off()
 	for _, anim in track do
 		anim:Stop()
 		anim:Destroy()
-		anim = nil
 	end
 	workspace.CurrentCamera.CameraSubject = localPlayer.Character.Humanoid
 end
@@ -2582,7 +2583,7 @@ function ESPPlayer.on(color, espSelection)
 
 	connection = workspace.Alive.ChildAdded:Connect(function(character)
 		local player = Players:GetPlayerFromCharacter(character)
-		if player ~= localPlayer and player.Character then
+		if player and player ~= localPlayer and player.Character then
 			characterESP(player.Character, "player", color, espSelection)
 		end
 	end)
