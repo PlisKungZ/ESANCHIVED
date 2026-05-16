@@ -43,7 +43,7 @@ local function openDoorWithTiedToString(text, section)
 end
 
 local Teleported = false
-
+local equipedDb = false
 local function killMob(offset)
 	local player = game.Players.LocalPlayer.Character.Humanoid.Animator
 	for i = 1, 3 do
@@ -77,8 +77,10 @@ local function killMob(offset)
 		end)
 
 		if #targetTable ~= 0 then
-			killingMob = true
-			Teleported = false
+			if not equipedDb then
+				game:GetService("ReplicatedStorage").Events.Equip:FireServer(true)
+				equipedDb = true
+			end
 			for _, animTrack in track do
 				animTrack:AdjustSpeed(1000)
 			end
@@ -97,36 +99,14 @@ local function killMob(offset)
 				:WaitForChild("Grip")
 				:FireServer(localPlayer.Character)
 		else
+			if equipedDb then
+				game:GetService("ReplicatedStorage").Events.Equip:FireServer(false)
+				equipedDb = false
+			end
 			workspace.CurrentCamera.CameraSubject = game.Players.LocalPlayer.Character.Humanoid
-			killingMob = false
-			Teleported = true
 			localPlayer.Character:PivotTo(CFrame.new(-318.950195, 391.98999, 551.724976, 1, 0, 0, 0, 1, 0, 0, 0, 1))
 			for _, animTrack in track do
 				animTrack:AdjustSpeed(0)
-			end
-		end
-	end)
-	task.spawn(function()
-		while connection do
-			game:GetService("ReplicatedStorage").Events.Equip:FireServer(true)
-			task.wait(5)
-			if not connection then
-				break
-			end
-			game:GetService("ReplicatedStorage").Events.Equip:FireServer(false)
-		end
-	end)
-
-	task.spawn(function()
-		while connection do
-			task.wait()
-			if killingMob then
-				repeat
-					task.wait()
-				until not killingMob or not connection
-			end
-			if not connection then
-				break
 			end
 		end
 	end)

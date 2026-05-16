@@ -6,14 +6,14 @@ local playerGui = localPlayer.PlayerGui
 
 local GradePoint = {}
 GradePoint.GradePointsReq = {
-	1800,
-	1600,
-	1400,
-	1000,
-	800,
-	600,
-	450,
-	350,
+	10000,
+	3000,
+	2000,
+	1900,
+	1500,
+	1300,
+	1200,
+	500,
 	250,
 }
 

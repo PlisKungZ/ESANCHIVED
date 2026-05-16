@@ -1,6 +1,7 @@
 local autoLib = require("Features/Automation/AutoLibrary")
 local autoWarp = require("Features/Automation/AutoWarp")
-local autoRailway = require("Features/Automation/AutoRailway")
+--local autoRailway = require("Features/Automation/AutoRailway")
+--local autoGrade = require("Features/Automation/AutoGradeEvaluation")
 
 local Automation = {}
 
@@ -111,7 +112,6 @@ function Automation.init()
 			end,
 		})
 	end)()
-
 	--[[ 	Tab:AddParagraph({
 		Title = "Auto Railway Usage",
 		Content = "This is only usable when in the Railway itself.",
@@ -157,6 +157,45 @@ function Automation.init()
 			end
 		end,
 	}) ]]
+	--[[ 		local autoGradeEva = Tab:AddToggle("autoGradeEva", { Title = "Auto Grade Evaluation", Default = false })
+		Options.autoGradeEva:SetValue(false)
+
+		autoGradeEva:OnChanged(function()
+			if Options.autoGradeEva.Value then
+				local state, err = autoGrade.on(Options.autoGradeEvaYOffset.Value)
+				if not state then
+					GUI:Notify({
+						Title = "Error Occurred.",
+						Content = err,
+						Duration = 8,
+					})
+				end
+			else
+				autoGrade.off()
+			end
+		end)
+
+		local autoGradeEvaYOffset = Tab:AddSlider("autoGradeEvaYOffset", {
+			Title = "Y Offset",
+			Description = "Depends on your weapons",
+			Default = -30,
+			Min = -30,
+			Max = 0,
+			Rounding = 0,
+			Callback = function(Value)
+				if Options.autoGradeEva.Value then
+					local state, err = autoGrade.on(Value)
+					if not state then
+						Options.autoGradeEva:SetValue(false)
+						GUI:Notify({
+							Title = "Error Occurred.",
+							Content = err,
+							Duration = 8,
+						})
+					end
+				end
+			end,
+		}) ]]
 end
 
 return Automation
