@@ -12,53 +12,41 @@ ESP.Settings = {
 	LineHeight = 17,
 }
 
-local activeConnections = {}
+-- tag -> { entries = { {part, quads, textLines, options, tick, sX, sY, sZ} } }
+local tagLoops = {}
+
 local camera = workspace.CurrentCamera
 local RunService = game:GetService("RunService")
 
+-- ─── Drawing helpers ────────────────────────────────────────────────────────
+
 local function SafeColor(c)
-	if typeof(c) == "Color3" then
-		return c
-	end
-	return ESP.Settings.Color
+	return typeof(c) == "Color3" and c or ESP.Settings.Color
 end
 
 local function NewQuad(color)
-	local quad = Drawing.new("Quad")
-	quad.Visible = false
-	quad.PointA = Vector2.new(0, 0)
-	quad.PointB = Vector2.new(0, 0)
-	quad.PointC = Vector2.new(0, 0)
-	quad.PointD = Vector2.new(0, 0)
-	quad.Color = SafeColor(color)
-	quad.Filled = true
-	quad.Thickness = 1
-	quad.Transparency = ESP.Settings.BoxTransparency
-	return quad
+	local q = Drawing.new("Quad")
+	q.Visible = false
+	q.PointA = Vector2.zero
+	q.PointB = Vector2.zero
+	q.PointC = Vector2.zero
+	q.PointD = Vector2.zero
+	q.Color = SafeColor(color)
+	q.Filled = true
+	q.Thickness = 1
+	q.Transparency = ESP.Settings.BoxTransparency
+	return q
 end
 
 local function NewTextLine(color)
-	local text = Drawing.new("Text")
-	text.Visible = false
-	text.Size = ESP.Settings.TextSize
-	text.Color = SafeColor(color)
-	text.Outline = true
-	text.OutlineColor = Color3.fromRGB(0, 0, 0)
-	text.Center = true
-	return text
-end
-
-local function Colorize(color, quads)
-	local c = SafeColor(color)
-	for _, quad in pairs(quads) do
-		quad.Color = c
-	end
-end
-
-local function SetQuadsVisible(quads, visible)
-	for _, quad in pairs(quads) do
-		quad.Visible = visible
-	end
+	local t = Drawing.new("Text")
+	t.Visible = false
+	t.Size = ESP.Settings.TextSize
+	t.Color = SafeColor(color)
+	t.Outline = true
+	t.OutlineColor = Color3.fromRGB(0, 0, 0)
+	t.Center = true
+	return t
 end
 
 local function RemoveDrawings(drawings)
@@ -67,54 +55,222 @@ local function RemoveDrawings(drawings)
 	end
 end
 
-local function UpdateQuads(quads, cf, sX, sY, sZ)
-	local function vp(v)
-		local p = camera:WorldToViewportPoint(v)
-		return Vector2.new(p.X, p.Y)
-	end
-
-	local Top1 = vp((cf * CFrame.new(-sX, sY, -sZ)).p)
-	local Top2 = vp((cf * CFrame.new(-sX, sY, sZ)).p)
-	local Top3 = vp((cf * CFrame.new(sX, sY, sZ)).p)
-	local Top4 = vp((cf * CFrame.new(sX, sY, -sZ)).p)
-	local Bot1 = vp((cf * CFrame.new(-sX, -sY, -sZ)).p)
-	local Bot2 = vp((cf * CFrame.new(-sX, -sY, sZ)).p)
-	local Bot3 = vp((cf * CFrame.new(sX, -sY, sZ)).p)
-	local Bot4 = vp((cf * CFrame.new(sX, -sY, -sZ)).p)
-
-	quads.quad1.PointA = Top1
-	quads.quad1.PointB = Top2
-	quads.quad1.PointC = Top3
-	quads.quad1.PointD = Top4
-	quads.quad2.PointA = Bot1
-	quads.quad2.PointB = Bot2
-	quads.quad2.PointC = Bot3
-	quads.quad2.PointD = Bot4
-	quads.quad3.PointA = Top1
-	quads.quad3.PointB = Top2
-	quads.quad3.PointC = Bot2
-	quads.quad3.PointD = Bot1
-	quads.quad4.PointA = Top2
-	quads.quad4.PointB = Top3
-	quads.quad4.PointC = Bot3
-	quads.quad4.PointD = Bot2
-	quads.quad5.PointA = Top3
-	quads.quad5.PointB = Top4
-	quads.quad5.PointC = Bot4
-	quads.quad5.PointD = Bot3
-	quads.quad6.PointA = Top4
-	quads.quad6.PointB = Top1
-	quads.quad6.PointC = Bot1
-	quads.quad6.PointD = Bot4
+local function SetQuadsVisible(quads, v)
+	quads.quad1.Visible = v
+	quads.quad2.Visible = v
+	quads.quad3.Visible = v
+	quads.quad4.Visible = v
+	quads.quad5.Visible = v
+	quads.quad6.Visible = v
 end
 
-local bindCounter = 0
+local function Colorize(quads, c)
+	quads.quad1.Color = c
+	quads.quad2.Color = c
+	quads.quad3.Color = c
+	quads.quad4.Color = c
+	quads.quad5.Color = c
+	quads.quad6.Color = c
+end
 
+-- ─── Quad geometry ──────────────────────────────────────────────────────────
+
+local function vp(v)
+	local p = camera:WorldToViewportPoint(v)
+	return Vector2.new(p.X, p.Y)
+end
+
+local function UpdateQuads(quads, cf, sX, sY, sZ)
+	local p = cf.Position
+	local rX = cf.RightVector * sX
+	local rY = cf.UpVector * sY
+	local rZ = cf.LookVector * sZ
+
+	-- 8 corners, built from vectors (no CFrame allocation)
+	local Top1 = vp(p - rX + rY - rZ)
+	local Top2 = vp(p - rX + rY + rZ)
+	local Top3 = vp(p + rX + rY + rZ)
+	local Top4 = vp(p + rX + rY - rZ)
+	local Bot1 = vp(p - rX - rY - rZ)
+	local Bot2 = vp(p - rX - rY + rZ)
+	local Bot3 = vp(p + rX - rY + rZ)
+	local Bot4 = vp(p + rX - rY - rZ)
+
+	local q1 = quads.quad1
+	q1.PointA = Top1
+	q1.PointB = Top2
+	q1.PointC = Top3
+	q1.PointD = Top4
+
+	local q2 = quads.quad2
+	q2.PointA = Bot1
+	q2.PointB = Bot2
+	q2.PointC = Bot3
+	q2.PointD = Bot4
+
+	local q3 = quads.quad3
+	q3.PointA = Top1
+	q3.PointB = Top2
+	q3.PointC = Bot2
+	q3.PointD = Bot1
+
+	local q4 = quads.quad4
+	q4.PointA = Top2
+	q4.PointB = Top3
+	q4.PointC = Bot3
+	q4.PointD = Bot2
+
+	local q5 = quads.quad5
+	q5.PointA = Top3
+	q5.PointB = Top4
+	q5.PointC = Bot4
+	q5.PointD = Bot3
+
+	local q6 = quads.quad6
+	q6.PointA = Top4
+	q6.PointB = Top1
+	q6.PointC = Bot1
+	q6.PointD = Bot4
+end
+
+-- ─── Internal per-entry update ──────────────────────────────────────────────
+
+local function UpdateEntry(entry, camCF, camPos)
+	local part = entry.part
+
+	-- check alive
+	if not entry.isAlive() then
+		SetQuadsVisible(entry.quads, false)
+		for _, l in ipairs(entry.textLines) do
+			l.Visible = false
+		end
+		entry.dead = true
+		return
+	end
+
+	local partPos = part.Position
+	local screenPos, onScreen = camera:WorldToViewportPoint(partPos)
+
+	if not onScreen then
+		SetQuadsVisible(entry.quads, false)
+		for _, l in ipairs(entry.textLines) do
+			l.Visible = false
+		end
+		return
+	end
+
+	-- distance-based throttle
+	local dist = (camPos - partPos).Magnitude
+	local rate = dist > 100 and 4 or dist > 50 and 2 or 1
+
+	entry.tick = entry.tick + 1
+	if entry.tick % rate ~= 0 then
+		-- still make quads visible between throttled frames
+		SetQuadsVisible(entry.quads, true)
+		return
+	end
+
+	-- update box
+	UpdateQuads(entry.quads, part.CFrame, entry.sX, entry.sY, entry.sZ)
+	Colorize(entry.quads, SafeColor(entry.getColor()))
+	SetQuadsVisible(entry.quads, true)
+
+	-- update text labels
+	if entry.getLines then
+		local lines = entry.getLines(math.floor(dist))
+		if type(lines) == "table" and #lines > 0 then
+			-- reuse cached top-position: screenPos.Y - sY projected
+			local topScreen = camera:WorldToViewportPoint(partPos + part.CFrame.UpVector * (entry.sY + 0.3))
+			local topX = topScreen.X
+			local startY = topScreen.Y - #lines * ESP.Settings.LineHeight - 4
+
+			local textLines = entry.textLines
+			for i, lineText in ipairs(lines) do
+				local line = textLines[i]
+				if not line then
+					line = NewTextLine(SafeColor(entry.getColor()))
+					textLines[i] = line
+				end
+				line.Text = tostring(lineText)
+				line.Position = Vector2.new(topX, startY + (i - 1) * ESP.Settings.LineHeight)
+				line.Visible = true
+			end
+
+			-- hide leftover lines
+			for i = #lines + 1, #textLines do
+				textLines[i].Visible = false
+			end
+		else
+			for _, l in ipairs(entry.textLines) do
+				l.Visible = false
+			end
+		end
+	end
+end
+
+-- ─── Tag loop management ────────────────────────────────────────────────────
+
+local function EnsureTagLoop(tag)
+	if tagLoops[tag] then
+		return
+	end
+
+	local loop = { entries = {} }
+	tagLoops[tag] = loop
+
+	local bindName = "ESP_Tag_" .. tag
+
+	RunService:BindToRenderStep(
+		bindName,
+		Enum.RenderPriority.Camera.Value + 1,
+		LPH_NO_VIRTUALIZE(function()
+			local entries = loop.entries
+			if #entries == 0 then
+				return
+			end
+
+			local camCF = camera.CFrame
+			local camPos = camCF.Position
+
+			local i = 1
+			while i <= #entries do
+				local entry = entries[i]
+				UpdateEntry(entry, camCF, camPos)
+
+				if entry.dead then
+					-- clean up and remove from list
+					RemoveDrawings(entry.quads)
+					for _, l in ipairs(entry.textLines) do
+						l:Remove()
+					end
+					table.remove(entries, i)
+				-- don't increment i
+				else
+					i = i + 1
+				end
+			end
+		end)
+	)
+
+	loop.bindName = bindName
+end
+
+-- ─── Public API ─────────────────────────────────────────────────────────────
+
+--[[
+	ESP.ESPPart(part, options)
+
+	options = {
+		tag      = string,                   -- groups parts into one render loop
+		getLines = function(dist) -> table,  -- optional text labels above box
+		getColor = function() -> Color3,     -- optional per-frame color
+		isAlive  = function() -> bool,       -- when false, entry is removed
+	}
+]]
 function ESP.ESPPart(part, options)
 	options = options or {}
 
-	local tag = options.tag or "untagged"
-	local getLines = options.getLines
+	local tag = options.tag or "default"
 	local getColor = options.getColor or function()
 		return ESP.Settings.Color
 	end
@@ -122,153 +278,70 @@ function ESP.ESPPart(part, options)
 		return part and part.Parent ~= nil
 	end
 
-	local function safeColor()
-		return SafeColor(getColor())
-	end
+	local color = SafeColor(getColor())
 
 	local quads = {
-		quad1 = NewQuad(safeColor()),
-		quad2 = NewQuad(safeColor()),
-		quad3 = NewQuad(safeColor()),
-		quad4 = NewQuad(safeColor()),
-		quad5 = NewQuad(safeColor()),
-		quad6 = NewQuad(safeColor()),
+		quad1 = NewQuad(color),
+		quad2 = NewQuad(color),
+		quad3 = NewQuad(color),
+		quad4 = NewQuad(color),
+		quad5 = NewQuad(color),
+		quad6 = NewQuad(color),
 	}
 
-	local sX = part.Size.X / 2
-	local sY = part.Size.Y / 2
-	local sZ = part.Size.Z / 2
+	local entry = {
+		part = part,
+		quads = quads,
+		textLines = {},
+		getColor = getColor,
+		getLines = options.getLines,
+		isAlive = isAlive,
+		tick = 0,
+		dead = false,
+		sX = part.Size.X / 2,
+		sY = part.Size.Y / 2,
+		sZ = part.Size.Z / 2,
+	}
 
-	local textLines = {}
-	local tick = 0
-
-	bindCounter = bindCounter + 1
-	local bindName = "ESP_" .. tag .. "_" .. bindCounter
-
-	local function GetOrCreateLine(i)
-		if not textLines[i] then
-			textLines[i] = NewTextLine(safeColor())
-		end
-		return textLines[i]
-	end
-
-	local function HideAllLines()
-		for _, line in ipairs(textLines) do
-			line.Visible = false
-		end
-	end
-
-	local function RemoveAllLines()
-		for _, line in ipairs(textLines) do
-			line:Remove()
-		end
-		textLines = {}
-	end
-
-	local function Unbind()
-		RunService:UnbindFromRenderStep(bindName)
-	end
-
-	RunService:BindToRenderStep(
-		bindName,
-		Enum.RenderPriority.Camera.Value + 1,
-		LPH_NO_VIRTUALIZE(function()
-			if not isAlive() then
-				SetQuadsVisible(quads, false)
-				HideAllLines()
-				Unbind()
-				RemoveDrawings(quads)
-				RemoveAllLines()
-				return
-			end
-
-			tick = tick + 1
-
-			local pos, onScreen = camera:WorldToViewportPoint(part.Position)
-
-			if onScreen then
-				local dist = (camera.CFrame.Position - part.Position).Magnitude
-				local rate
-				if dist > 100 then
-					rate = 4
-				elseif dist > 50 then
-					rate = 2
-				else
-					rate = 1
-				end
-
-				if tick % rate == 0 then
-					local cf = part.CFrame
-					UpdateQuads(quads, cf, sX, sY, sZ)
-					Colorize(safeColor(), quads)
-
-					-- moved inside rate throttle to avoid per-frame allocation/updates
-					if getLines then
-						local distance = math.floor((camera.CFrame.Position - part.Position).Magnitude)
-						local lines = getLines(distance)
-						if type(lines) == "table" then
-							local topPos = camera:WorldToViewportPoint((part.CFrame * CFrame.new(0, sY + 0.3, 0)).p)
-							local startY = topPos.Y - #lines * ESP.Settings.LineHeight - 4
-
-							for i, lineText in ipairs(lines) do
-								local line = GetOrCreateLine(i)
-								line.Text = tostring(lineText)
-								line.Position = Vector2.new(topPos.X, startY + (i - 1) * ESP.Settings.LineHeight)
-								line.Visible = true
-							end
-
-							for i = #lines + 1, #textLines do
-								textLines[i].Visible = false
-							end
-						end
-					end
-				end
-
-				SetQuadsVisible(quads, true)
-			else
-				SetQuadsVisible(quads, false)
-				HideAllLines()
-			end
-		end)
-	)
-
-	if not activeConnections[tag] then
-		activeConnections[tag] = {}
-	end
-	table.insert(activeConnections[tag], {
-		bindName = bindName,
-		drawings = quads,
-		textLines = textLines,
-		removeLines = RemoveAllLines,
-	})
+	EnsureTagLoop(tag)
+	table.insert(tagLoops[tag].entries, entry)
 end
 
+-- Remove all ESP for a given tag
 function ESP.Disable(tag)
-	if not activeConnections[tag] then
+	local loop = tagLoops[tag]
+	if not loop then
 		return
 	end
-	for _, entry in ipairs(activeConnections[tag]) do
+
+	pcall(function()
+		RunService:UnbindFromRenderStep(loop.bindName)
+	end)
+
+	for _, entry in ipairs(loop.entries) do
 		pcall(function()
-			RunService:UnbindFromRenderStep(entry.bindName)
+			RemoveDrawings(entry.quads)
 		end)
 		pcall(function()
-			RemoveDrawings(entry.drawings)
-		end)
-		pcall(function()
-			entry.removeLines()
+			for _, l in ipairs(entry.textLines) do
+				l:Remove()
+			end
 		end)
 	end
-	activeConnections[tag] = {}
+
+	tagLoops[tag] = nil
 end
 
+-- Remove all ESP for every tag
 function ESP.DisableAll()
-	for tag in pairs(activeConnections) do
+	for tag in pairs(tagLoops) do
 		ESP.Disable(tag)
 	end
 end
 
+-- True if tag has at least one live entry
 function ESP.IsEnabled(tag)
-	return activeConnections[tag] ~= nil and #activeConnections[tag] > 0
+	return tagLoops[tag] ~= nil and #tagLoops[tag].entries > 0
 end
 
 return ESP
