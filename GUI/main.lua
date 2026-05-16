@@ -2834,8 +2834,11 @@ local aa = {
 			local g = d.Library
 			assert(f.Title, "Toggle - Missing Title")
 			local h, i =
-				{ Value = f.Default or false, Callback = f.Callback or function(h) end, Type = "Toggle" },
-				ac(aj.Element)(f.Title, f.Description, d.Container, true)
+				{
+					Value = f.Default or false,
+					Callback = f.Callback or function(h) end,
+					Type = "Toggle",
+				}, ac(aj.Element)(f.Title, f.Description, d.Container, true)
 			i.DescLabel.Size = UDim2.new(1, -54, 0, 14)
 			h.SetTitle = i.SetTitle
 			h.SetDesc = i.SetDesc
@@ -4060,7 +4063,7 @@ local aa = {
 	end),
 	[40] = LPH_NO_VIRTUALIZE(function()
 		local aa, ab, ac, ad, ae = b(40)
-		return LPH_NO_VIRTUALIZE(function()
+		return function()
 			local af = ac(ab.Parent.Signal)
 			it("should invoke all connections, instantly", function()
 				local ag, ah, aj = (af.new())
@@ -4092,7 +4095,7 @@ local aa = {
 				ag:fire()
 				expect(ah).to.equal(false)
 			end)
-		end)
+		end
 	end),
 	[41] = LPH_NO_VIRTUALIZE(function()
 		local aa, ab, ac, ad, ae = b(41)
@@ -4227,7 +4230,7 @@ local aa = {
 	end),
 	[44] = LPH_NO_VIRTUALIZE(function()
 		local aa, ab, ac, ad, ae = b(44)
-		return LPH_NO_VIRTUALIZE(function()
+		return function()
 			local af, ag = ac(ab.Parent.SingleMotor), ac(ab.Parent.Spring)
 			describe("completed state", function()
 				local ah, aj = af.new(0, false), ag.new(1, { frequency = 2, dampingRatio = 0.75 })
@@ -4250,7 +4253,7 @@ local aa = {
 				ah:step(1.6666666666666665E-2)
 				expect(ah._state.velocity < 0).to.equal(true)
 			end)
-		end)
+		end
 	end),
 	[45] = LPH_NO_VIRTUALIZE(function()
 		local aa, ab, ac, ad, ae = b(45)
@@ -4541,23 +4544,23 @@ do
 		setfenv,
 		rawget
 	local l, m, n, o, p, s, t, u, v, w, x =
-		ah.insert, ah.remove, ah.freeze or function(l)
+		ah.insert, ah.remove, ah.freeze or LPH_NO_VIRTUALIZE(function(l)
 			return l
-		end, ab and ab.defer or function(l, ...)
+		end), ab and ab.defer or LPH_NO_VIRTUALIZE(function(l, ...)
 			local m = c.create(l)
 			c.resume(m, ...)
 			return m
-		end, "0.0.0-venv", {}, {}, {}, {}, {}, {}
+		end), "0.0.0-venv", {}, {}, {}, {}, {}, {}
 	local y, z =
 		{
-			GetChildren = function(y)
+			GetChildren = LPH_NO_VIRTUALIZE(function(y)
 				local z, A = x[y], {}
 				for B in ag, z do
 					l(A, B)
 				end
 				return A
-			end,
-			FindFirstChild = function(y, z)
+			end),
+			FindFirstChild = LPH_NO_VIRTUALIZE(function(y, z)
 				if not z then
 					ad("Argument 1 missing or nil", 2)
 				end
@@ -4567,25 +4570,25 @@ do
 					end
 				end
 				return
-			end,
-			GetFullName = function(y)
+			end),
+			GetFullName = LPH_NO_VIRTUALIZE(function(y)
 				local z, A = y.Name, y.Parent
 				while A do
 					z = A.Name .. "." .. z
 					A = A.Parent
 				end
 				return "VirtualEnv." .. z
-			end,
+			end),
 		}, {}
 	for A, B in ag, y do
-		z[A] = function(C, ...)
+		z[A] = LPH_NO_VIRTUALIZE(function(C, ...)
 			if not x[C] then
 				ad("Expected ':' not '.' calling member function " .. A, 1)
 			end
 			return B(C, ...)
-		end
+		end)
 	end
-	local C = function(C, D, E)
+	local C = LPH_NO_VIRTUALIZE(function(C, D, E)
 		local F, G, H, I, J =
 			ac({}, { __mode = "k" }), function(F)
 				ad(F .. " is not a valid (virtual) member of " .. C .. ' "' .. D .. '"', 1)
@@ -4645,7 +4648,7 @@ do
 			x[E][I] = true
 		end
 		return I
-	end
+	end)
 	local function D(E, F)
 		local G, H, I, J = E[1], E[2], E[3], E[4]
 		local K = m(I, 1)
@@ -4675,7 +4678,7 @@ do
 			l(v, J)
 		end
 	end
-	local J = function(J)
+	local J = LPH_NO_VIRTUALIZE(function(J)
 		local K, L = J.ClassName, u[J]
 		if L and K == "ModuleScript" then
 			return aj(L)
@@ -4692,7 +4695,7 @@ do
 			u[J] = N
 			return aj(N)
 		end
-	end
+	end)
 	function b(K)
 		local L = s[K]
 		local M = t[L]
@@ -4754,7 +4757,7 @@ do
 			R = i(0)
 			local W = { maui = O, script = P, require = Q, getfenv = U, setfenv = V }
 			S = ac({}, {
-				__index = function(X, Y)
+				__index = LPH_NO_VIRTUALIZE(function(X, Y)
 					local Z = k(S, Y)
 					if Z ~= nil then
 						return Z
@@ -4764,7 +4767,7 @@ do
 						return _
 					end
 					return R[Y]
-				end,
+				end),
 			})
 			j(M, S)
 			N = true

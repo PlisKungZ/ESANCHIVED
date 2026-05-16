@@ -6,70 +6,70 @@ do
 	SaveManager.Ignore = {}
 	SaveManager.Parser = {
 		Toggle = {
-			Save = function(idx, object)
+			Save = LPH_NO_VIRTUALIZE(function(idx, object)
 				return { type = "Toggle", idx = idx, value = object.Value }
-			end,
-			Load = function(idx, data)
+			end),
+			Load = LPH_NO_VIRTUALIZE(function(idx, data)
 				if SaveManager.Options[idx] then
 					SaveManager.Options[idx]:SetValue(data.value)
 				end
-			end,
+			end),
 		},
 		Slider = {
-			Save = function(idx, object)
+			Save = LPH_NO_VIRTUALIZE(function(idx, object)
 				return { type = "Slider", idx = idx, value = tostring(object.Value) }
-			end,
-			Load = function(idx, data)
+			end),
+			Load = LPH_NO_VIRTUALIZE(function(idx, data)
 				if SaveManager.Options[idx] then
 					SaveManager.Options[idx]:SetValue(data.value)
 				end
-			end,
+			end),
 		},
 		Dropdown = {
-			Save = function(idx, object)
+			Save = LPH_NO_VIRTUALIZE(function(idx, object)
 				return { type = "Dropdown", idx = idx, value = object.Value, mutli = object.Multi }
-			end,
-			Load = function(idx, data)
+			end),
+			Load = LPH_NO_VIRTUALIZE(function(idx, data)
 				if SaveManager.Options[idx] then
 					SaveManager.Options[idx]:SetValue(data.value)
 				end
-			end,
+			end),
 		},
 		Colorpicker = {
-			Save = function(idx, object)
+			Save = LPH_NO_VIRTUALIZE(function(idx, object)
 				return {
 					type = "Colorpicker",
 					idx = idx,
 					value = object.Value:ToHex(),
 					transparency = object.Transparency,
 				}
-			end,
-			Load = function(idx, data)
+			end),
+			Load = LPH_NO_VIRTUALIZE(function(idx, data)
 				if SaveManager.Options[idx] then
 					SaveManager.Options[idx]:SetValueRGB(Color3.fromHex(data.value), data.transparency)
 				end
-			end,
+			end),
 		},
 		Keybind = {
-			Save = function(idx, object)
+			Save = LPH_NO_VIRTUALIZE(function(idx, object)
 				return { type = "Keybind", idx = idx, mode = object.Mode, key = object.Value }
-			end,
-			Load = function(idx, data)
+			end),
+			Load = LPH_NO_VIRTUALIZE(function(idx, data)
 				if SaveManager.Options[idx] then
 					SaveManager.Options[idx]:SetValue(data.key, data.mode)
 				end
-			end,
+			end),
 		},
 
 		Input = {
-			Save = function(idx, object)
+			Save = LPH_NO_VIRTUALIZE(function(idx, object)
 				return { type = "Input", idx = idx, text = object.Value }
-			end,
-			Load = function(idx, data)
+			end),
+			Load = LPH_NO_VIRTUALIZE(function(idx, data)
 				if SaveManager.Options[idx] and type(data.text) == "string" then
 					SaveManager.Options[idx]:SetValue(data.text)
 				end
-			end,
+			end),
 		},
 	}
 
