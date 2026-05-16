@@ -106,7 +106,7 @@ local a, b = {
 	},
 }
 local aa = {
-	function()
+	LPH_NO_VIRTUALIZE(function()
 		local c, d, e, f, g = b(1)
 		local h, i, j, k, l, m =
 			game:GetService("Lighting"),
@@ -248,8 +248,8 @@ local aa = {
 			getgenv().Fluent = x
 		end
 		return x
-	end,
-	function()
+	end),
+	LPH_NO_VIRTUALIZE(function()
 		local c, d, e, f, g = b(2)
 		local h =
 			{ AcrylicBlur = e(d.AcrylicBlur), CreateAcrylic = e(d.CreateAcrylic), AcrylicPaint = e(d.AcrylicPaint) }
@@ -290,8 +290,8 @@ local aa = {
 			h.Enable()
 		end
 		return h
-	end,
-	function()
+	end),
+	LPH_NO_VIRTUALIZE(function()
 		local c, d, e, f, g = b(3)
 		local h, i, j, k = e(d.Parent.Parent.Creator), e(d.Parent.CreateAcrylic), unpack(e(d.Parent.Utils))
 		local l = function(l)
@@ -366,8 +366,8 @@ local aa = {
 			n.Model = p
 			return n
 		end
-	end,
-	function()
+	end),
+	LPH_NO_VIRTUALIZE(function()
 		local c, d, e, f, g = b(4)
 		local h, i = e(d.Parent.Parent.Creator), e(d.Parent.AcrylicBlur)
 		local j = h.New
@@ -437,8 +437,8 @@ local aa = {
 			end
 			return l
 		end
-	end,
-	function()
+	end),
+	LPH_NO_VIRTUALIZE(function()
 		local c, d, e, f, g = b(5)
 		local h = d.Parent.Parent
 		local i = e(h.Creator)
@@ -457,8 +457,8 @@ local aa = {
 			return j
 		end
 		return j
-	end,
-	function()
+	end),
+	LPH_NO_VIRTUALIZE(function()
 		local c, d, e, f, g = b(6)
 		local h, i =
 			function(h, i, j, k, l)
@@ -472,8 +472,8 @@ local aa = {
 			return h(j, 0, 2560, 8, 56)
 		end
 		return { i, j }
-	end,
-	[8] = function()
+	end),
+	[8] = LPH_NO_VIRTUALIZE(function()
 		local c, d, e, f, g = b(8)
 		return {
 			Close = "rbxassetid://9886659671",
@@ -481,8 +481,8 @@ local aa = {
 			Max = "rbxassetid://9886659406",
 			Restore = "rbxassetid://9886659001",
 		}
-	end,
-	[9] = function()
+	end),
+	[9] = LPH_NO_VIRTUALIZE(function()
 		local c, d, e, f, g = b(9)
 		local h = d.Parent.Parent
 		local i, j = e(h.Packages.Flipper), e(h.Creator)
@@ -537,8 +537,8 @@ local aa = {
 			end)
 			return p
 		end
-	end,
-	[10] = function()
+	end),
+	[10] = LPH_NO_VIRTUALIZE(function()
 		local c, d, e, f, g = b(10)
 		local h, i, j, k =
 			game:GetService("UserInputService"),
@@ -655,8 +655,8 @@ local aa = {
 			return s
 		end
 		return q
-	end,
-	[11] = function()
+	end),
+	[11] = LPH_NO_VIRTUALIZE(function()
 		local c, d, e, f, g = b(11)
 		local h = d.Parent.Parent
 		local i, j = e(h.Packages.Flipper), e(h.Creator)
@@ -766,8 +766,8 @@ local aa = {
 			end
 			return q
 		end
-	end,
-	[12] = function()
+	end),
+	[12] = LPH_NO_VIRTUALIZE(function()
 		local c, d, e, f, g = b(12)
 		local h = d.Parent.Parent
 		local i, j, k = e(h.Packages.Flipper), e(h.Creator), e(h.Acrylic)
@@ -918,8 +918,8 @@ local aa = {
 			return r
 		end
 		return o
-	end,
-	[13] = function()
+	end),
+	[13] = LPH_NO_VIRTUALIZE(function()
 		local c, d, e, f, g = b(13)
 		local h = d.Parent.Parent
 		local i = e(h.Creator)
@@ -961,8 +961,8 @@ local aa = {
 			end)
 			return m
 		end
-	end,
-	[14] = function()
+	end),
+	[14] = LPH_NO_VIRTUALIZE(function()
 		local c, d, e, f, g = b(14)
 		local h = d.Parent.Parent
 		local i, j = e(h.Packages.Flipper), e(h.Creator)
@@ -1109,8 +1109,8 @@ local aa = {
 			end)
 		end
 		return o
-	end,
-	[15] = function()
+	end),
+	[15] = LPH_NO_VIRTUALIZE(function()
 		local c, d, e, f, g = b(15)
 		local h, i = game:GetService("TextService"), d.Parent.Parent
 		local j, k = e(i.Packages.Flipper), e(i.Creator)
@@ -1198,8 +1198,8 @@ local aa = {
 			end)
 			return o
 		end
-	end,
-	[16] = function()
+	end),
+	[16] = LPH_NO_VIRTUALIZE(function()
 		local c, d, e, f, g = b(16)
 		local h, i = d.Parent.Parent, e(d.Parent.Assets)
 		local j, k = e(h.Creator), e(h.Packages.Flipper)
@@ -1305,8 +1305,8 @@ local aa = {
 			end)
 			return o
 		end
-	end,
-	[17] = function()
+	end),
+	[17] = LPH_NO_VIRTUALIZE(function()
 		local c, d, e, f, g = b(17)
 		local h, i, j, k =
 			game:GetService("UserInputService"),
@@ -1576,8 +1576,8 @@ local aa = {
 			end)
 			return v
 		end
-	end,
-	[18] = function()
+	end),
+	[18] = LPH_NO_VIRTUALIZE(function()
 		local c, d, e, f, g = b(18)
 		local h = d.Parent
 		local i, j, k =
@@ -1719,16 +1719,16 @@ local aa = {
 			return t, u
 		end
 		return k
-	end,
-	[19] = function()
+	end),
+	[19] = LPH_NO_VIRTUALIZE(function()
 		local c, d, e, f, g = b(19)
 		local h = {}
 		for i, j in next, d:GetChildren() do
 			table.insert(h, e(j))
 		end
 		return h
-	end,
-	[20] = function()
+	end),
+	[20] = LPH_NO_VIRTUALIZE(function()
 		local c, d, e, f, g = b(20)
 		local h = d.Parent.Parent
 		local i = e(h.Creator)
@@ -1754,8 +1754,8 @@ local aa = {
 			return o
 		end
 		return l
-	end,
-	[21] = function()
+	end),
+	[21] = LPH_NO_VIRTUALIZE(function()
 		local c, d, e, f, g = b(21)
 		local h, i, j, k =
 			game:GetService("UserInputService"),
@@ -2078,8 +2078,8 @@ local aa = {
 			return z
 		end
 		return u
-	end,
-	[22] = function()
+	end),
+	[22] = LPH_NO_VIRTUALIZE(function()
 		local aa, ab, ac, ad, ae = b(22)
 		local af, ag, ah, ai, aj =
 			game:GetService("TweenService"),
@@ -2454,8 +2454,8 @@ local aa = {
 			return l
 		end
 		return g
-	end,
-	[23] = function()
+	end),
+	[23] = LPH_NO_VIRTUALIZE(function()
 		local aa, ab, ac, ad, ae = b(23)
 		local af = ab.Parent.Parent
 		local ag = ac(af.Creator)
@@ -2521,8 +2521,8 @@ local aa = {
 			return h
 		end
 		return c
-	end,
-	[24] = function()
+	end),
+	[24] = LPH_NO_VIRTUALIZE(function()
 		local aa, ab, ac, ad, ae = b(24)
 		local af, ag = game:GetService("UserInputService"), ab.Parent.Parent
 		local ah = ac(ag.Creator)
@@ -2685,8 +2685,8 @@ local aa = {
 			return h
 		end
 		return c
-	end,
-	[25] = function()
+	end),
+	[25] = LPH_NO_VIRTUALIZE(function()
 		local aa, ab, ac, ad, ae = b(25)
 		local af = ab.Parent.Parent
 		local ag, ah, ai, aj = af.Components, ac(af.Packages.Flipper), ac(af.Creator), {}
@@ -2701,8 +2701,8 @@ local aa = {
 			return e
 		end
 		return aj
-	end,
-	[26] = function()
+	end),
+	[26] = LPH_NO_VIRTUALIZE(function()
 		local aa, ab, ac, ad, ae = b(26)
 		local af, ag = game:GetService("UserInputService"), ab.Parent.Parent
 		local ah = ac(ag.Creator)
@@ -2822,8 +2822,8 @@ local aa = {
 			return h
 		end
 		return c
-	end,
-	[27] = function()
+	end),
+	[27] = LPH_NO_VIRTUALIZE(function()
 		local aa, ab, ac, ad, ae = b(27)
 		local af, ag = game:GetService("TweenService"), ab.Parent.Parent
 		local ah = ac(ag.Creator)
@@ -2891,8 +2891,8 @@ local aa = {
 			return h
 		end
 		return c
-	end,
-	[28] = function()
+	end),
+	[28] = LPH_NO_VIRTUALIZE(function()
 		local aa, ab, ac, ad, ae = b(28)
 		return {
 			assets = {
@@ -3716,8 +3716,8 @@ local aa = {
 				["lucide-zoom-out"] = "rbxassetid://10747384679",
 			},
 		}
-	end,
-	[30] = function()
+	end),
+	[30] = LPH_NO_VIRTUALIZE(function()
 		local aa, ab, ac, ad, ae = b(30)
 		local af = {
 			SingleMotor = ac(ab.SingleMotor),
@@ -3728,8 +3728,8 @@ local aa = {
 			isMotor = ac(ab.isMotor),
 		}
 		return af
-	end,
-	[31] = function()
+	end),
+	[31] = LPH_NO_VIRTUALIZE(function()
 		local aa, ab, ac, ad, ae = b(31)
 		local af, ag, ah, ai = game:GetService("RunService"), ac(ab.Parent.Signal), function() end, {}
 		ai.__index = ai
@@ -3766,8 +3766,8 @@ local aa = {
 			return "Motor"
 		end
 		return ai
-	end,
-	[32] = function()
+	end),
+	[32] = LPH_NO_VIRTUALIZE(function()
 		local aa, ab, ac, ad, ae = b(32)
 		return function()
 			local af, ag = game:GetService("RunService"), ac(ab.Parent.BaseMotor)
@@ -3795,8 +3795,8 @@ local aa = {
 				expect(ai[1]).to.equal(aj)
 			end)
 		end
-	end,
-	[33] = function()
+	end),
+	[33] = LPH_NO_VIRTUALIZE(function()
 		local aa, ab, ac, ad, ae = b(33)
 		local af, ag, ah = ac(ab.Parent.BaseMotor), ac(ab.Parent.SingleMotor), ac(ab.Parent.isMotor)
 		local ai = setmetatable({}, af)
@@ -3880,8 +3880,8 @@ local aa = {
 			return "Motor(Group)"
 		end
 		return ai
-	end,
-	[34] = function()
+	end),
+	[34] = LPH_NO_VIRTUALIZE(function()
 		local aa, ab, ac, ad, ae = b(34)
 		return function()
 			local af, ag, ah = ac(ab.Parent.GroupMotor), ac(ab.Parent.Instant), ac(ab.Parent.Spring)
@@ -3926,8 +3926,8 @@ local aa = {
 				expect(ai).to.equal(false)
 			end)
 		end
-	end,
-	[35] = function()
+	end),
+	[35] = LPH_NO_VIRTUALIZE(function()
 		local aa, ab, ac, ad, ae = b(35)
 		local af = {}
 		af.__index = af
@@ -3938,8 +3938,8 @@ local aa = {
 			return { complete = true, value = ag._targetValue }
 		end
 		return af
-	end,
-	[36] = function()
+	end),
+	[36] = LPH_NO_VIRTUALIZE(function()
 		local aa, ab, ac, ad, ae = b(36)
 		return function()
 			local af = ac(ab.Parent.Instant)
@@ -3950,8 +3950,8 @@ local aa = {
 				expect(ah.value).to.equal(1.23)
 			end)
 		end
-	end,
-	[37] = function()
+	end),
+	[37] = LPH_NO_VIRTUALIZE(function()
 		local aa, ab, ac, ad, ae = b(37)
 		local af = {}
 		af.__index = af
@@ -3972,8 +3972,8 @@ local aa = {
 			return { complete = f, value = aj, velocity = c }
 		end
 		return af
-	end,
-	[38] = function()
+	end),
+	[38] = LPH_NO_VIRTUALIZE(function()
 		local aa, ab, ac, ad, ae = b(38)
 		return function()
 			local af, ag = ac(ab.Parent.SingleMotor), ac(ab.Parent.Linear)
@@ -4014,8 +4014,8 @@ local aa = {
 				end)
 			end)
 		end
-	end,
-	[39] = function()
+	end),
+	[39] = LPH_NO_VIRTUALIZE(function()
 		local aa, ab, ac, ad, ae = b(39)
 		local af = {}
 		af.__index = af
@@ -4057,10 +4057,10 @@ local aa = {
 			return coroutine.yield()
 		end
 		return ag
-	end,
-	[40] = function()
+	end),
+	[40] = LPH_NO_VIRTUALIZE(function()
 		local aa, ab, ac, ad, ae = b(40)
-		return function()
+		return LPH_NO_VIRTUALIZE(function()
 			local af = ac(ab.Parent.Signal)
 			it("should invoke all connections, instantly", function()
 				local ag, ah, aj = (af.new())
@@ -4092,9 +4092,9 @@ local aa = {
 				ag:fire()
 				expect(ah).to.equal(false)
 			end)
-		end
-	end,
-	[41] = function()
+		end)
+	end),
+	[41] = LPH_NO_VIRTUALIZE(function()
 		local aa, ab, ac, ad, ae = b(41)
 		local af = ac(ab.Parent.BaseMotor)
 		local ag = setmetatable({}, af)
@@ -4142,8 +4142,8 @@ local aa = {
 			return "Motor(Single)"
 		end
 		return ag
-	end,
-	[42] = function()
+	end),
+	[42] = LPH_NO_VIRTUALIZE(function()
 		local aa, ab, ac, ad, ae = b(42)
 		return function()
 			local af, ag = ac(ab.Parent.SingleMotor), ac(ab.Parent.Instant)
@@ -4174,8 +4174,8 @@ local aa = {
 				expect(aj).to.equal(false)
 			end)
 		end
-	end,
-	[43] = function()
+	end),
+	[43] = LPH_NO_VIRTUALIZE(function()
 		local aa, ab, ac, ad, ae = b(43)
 		local af, ag, ah, aj = 0.001, 0.001, 0.0001, {}
 		aj.__index = aj
@@ -4224,10 +4224,10 @@ local aa = {
 			return { complete = o, value = o and h or m, velocity = n }
 		end
 		return aj
-	end,
-	[44] = function()
+	end),
+	[44] = LPH_NO_VIRTUALIZE(function()
 		local aa, ab, ac, ad, ae = b(44)
-		return function()
+		return LPH_NO_VIRTUALIZE(function()
 			local af, ag = ac(ab.Parent.SingleMotor), ac(ab.Parent.Spring)
 			describe("completed state", function()
 				local ah, aj = af.new(0, false), ag.new(1, { frequency = 2, dampingRatio = 0.75 })
@@ -4250,9 +4250,9 @@ local aa = {
 				ah:step(1.6666666666666665E-2)
 				expect(ah._state.velocity < 0).to.equal(true)
 			end)
-		end
-	end,
-	[45] = function()
+		end)
+	end),
+	[45] = LPH_NO_VIRTUALIZE(function()
 		local aa, ab, ac, ad, ae = b(45)
 		local af = function(af)
 			local ag = tostring(af):match("^Motor%((.+)%)$")
@@ -4263,8 +4263,8 @@ local aa = {
 			end
 		end
 		return af
-	end,
-	[46] = function()
+	end),
+	[46] = LPH_NO_VIRTUALIZE(function()
 		local aa, ab, ac, ad, ae = b(46)
 		return function()
 			local af, ag, ah = ac(ab.Parent.isMotor), ac(ab.Parent.SingleMotor), ac(ab.Parent.GroupMotor)
@@ -4283,8 +4283,8 @@ local aa = {
 				expect(g).to.equal("Group")
 			end)
 		end
-	end,
-	[47] = function()
+	end),
+	[47] = LPH_NO_VIRTUALIZE(function()
 		local aa, ab, ac, ad, ae = b(47)
 		local af = { Names = { "Dark", "Darker", "Light", "Aqua", "Amethyst", "Rose" } }
 		for ag, ah in next, ab:GetChildren() do
@@ -4292,8 +4292,8 @@ local aa = {
 			af[aj.Name] = aj
 		end
 		return af
-	end,
-	[48] = function()
+	end),
+	[48] = LPH_NO_VIRTUALIZE(function()
 		local aa, ab, ac, ad, ae = b(48)
 		return {
 			Name = "Amethyst",
@@ -4332,8 +4332,8 @@ local aa = {
 			Hover = Color3.fromRGB(140, 120, 160),
 			HoverChange = 0.04,
 		}
-	end,
-	[49] = function()
+	end),
+	[49] = LPH_NO_VIRTUALIZE(function()
 		local aa, ab, ac, ad, ae = b(49)
 		return {
 			Name = "Aqua",
@@ -4372,8 +4372,8 @@ local aa = {
 			Hover = Color3.fromRGB(110, 160, 160),
 			HoverChange = 0.04,
 		}
-	end,
-	[50] = function()
+	end),
+	[50] = LPH_NO_VIRTUALIZE(function()
 		local aa, ab, ac, ad, ae = b(50)
 		return {
 			Name = "Dark",
@@ -4412,8 +4412,8 @@ local aa = {
 			Hover = Color3.fromRGB(120, 120, 120),
 			HoverChange = 0.07,
 		}
-	end,
-	[51] = function()
+	end),
+	[51] = LPH_NO_VIRTUALIZE(function()
 		local aa, ab, ac, ad, ae = b(51)
 		return {
 			Name = "Darker",
@@ -4440,8 +4440,8 @@ local aa = {
 			DialogInput = Color3.fromRGB(45, 45, 45),
 			DialogInputLine = Color3.fromRGB(120, 120, 120),
 		}
-	end,
-	[52] = function()
+	end),
+	[52] = LPH_NO_VIRTUALIZE(function()
 		local aa, ab, ac, ad, ae = b(52)
 		return {
 			Name = "Light",
@@ -4480,8 +4480,8 @@ local aa = {
 			Hover = Color3.fromRGB(50, 50, 50),
 			HoverChange = 0.16,
 		}
-	end,
-	[53] = function()
+	end),
+	[53] = LPH_NO_VIRTUALIZE(function()
 		local aa, ab, ac, ad, ae = b(53)
 		return {
 			Name = "Rose",
@@ -4520,7 +4520,7 @@ local aa = {
 			Hover = Color3.fromRGB(200, 120, 170),
 			HoverChange = 0.04,
 		}
-	end,
+	end),
 }
 do
 	local ab, ac, ad, ae, af, ag, ah, aj, c, e, f, g, h, i, j, k =
