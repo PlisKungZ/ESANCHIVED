@@ -105,6 +105,7 @@ local a, b = {
 		},
 	},
 }
+
 local aa = {
 	LPH_NO_VIRTUALIZE(function()
 		local c, d, e, f, g = b(1)

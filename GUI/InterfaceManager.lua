@@ -1,7 +1,7 @@
 local httpService = game:GetService("HttpService")
 -- stylua: ignore
 local InterfaceManager = {}
-do
+LPH_NO_VIRTUALIZE(function()
 	InterfaceManager.Folder = "FluentSettings"
 	InterfaceManager.Settings = {
 		Theme = "Dark",
@@ -111,6 +111,6 @@ do
 		end)
 		Library.MinimizeKeybind = MenuKeybind
 	end
-end
+end)()
 
 return InterfaceManager

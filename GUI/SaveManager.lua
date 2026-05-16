@@ -1,75 +1,75 @@
 local httpService = game:GetService("HttpService")
 -- stylua: ignore
 local SaveManager = {}
-do
+LPH_NO_VIRTUALIZE(function()
 	SaveManager.Folder = "FluentSettings"
 	SaveManager.Ignore = {}
 	SaveManager.Parser = {
 		Toggle = {
-			Save = LPH_NO_VIRTUALIZE(function(idx, object)
+			Save = function(idx, object)
 				return { type = "Toggle", idx = idx, value = object.Value }
-			end),
-			Load = LPH_NO_VIRTUALIZE(function(idx, data)
+			end,
+			Load = function(idx, data)
 				if SaveManager.Options[idx] then
 					SaveManager.Options[idx]:SetValue(data.value)
 				end
-			end),
+			end,
 		},
 		Slider = {
-			Save = LPH_NO_VIRTUALIZE(function(idx, object)
+			Save = function(idx, object)
 				return { type = "Slider", idx = idx, value = tostring(object.Value) }
-			end),
-			Load = LPH_NO_VIRTUALIZE(function(idx, data)
+			end,
+			Load = function(idx, data)
 				if SaveManager.Options[idx] then
 					SaveManager.Options[idx]:SetValue(data.value)
 				end
-			end),
+			end,
 		},
 		Dropdown = {
-			Save = LPH_NO_VIRTUALIZE(function(idx, object)
+			Save = function(idx, object)
 				return { type = "Dropdown", idx = idx, value = object.Value, mutli = object.Multi }
-			end),
-			Load = LPH_NO_VIRTUALIZE(function(idx, data)
+			end,
+			Load = function(idx, data)
 				if SaveManager.Options[idx] then
 					SaveManager.Options[idx]:SetValue(data.value)
 				end
-			end),
+			end,
 		},
 		Colorpicker = {
-			Save = LPH_NO_VIRTUALIZE(function(idx, object)
+			Save = function(idx, object)
 				return {
 					type = "Colorpicker",
 					idx = idx,
 					value = object.Value:ToHex(),
 					transparency = object.Transparency,
 				}
-			end),
-			Load = LPH_NO_VIRTUALIZE(function(idx, data)
+			end,
+			Load = function(idx, data)
 				if SaveManager.Options[idx] then
 					SaveManager.Options[idx]:SetValueRGB(Color3.fromHex(data.value), data.transparency)
 				end
-			end),
+			end,
 		},
 		Keybind = {
-			Save = LPH_NO_VIRTUALIZE(function(idx, object)
+			Save = function(idx, object)
 				return { type = "Keybind", idx = idx, mode = object.Mode, key = object.Value }
-			end),
-			Load = LPH_NO_VIRTUALIZE(function(idx, data)
+			end,
+			Load = function(idx, data)
 				if SaveManager.Options[idx] then
 					SaveManager.Options[idx]:SetValue(data.key, data.mode)
 				end
-			end),
+			end,
 		},
 
 		Input = {
-			Save = LPH_NO_VIRTUALIZE(function(idx, object)
+			Save = function(idx, object)
 				return { type = "Input", idx = idx, text = object.Value }
-			end),
-			Load = LPH_NO_VIRTUALIZE(function(idx, data)
+			end,
+			Load = function(idx, data)
 				if SaveManager.Options[idx] and type(data.text) == "string" then
 					SaveManager.Options[idx]:SetValue(data.text)
 				end
-			end),
+			end,
 		},
 	}
 
@@ -349,6 +349,6 @@ do
 	end
 
 	SaveManager:BuildFolderTree()
-end
+end)()
 
 return SaveManager

@@ -301,10 +301,16 @@ function Teleportation.init()
 		end
 
 		Players.PlayerAdded:Connect(function(player)
+			if player == Players.LocalPlayer then
+				return
+			end
 			Options.playerSelection:SetValues(getPlayerNames())
 		end)
 
 		Players.PlayerRemoving:Connect(function(player)
+			if player == Players.LocalPlayer then
+				return
+			end
 			Options.playerSelection:SetValues(getPlayerNames())
 		end)
 
@@ -3105,7 +3111,7 @@ __bundle_register("GUI/InterfaceManager", function(require, _LOADED, __bundle_re
 local httpService = game:GetService("HttpService")
 -- stylua: ignore
 local InterfaceManager = {}
-do
+LPH_NO_VIRTUALIZE(function()
 	InterfaceManager.Folder = "FluentSettings"
 	InterfaceManager.Settings = {
 		Theme = "Dark",
@@ -3215,7 +3221,7 @@ do
 		end)
 		Library.MinimizeKeybind = MenuKeybind
 	end
-end
+end)()
 
 return InterfaceManager
 
@@ -3224,75 +3230,75 @@ __bundle_register("GUI/SaveManager", function(require, _LOADED, __bundle_registe
 local httpService = game:GetService("HttpService")
 -- stylua: ignore
 local SaveManager = {}
-do
+LPH_NO_VIRTUALIZE(function()
 	SaveManager.Folder = "FluentSettings"
 	SaveManager.Ignore = {}
 	SaveManager.Parser = {
 		Toggle = {
-			Save = LPH_NO_VIRTUALIZE(function(idx, object)
+			Save = function(idx, object)
 				return { type = "Toggle", idx = idx, value = object.Value }
-			end),
-			Load = LPH_NO_VIRTUALIZE(function(idx, data)
+			end,
+			Load = function(idx, data)
 				if SaveManager.Options[idx] then
 					SaveManager.Options[idx]:SetValue(data.value)
 				end
-			end),
+			end,
 		},
 		Slider = {
-			Save = LPH_NO_VIRTUALIZE(function(idx, object)
+			Save = function(idx, object)
 				return { type = "Slider", idx = idx, value = tostring(object.Value) }
-			end),
-			Load = LPH_NO_VIRTUALIZE(function(idx, data)
+			end,
+			Load = function(idx, data)
 				if SaveManager.Options[idx] then
 					SaveManager.Options[idx]:SetValue(data.value)
 				end
-			end),
+			end,
 		},
 		Dropdown = {
-			Save = LPH_NO_VIRTUALIZE(function(idx, object)
+			Save = function(idx, object)
 				return { type = "Dropdown", idx = idx, value = object.Value, mutli = object.Multi }
-			end),
-			Load = LPH_NO_VIRTUALIZE(function(idx, data)
+			end,
+			Load = function(idx, data)
 				if SaveManager.Options[idx] then
 					SaveManager.Options[idx]:SetValue(data.value)
 				end
-			end),
+			end,
 		},
 		Colorpicker = {
-			Save = LPH_NO_VIRTUALIZE(function(idx, object)
+			Save = function(idx, object)
 				return {
 					type = "Colorpicker",
 					idx = idx,
 					value = object.Value:ToHex(),
 					transparency = object.Transparency,
 				}
-			end),
-			Load = LPH_NO_VIRTUALIZE(function(idx, data)
+			end,
+			Load = function(idx, data)
 				if SaveManager.Options[idx] then
 					SaveManager.Options[idx]:SetValueRGB(Color3.fromHex(data.value), data.transparency)
 				end
-			end),
+			end,
 		},
 		Keybind = {
-			Save = LPH_NO_VIRTUALIZE(function(idx, object)
+			Save = function(idx, object)
 				return { type = "Keybind", idx = idx, mode = object.Mode, key = object.Value }
-			end),
-			Load = LPH_NO_VIRTUALIZE(function(idx, data)
+			end,
+			Load = function(idx, data)
 				if SaveManager.Options[idx] then
 					SaveManager.Options[idx]:SetValue(data.key, data.mode)
 				end
-			end),
+			end,
 		},
 
 		Input = {
-			Save = LPH_NO_VIRTUALIZE(function(idx, object)
+			Save = function(idx, object)
 				return { type = "Input", idx = idx, text = object.Value }
-			end),
-			Load = LPH_NO_VIRTUALIZE(function(idx, data)
+			end,
+			Load = function(idx, data)
 				if SaveManager.Options[idx] and type(data.text) == "string" then
 					SaveManager.Options[idx]:SetValue(data.text)
 				end
-			end),
+			end,
 		},
 	}
 
@@ -3572,7 +3578,7 @@ do
 	end
 
 	SaveManager:BuildFolderTree()
-end
+end)()
 
 return SaveManager
 
@@ -3588,6 +3594,7 @@ __bundle_register("GUI/main", function(require, _LOADED, __bundle_register, __bu
     GitHub: https://github.com/dawid-scripts/Fluent
 --]]
 -- stylua: ignore
+LPH_NO_VIRTUALIZE(function()
 local a, b = {
 	{
 		1,
@@ -3685,6 +3692,7 @@ local a, b = {
 		},
 	},
 }
+end)
 local aa = {
 	LPH_NO_VIRTUALIZE(function()
 		local c, d, e, f, g = b(1)

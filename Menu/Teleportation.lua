@@ -29,10 +29,16 @@ function Teleportation.init()
 		end
 
 		Players.PlayerAdded:Connect(function(player)
+			if player == Players.LocalPlayer then
+				return
+			end
 			Options.playerSelection:SetValues(getPlayerNames())
 		end)
 
 		Players.PlayerRemoving:Connect(function(player)
+			if player == Players.LocalPlayer then
+				return
+			end
 			Options.playerSelection:SetValues(getPlayerNames())
 		end)
 
