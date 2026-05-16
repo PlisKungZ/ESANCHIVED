@@ -2920,10 +2920,11 @@ local function enableFly(SPEED)
 		return
 	end
 
-	humanoid.PlatformStand = true -- disables default movement without rotating char
+	humanoid.PlatformStand = true
+
+	local hoverPosition = rootPart.Position -- track where to hover when idle
 
 	connection = RunService.Heartbeat:Connect(LPH_NO_VIRTUALIZE(function(delta)
-		-- re-grab in case of respawn
 		character = localPlayer.Character
 		if not character then
 			return
@@ -2937,11 +2938,15 @@ local function enableFly(SPEED)
 		local direction = getDirection()
 
 		if direction.Magnitude > 0 then
-			-- move position only, don't touch rotation
+			-- Moving: update position and record it as the new hover point
 			rootPart.CFrame = rootPart.CFrame + (direction.Unit * SPEED * delta)
+			hoverPosition = rootPart.Position -- update hover anchor
+		else
+			-- Idle: lock to last position so gravity can't pull character down
+			rootPart.CFrame = CFrame.new(hoverPosition) * (rootPart.CFrame - rootPart.CFrame.Position)
 		end
 
-		-- keep character upright and prevent physics from moving it
+		-- Kill all physics-driven movement
 		rootPart.AssemblyLinearVelocity = Vector3.zero
 		rootPart.AssemblyAngularVelocity = Vector3.zero
 	end))
@@ -3594,7 +3599,6 @@ __bundle_register("GUI/main", function(require, _LOADED, __bundle_register, __bu
     GitHub: https://github.com/dawid-scripts/Fluent
 --]]
 -- stylua: ignore
-LPH_NO_VIRTUALIZE(function()
 local a, b = {
 	{
 		1,
@@ -3692,7 +3696,7 @@ local a, b = {
 		},
 	},
 }
-end)
+
 local aa = {
 	LPH_NO_VIRTUALIZE(function()
 		local c, d, e, f, g = b(1)
