@@ -85,8 +85,34 @@ local function killMob(offset)
 				animTrack:AdjustSpeed(0)
 			end
 			connection:Disconnect()
+			workspace.CurrentCamera.CameraSubject = localPlayer.Character.Humanoid
 		end
 	end)
+end
+
+local animationLists = {}
+
+local nothingThereHitAnim = {
+	"rbxassetid://16428863879",
+	"rbxassetid://16390219304",
+	"rbxassetid://16390215619",
+	"rbxassetid://16390221563",
+	"rbxassetid://16390165394",
+	"rbxassetid://16390173071",
+	"rbxassetid://16390234461",
+	"rbxassetid://16390226552",
+	"rbxassetid://15151732756",
+}
+
+local function checkAnimations(tabled, animator)
+	for _, track in animator:GetPlayingAnimationTracks() do
+		if track.Animation.AnimationId then
+			if table.find(tabled, track.Animation.AnimationId) then
+				return false
+			end
+		end
+	end
+	return true
 end
 
 local function killBehind(offset)
@@ -130,13 +156,16 @@ local function killBehind(offset)
 				animTrack:AdjustSpeed(1000)
 			end
 			local backDirection = -targetTable[1].HumanoidRootPart.CFrame.LookVector
-			local teleportPosition = targetTable[1].HumanoidRootPart.CFrame.Position + (backDirection * -offset)
+			local teleportPosition = targetTable[1].HumanoidRootPart.CFrame.Position + (backDirection * 3)
 			game:GetService("ReplicatedStorage").Events.BegunM1:FireServer(game.Players.LocalPlayer.Data.Weapon.Value)
-
-			localPlayer.Character.HumanoidRootPart:PivotTo(
-				CFrame.new(teleportPosition, targetTable[1].HumanoidRootPart.CFrame.Position)
-			)
-			workspace.CurrentCamera.CameraSubject = targetTable[1].Humanoid
+			if not checkAnimations(nothingThereHitAnim, targetTable[1].Humanoid.Animator) then
+				localPlayer.Character.HumanoidRootPart:PivotTo(targetTable[1]:GetPivot() + Vector3.new(0, 100, 0))
+			else
+				localPlayer.Character.HumanoidRootPart:PivotTo(
+					CFrame.new(teleportPosition, targetTable[1].HumanoidRootPart.CFrame.Position)
+				)
+				workspace.CurrentCamera.CameraSubject = targetTable[1].Humanoid
+			end
 			localPlayer.Character.HumanoidRootPart.AssemblyLinearVelocity = Vector3.zero
 			localPlayer.Character.HumanoidRootPart.AssemblyAngularVelocity = Vector3.zero
 			localPlayer.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Ragdoll, false)
@@ -149,6 +178,7 @@ local function killBehind(offset)
 				animTrack:AdjustSpeed(0)
 			end
 			connection:Disconnect()
+			workspace.CurrentCamera.CameraSubject = localPlayer.Character.Humanoid
 		end
 	end)
 end
@@ -234,20 +264,14 @@ local gradeFunctions = {
 	[5] = function(offset)
 		goUpElavator()
 		clickBegin()
-		localPlayer.Character:PivotTo(
-			2475.43213,
-			2506.63574,
-			2826.79248,
-			-0.110904016,
-			5.24129611e-08,
-			-0.993831098,
-			5.52633814e-08,
-			1,
-			4.65713228e-08,
-			0.993831098,
-			-4.97575208e-08,
-			-0.110904016
-		)
+		repeat
+			task.wait()
+		until #workspace.Alive:GetChildren() >= 2
+		for _, npc in workspace.NPCS:GetChildren() do
+			if npc.Name == "Elevator" and npc:FindFirstChild("NormalTP") then
+				localPlayer.Character:PivotTo(npc:GetPivot())
+			end
+		end
 	end,
 	[4] = function(offset)
 		goUpElavator()

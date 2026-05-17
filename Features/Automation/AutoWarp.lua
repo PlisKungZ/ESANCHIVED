@@ -91,7 +91,7 @@ local function killMob(offset)
 				animTrack:Play()
 				animTrack:AdjustSpeed(1000)
 			end
-			local offset = Vector3.new(math.random(0, 1), math.random(offset, offset + 1), math.random(0, 1))
+			local offset = Vector3.new(math.random(0, 1), -math.random(offset, offset + 1), math.random(0, 1))
 			if not m1Debounce then
 				m1Debounce = true
 				game:GetService("ReplicatedStorage").Events.BegunM1

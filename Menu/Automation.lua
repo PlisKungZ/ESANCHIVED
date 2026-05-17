@@ -1,7 +1,7 @@
 local autoLib = require("Features/Automation/AutoLibrary")
 local autoWarp = require("Features/Automation/AutoWarp")
 --local autoRailway = require("Features/Automation/AutoRailway")
---local autoGrade = require("Features/Automation/AutoGradeEvaluation")
+local autoGrade = require("Features/Automation/AutoGradeEvaluation")
 
 local Automation = {}
 
@@ -48,9 +48,9 @@ function Automation.init()
 		local autoLibraryYOffset = Tab:AddSlider("autoLibYOffset", {
 			Title = "Y Offset",
 			Description = "Depends on your weapons",
-			Default = -7,
-			Min = -20,
-			Max = 10,
+			Default = 5,
+			Min = 0,
+			Max = 30,
 			Rounding = 0,
 			Callback = function(Value)
 				if Options.AutoLibrary.Value then
@@ -93,15 +93,54 @@ function Automation.init()
 		local autoWarpYOffset = Tab:AddSlider("autoWarpYOffset", {
 			Title = "Y Offset",
 			Description = "Depends on your weapons",
-			Default = -7,
-			Min = -20,
-			Max = 10,
+			Default = 10,
+			Min = 0,
+			Max = 30,
 			Rounding = 0,
 			Callback = function(Value)
 				if Options.AutoWarp.Value then
 					local state, err = autoWarp.on(Value)
 					if not state then
 						Options.AutoWarp:SetValue(false)
+						GUI:Notify({
+							Title = "Error Occurred.",
+							Content = err,
+							Duration = 8,
+						})
+					end
+				end
+			end,
+		})
+		local autoGradeEva = Tab:AddToggle("autoGradeEva", { Title = "Auto Grade Evaluation", Default = false })
+		Options.autoGradeEva:SetValue(false)
+
+		autoGradeEva:OnChanged(function()
+			if Options.autoGradeEva.Value then
+				local state, err = autoGrade.on(Options.autoGradeEvaYOffset.Value)
+				if not state then
+					GUI:Notify({
+						Title = "Error Occurred.",
+						Content = err,
+						Duration = 8,
+					})
+				end
+			else
+				autoGrade.off()
+			end
+		end)
+
+		local autoGradeEvaYOffset = Tab:AddSlider("autoGradeEvaYOffset", {
+			Title = "Y Offset",
+			Description = "Depends on your weapons",
+			Default = 30,
+			Min = 0,
+			Max = 30,
+			Rounding = 0,
+			Callback = function(Value)
+				if Options.autoGradeEva.Value then
+					local state, err = autoGrade.on(Value)
+					if not state then
+						Options.autoGradeEva:SetValue(false)
 						GUI:Notify({
 							Title = "Error Occurred.",
 							Content = err,
@@ -157,45 +196,6 @@ function Automation.init()
 			end
 		end,
 	}) ]]
-	--[[ 		local autoGradeEva = Tab:AddToggle("autoGradeEva", { Title = "Auto Grade Evaluation", Default = false })
-		Options.autoGradeEva:SetValue(false)
-
-		autoGradeEva:OnChanged(function()
-			if Options.autoGradeEva.Value then
-				local state, err = autoGrade.on(Options.autoGradeEvaYOffset.Value)
-				if not state then
-					GUI:Notify({
-						Title = "Error Occurred.",
-						Content = err,
-						Duration = 8,
-					})
-				end
-			else
-				autoGrade.off()
-			end
-		end)
-
-		local autoGradeEvaYOffset = Tab:AddSlider("autoGradeEvaYOffset", {
-			Title = "Y Offset",
-			Description = "Depends on your weapons",
-			Default = -30,
-			Min = -30,
-			Max = 0,
-			Rounding = 0,
-			Callback = function(Value)
-				if Options.autoGradeEva.Value then
-					local state, err = autoGrade.on(Value)
-					if not state then
-						Options.autoGradeEva:SetValue(false)
-						GUI:Notify({
-							Title = "Error Occurred.",
-							Content = err,
-							Duration = 8,
-						})
-					end
-				end
-			end,
-		}) ]]
 end
 
 return Automation

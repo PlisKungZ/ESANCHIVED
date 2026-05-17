@@ -160,7 +160,7 @@ function AutoLibrary.on(offset, floor)
 					animTrack:AdjustSpeed(1000)
 				end
 				local offset =
-					Vector3.new(math.random(0, 1), math.random(offset, offset + math.random(1, 2)), math.random(0, 1))
+					Vector3.new(math.random(0, 1), -math.random(offset, offset + math.random(1, 2)), math.random(0, 1))
 
 				localPlayer.Character.HumanoidRootPart:PivotTo(
 					targetTable[1].HumanoidRootPart.CFrame * CFrame.Angles(math.rad(90), 0, 0) + offset
