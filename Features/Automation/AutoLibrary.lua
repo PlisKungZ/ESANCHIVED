@@ -64,7 +64,6 @@ local waitingPeriod = false
 local bossWaited = false
 local pressedOrdeal = false
 local teleported = false
-local waitingTime = 420
 
 function AutoLibrary.on(offset, floor)
 	pcall(function()
@@ -117,14 +116,9 @@ function AutoLibrary.on(offset, floor)
 			task.wait()
 		until workspace.Map:FindFirstChild(floorIdentifier[floor])
 		localPlayer.Character.HumanoidRootPart:PivotTo(safeZone[floor])
-		local isWaiting = true
-		task.delay(waitingTime, function()
-			isWaiting = false
-		end)
-
 		local equipDebounce = false
 		connection = RunService.PostSimulation:Connect(LPH_NO_VIRTUALIZE(function(delta)
-			if isWaiting then
+			if math.floor(workspace.DistributedGameTime) < 420 then
 				game:GetService("ReplicatedStorage").Events.Equip:FireServer(false)
 				for _, animTrack in track do
 					animTrack:AdjustSpeed(0)

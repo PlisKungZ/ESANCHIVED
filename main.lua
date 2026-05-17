@@ -153,10 +153,6 @@ LPH_NO_VIRTUALIZE(function()
 	getgenv().GUI = GUI
 	getgenv().window = Window
 
-	getgenv().print = function(text)
-		return
-	end
-
 	CharacterTab.init(GUI, Window)
 	TeleportationTab.init(GUI, Window)
 	VisualTab.init(GUI, Window)
