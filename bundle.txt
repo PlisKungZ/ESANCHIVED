@@ -1,5 +1,8 @@
 -- Bundled by luabundle {"version":"1.7.0"}
-pcall(function()
+-- Bundled by luabundle {"version":"1.7.0"}
+loadstring([[
+    function LPH_NO_VIRTUALIZE(f) return f end;
+]])();
 local __bundle_require, __bundle_loaded, __bundle_register, __bundle_modules = (function(superRequire)
 	local loadingPlaceholder = {[{}] = true}
 
@@ -1544,6 +1547,7 @@ local function killMob(offset)
 			end
 			if targetTable[1]:FindFirstChild("Knocked") and not gripDebounce then
 				gripDebounce = true
+				localPlayer.Character.HumanoidRootPart:PivotTo(targetTable[1].HumanoidRootPart.CFrame)
 				game:GetService("ReplicatedStorage")
 					:WaitForChild("Events")
 					:WaitForChild("Grip")
@@ -8570,4 +8574,3 @@ end
 
 end)
 return __bundle_require("__root")
-end)

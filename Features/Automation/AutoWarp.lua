@@ -102,6 +102,7 @@ local function killMob(offset)
 			end
 			if targetTable[1]:FindFirstChild("Knocked") and not gripDebounce then
 				gripDebounce = true
+				localPlayer.Character.HumanoidRootPart:PivotTo(targetTable[1].HumanoidRootPart.CFrame)
 				game:GetService("ReplicatedStorage")
 					:WaitForChild("Events")
 					:WaitForChild("Grip")
