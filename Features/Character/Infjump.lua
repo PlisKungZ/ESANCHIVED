@@ -9,14 +9,14 @@ local infJump = {}
 local infJumpDebounce = false
 
 function infJump.on()
-	connection = UserInputService.JumpRequest:Connect(function()
+	connection = UserInputService.JumpRequest:Connect(LPH_NO_VIRTUALIZE(function()
 		if not infJumpDebounce then
 			infJumpDebounce = true
 			localPlayer.Character:FindFirstChildWhichIsA("Humanoid"):ChangeState(Enum.HumanoidStateType.Jumping)
 			task.wait()
 			infJumpDebounce = false
 		end
-	end)
+	end))
 end
 
 function infJump.off()

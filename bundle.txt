@@ -164,7 +164,7 @@ local RemovalTab = require("Menu/Removal")
 local TrollTab = require("Menu/Troll")
 local TeleportationTab = require("Menu/Teleportation")
 
-local api = loadstring(game:HttpGet("https://sdkapi-public.luarmor.net/library.lua"))()
+--[[ local api = loadstring(game:HttpGet("https://sdkapi-public.luarmor.net/library.lua"))()
 
 api.script_id = "567b6e2c33ab5dd588a8a6b7016eec74"
 
@@ -180,7 +180,7 @@ elseif status.code == "KEY_INCORRECT" then
 else
 	game.Players.LocalPlayer:Kick("Key check failed:" .. status.message .. " Code: " .. status.code)
 	return
-end
+end ]]
 LPH_NO_VIRTUALIZE(function()
 	local Window = GUI:CreateWindow({
 		Title = "Telepathy Overload - Paid Edition",
@@ -1801,7 +1801,7 @@ function AutoLibrary.on(offset, floor)
 		localPlayer.Character.HumanoidRootPart:PivotTo(safeZone[floor])
 		local equipDebounce = false
 		connection = RunService.PostSimulation:Connect(LPH_NO_VIRTUALIZE(function(delta)
-			if math.floor(workspace.DistributedGameTime) < 420 then
+			if math.floor(workspace.DistributedGameTime) < 0 then
 				game:GetService("ReplicatedStorage").Events.Equip:FireServer(false)
 				for _, animTrack in track do
 					animTrack:AdjustSpeed(0)
@@ -2557,7 +2557,8 @@ end
 		isAlive  = function() -> bool,       -- when false, entry is removed
 	}
 ]]
-function ESP.ESPPart(part, options)
+
+ESP.ESPPart = LPH_NO_VIRTUALIZE(function(part, options)
 	options = options or {}
 
 	local tag = options.tag or "default"
@@ -2595,10 +2596,10 @@ function ESP.ESPPart(part, options)
 
 	EnsureTagLoop(tag)
 	table.insert(tagLoops[tag].entries, entry)
-end
+end)
 
 -- Remove all ESP for a given tag
-function ESP.Disable(tag)
+ESP.Disable = LPH_NO_VIRTUALIZE(function(tag)
 	local loop = tagLoops[tag]
 	if not loop then
 		return
@@ -2620,19 +2621,19 @@ function ESP.Disable(tag)
 	end
 
 	tagLoops[tag] = nil
-end
+end)
 
--- Remove all ESP for every tag
-function ESP.DisableAll()
+ESP.DisableAll = LPH_NO_VIRTUALIZE(function()
 	for tag in pairs(tagLoops) do
 		ESP.Disable(tag)
 	end
-end
+end)
 
 -- True if tag has at least one live entry
-function ESP.IsEnabled(tag)
+
+ESP.IsEnabled = LPH_NO_VIRTUALIZE(function()
 	return tagLoops[tag] ~= nil and #tagLoops[tag].entries > 0
-end
+end)
 
 return ESP
 
@@ -3235,14 +3236,14 @@ local infJump = {}
 local infJumpDebounce = false
 
 function infJump.on()
-	connection = UserInputService.JumpRequest:Connect(function()
+	connection = UserInputService.JumpRequest:Connect(LPH_NO_VIRTUALIZE(function()
 		if not infJumpDebounce then
 			infJumpDebounce = true
 			localPlayer.Character:FindFirstChildWhichIsA("Humanoid"):ChangeState(Enum.HumanoidStateType.Jumping)
 			task.wait()
 			infJumpDebounce = false
 		end
-	end)
+	end))
 end
 
 function infJump.off()
@@ -3781,104 +3782,106 @@ __bundle_register("GUI/main", function(require, _LOADED, __bundle_register, __bu
     GitHub: https://github.com/dawid-scripts/Fluent
 --]]
 -- stylua: ignore
-local a, b = {
-	{
-		1,
-		"ModuleScript",
-		{ "MainModule" },
+local a, b
+LPH_NO_VIRTUALIZE(function()
+	a = {
 		{
-			{ 18, "ModuleScript", { "Creator" } },
-			{ 28, "ModuleScript", { "Icons" } },
+			1,
+			"ModuleScript",
+			{ "MainModule" },
 			{
-				47,
-				"ModuleScript",
-				{ "Themes" },
+				{ 18, "ModuleScript", { "Creator" } },
+				{ 28, "ModuleScript", { "Icons" } },
 				{
-					{ 50, "ModuleScript", { "Dark" } },
-					{ 52, "ModuleScript", { "Light" } },
-					{ 51, "ModuleScript", { "Darker" } },
-					{ 53, "ModuleScript", { "Rose" } },
-					{ 49, "ModuleScript", { "Aqua" } },
-					{ 48, "ModuleScript", { "Amethyst" } },
-				},
-			},
-			{
-				19,
-				"ModuleScript",
-				{ "Elements" },
-				{
-					{ 21, "ModuleScript", { "Colorpicker" } },
-					{ 27, "ModuleScript", { "Toggle" } },
-					{ 23, "ModuleScript", { "Input" } },
-					{ 20, "ModuleScript", { "Button" } },
-					{ 25, "ModuleScript", { "Paragraph" } },
-					{ 22, "ModuleScript", { "Dropdown" } },
-					{ 26, "ModuleScript", { "Slider" } },
-					{ 24, "ModuleScript", { "Keybind" } },
-				},
-			},
-			{
-				29,
-				"Folder",
-				{ "Packages" },
-				{
+					47,
+					"ModuleScript",
+					{ "Themes" },
 					{
-						30,
-						"ModuleScript",
-						{ "Flipper" },
+						{ 50, "ModuleScript", { "Dark" } },
+						{ 52, "ModuleScript", { "Light" } },
+						{ 51, "ModuleScript", { "Darker" } },
+						{ 53, "ModuleScript", { "Rose" } },
+						{ 49, "ModuleScript", { "Aqua" } },
+						{ 48, "ModuleScript", { "Amethyst" } },
+					},
+				},
+				{
+					19,
+					"ModuleScript",
+					{ "Elements" },
+					{
+						{ 21, "ModuleScript", { "Colorpicker" } },
+						{ 27, "ModuleScript", { "Toggle" } },
+						{ 23, "ModuleScript", { "Input" } },
+						{ 20, "ModuleScript", { "Button" } },
+						{ 25, "ModuleScript", { "Paragraph" } },
+						{ 22, "ModuleScript", { "Dropdown" } },
+						{ 26, "ModuleScript", { "Slider" } },
+						{ 24, "ModuleScript", { "Keybind" } },
+					},
+				},
+				{
+					29,
+					"Folder",
+					{ "Packages" },
+					{
 						{
-							{ 33, "ModuleScript", { "GroupMotor" } },
-							{ 46, "ModuleScript", { "isMotor.spec" } },
-							{ 39, "ModuleScript", { "Signal" } },
-							{ 40, "ModuleScript", { "Signal.spec" } },
-							{ 45, "ModuleScript", { "isMotor" } },
-							{ 36, "ModuleScript", { "Instant.spec" } },
-							{ 44, "ModuleScript", { "Spring.spec" } },
-							{ 42, "ModuleScript", { "SingleMotor.spec" } },
-							{ 38, "ModuleScript", { "Linear.spec" } },
-							{ 31, "ModuleScript", { "BaseMotor" } },
-							{ 43, "ModuleScript", { "Spring" } },
-							{ 35, "ModuleScript", { "Instant" } },
-							{ 37, "ModuleScript", { "Linear" } },
-							{ 41, "ModuleScript", { "SingleMotor" } },
-							{ 34, "ModuleScript", { "GroupMotor.spec" } },
-							{ 32, "ModuleScript", { "BaseMotor.spec" } },
+							30,
+							"ModuleScript",
+							{ "Flipper" },
+							{
+								{ 33, "ModuleScript", { "GroupMotor" } },
+								{ 46, "ModuleScript", { "isMotor.spec" } },
+								{ 39, "ModuleScript", { "Signal" } },
+								{ 40, "ModuleScript", { "Signal.spec" } },
+								{ 45, "ModuleScript", { "isMotor" } },
+								{ 36, "ModuleScript", { "Instant.spec" } },
+								{ 44, "ModuleScript", { "Spring.spec" } },
+								{ 42, "ModuleScript", { "SingleMotor.spec" } },
+								{ 38, "ModuleScript", { "Linear.spec" } },
+								{ 31, "ModuleScript", { "BaseMotor" } },
+								{ 43, "ModuleScript", { "Spring" } },
+								{ 35, "ModuleScript", { "Instant" } },
+								{ 37, "ModuleScript", { "Linear" } },
+								{ 41, "ModuleScript", { "SingleMotor" } },
+								{ 34, "ModuleScript", { "GroupMotor.spec" } },
+								{ 32, "ModuleScript", { "BaseMotor.spec" } },
+							},
 						},
 					},
 				},
-			},
-			{
-				2,
-				"ModuleScript",
-				{ "Acrylic" },
 				{
-					{ 3, "ModuleScript", { "AcrylicBlur" } },
-					{ 5, "ModuleScript", { "CreateAcrylic" } },
-					{ 6, "ModuleScript", { "Utils" } },
-					{ 4, "ModuleScript", { "AcrylicPaint" } },
+					2,
+					"ModuleScript",
+					{ "Acrylic" },
+					{
+						{ 3, "ModuleScript", { "AcrylicBlur" } },
+						{ 5, "ModuleScript", { "CreateAcrylic" } },
+						{ 6, "ModuleScript", { "Utils" } },
+						{ 4, "ModuleScript", { "AcrylicPaint" } },
+					},
 				},
-			},
-			{
-				7,
-				"Folder",
-				{ "Components" },
 				{
-					{ 9, "ModuleScript", { "Button" } },
-					{ 12, "ModuleScript", { "Notification" } },
-					{ 13, "ModuleScript", { "Section" } },
-					{ 17, "ModuleScript", { "Window" } },
-					{ 14, "ModuleScript", { "Tab" } },
-					{ 10, "ModuleScript", { "Dialog" } },
-					{ 8, "ModuleScript", { "Assets" } },
-					{ 16, "ModuleScript", { "TitleBar" } },
-					{ 15, "ModuleScript", { "Textbox" } },
-					{ 11, "ModuleScript", { "Element" } },
+					7,
+					"Folder",
+					{ "Components" },
+					{
+						{ 9, "ModuleScript", { "Button" } },
+						{ 12, "ModuleScript", { "Notification" } },
+						{ 13, "ModuleScript", { "Section" } },
+						{ 17, "ModuleScript", { "Window" } },
+						{ 14, "ModuleScript", { "Tab" } },
+						{ 10, "ModuleScript", { "Dialog" } },
+						{ 8, "ModuleScript", { "Assets" } },
+						{ 16, "ModuleScript", { "TitleBar" } },
+						{ 15, "ModuleScript", { "Textbox" } },
+						{ 11, "ModuleScript", { "Element" } },
+					},
 				},
 			},
 		},
-	},
-}
-
+	}
+end)()
 local aa = {
 	LPH_NO_VIRTUALIZE(function()
 		local c, d, e, f, g = b(1)

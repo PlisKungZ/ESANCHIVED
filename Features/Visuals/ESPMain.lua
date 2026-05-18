@@ -267,7 +267,8 @@ end
 		isAlive  = function() -> bool,       -- when false, entry is removed
 	}
 ]]
-function ESP.ESPPart(part, options)
+
+ESP.ESPPart = LPH_NO_VIRTUALIZE(function(part, options)
 	options = options or {}
 
 	local tag = options.tag or "default"
@@ -305,10 +306,10 @@ function ESP.ESPPart(part, options)
 
 	EnsureTagLoop(tag)
 	table.insert(tagLoops[tag].entries, entry)
-end
+end)
 
 -- Remove all ESP for a given tag
-function ESP.Disable(tag)
+ESP.Disable = LPH_NO_VIRTUALIZE(function(tag)
 	local loop = tagLoops[tag]
 	if not loop then
 		return
@@ -330,18 +331,18 @@ function ESP.Disable(tag)
 	end
 
 	tagLoops[tag] = nil
-end
+end)
 
--- Remove all ESP for every tag
-function ESP.DisableAll()
+ESP.DisableAll = LPH_NO_VIRTUALIZE(function()
 	for tag in pairs(tagLoops) do
 		ESP.Disable(tag)
 	end
-end
+end)
 
 -- True if tag has at least one live entry
-function ESP.IsEnabled(tag)
+
+ESP.IsEnabled = LPH_NO_VIRTUALIZE(function()
 	return tagLoops[tag] ~= nil and #tagLoops[tag].entries > 0
-end
+end)
 
 return ESP

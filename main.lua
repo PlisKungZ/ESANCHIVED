@@ -119,7 +119,7 @@ local RemovalTab = require("Menu/Removal")
 local TrollTab = require("Menu/Troll")
 local TeleportationTab = require("Menu/Teleportation")
 
-local api = loadstring(game:HttpGet("https://sdkapi-public.luarmor.net/library.lua"))()
+--[[ local api = loadstring(game:HttpGet("https://sdkapi-public.luarmor.net/library.lua"))()
 
 api.script_id = "567b6e2c33ab5dd588a8a6b7016eec74"
 
@@ -135,7 +135,7 @@ elseif status.code == "KEY_INCORRECT" then
 else
 	game.Players.LocalPlayer:Kick("Key check failed:" .. status.message .. " Code: " .. status.code)
 	return
-end
+end ]]
 LPH_NO_VIRTUALIZE(function()
 	local Window = GUI:CreateWindow({
 		Title = "Telepathy Overload - Paid Edition",
