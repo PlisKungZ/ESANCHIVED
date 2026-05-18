@@ -118,7 +118,7 @@ function AutoLibrary.on(offset, floor)
 		localPlayer.Character.HumanoidRootPart:PivotTo(safeZone[floor])
 		local equipDebounce = false
 		connection = RunService.PostSimulation:Connect(LPH_NO_VIRTUALIZE(function(delta)
-			if math.floor(workspace.DistributedGameTime) < 420 then
+			if math.floor(workspace.DistributedGameTime) < 0 then
 				game:GetService("ReplicatedStorage").Events.Equip:FireServer(false)
 				for _, animTrack in track do
 					animTrack:AdjustSpeed(0)
