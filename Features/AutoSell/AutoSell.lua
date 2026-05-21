@@ -4,15 +4,14 @@ local VirtualInputManager = game:GetService("VirtualInputManager")
 local localPlayer = Players.LocalPlayer
 
 local autoSell = {}
-
-local function splitString(str, sep)
+local splitString = LPH_NO_VIRTUALIZE(function(str, sep)
 	sep = sep or ","
 	local result = {}
 	for item in str:gmatch("[^" .. sep .. "]+") do
 		table.insert(result, item:lower())
 	end
 	return result
-end
+end)
 
 local function clickButton(text)
 	for _, frame in game:GetService("Players").LocalPlayer.PlayerGui.Dialogue.MainFrame.Options.Scroll:GetChildren() do
@@ -133,7 +132,7 @@ function autoSell.on(mode, items)
 		end,
 	}
 
-	connection = game.RunService.Stepped:Connect(function(deltaTime)
+	connection = game.RunService.Stepped:Connect(LPH_NO_VIRTUALIZE(function(deltaTime)
 		if db then
 			return
 		end
@@ -171,7 +170,7 @@ function autoSell.on(mode, items)
 				db = false
 			end)
 		end
-	end)
+	end))
 end
 
 function autoSell.off()

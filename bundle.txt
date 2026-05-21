@@ -327,15 +327,14 @@ local VirtualInputManager = game:GetService("VirtualInputManager")
 local localPlayer = Players.LocalPlayer
 
 local autoSell = {}
-
-local function splitString(str, sep)
+local splitString = LPH_NO_VIRTUALIZE(function(str, sep)
 	sep = sep or ","
 	local result = {}
 	for item in str:gmatch("[^" .. sep .. "]+") do
 		table.insert(result, item:lower())
 	end
 	return result
-end
+end)
 
 local function clickButton(text)
 	for _, frame in game:GetService("Players").LocalPlayer.PlayerGui.Dialogue.MainFrame.Options.Scroll:GetChildren() do
@@ -456,7 +455,7 @@ function autoSell.on(mode, items)
 		end,
 	}
 
-	connection = game.RunService.Stepped:Connect(function(deltaTime)
+	connection = game.RunService.Stepped:Connect(LPH_NO_VIRTUALIZE(function(deltaTime)
 		if db then
 			return
 		end
@@ -494,7 +493,7 @@ function autoSell.on(mode, items)
 				db = false
 			end)
 		end
-	end)
+	end))
 end
 
 function autoSell.off()
@@ -1773,6 +1772,18 @@ local function checkForStuffandClick(name)
 	return false
 end
 
+local function getDroppedItems()
+	local tabled = {}
+	for _, item in workspace.Thrown:GetChildren() do
+		for _, prompt in item:GetDescendants() do
+			if prompt:IsA("ProximityPrompt") then
+				table.insert(tabled, item)
+			end
+		end
+	end
+	return tabled
+end
+
 local function splitString(str, sep)
 	sep = sep or ","
 	local result = {}
@@ -1803,6 +1814,7 @@ local blackListedAnim = {
 }
 local Teleported = false
 local teleportToMerchantdb = false
+local pickingUpItem = false
 local equipedDb = false
 
 local function killMob(offset)
@@ -1908,7 +1920,6 @@ local function killMob(offset)
 						local behind = targetHRP.CFrame.LookVector * -5
 						local myPos = targetPos + behind
 						localPlayer.Character.HumanoidRootPart:PivotTo(CFrame.lookAt(myPos, targetPos))
-						print("teleported behind")
 					else
 						localPlayer.Character.HumanoidRootPart:PivotTo(
 							targetTable[1].HumanoidRootPart.CFrame * CFrame.Angles(math.rad(90), 0, 0) + offset
@@ -1966,6 +1977,36 @@ local function killMob(offset)
 				game:GetService("ReplicatedStorage").Events.Equip:FireServer(false)
 				equipedDb = false
 			end
+			if pickingUpItem then
+				return
+			end
+			local droppedItems = getDroppedItems()
+			if #droppedItems ~= 0 then
+				pickingUpItem = true
+				for _, item in droppedItems do
+					if not connection then
+						return
+					end
+					for _, prompt in item:GetDescendants() do
+						if prompt:IsA("ProximityPrompt") then
+							localPlayer.Character:PivotTo(item:GetPivot())
+							fireproximityprompt(prompt)
+							if not connection then
+								return
+							end
+							repeat
+								if not connection then
+									return
+								end
+								localPlayer.Character:PivotTo(item:GetPivot())
+								fireproximityprompt(prompt)
+								task.wait()
+							until not item.Parent
+						end
+					end
+				end
+				pickingUpItem = false
+			end
 			if checkIfStationYet() and not workspace.NPCS:FindFirstChild("Railway Merchant") then
 				if attachmentCounter() == 4 then
 					if checkForStuffandClick("Sing") then
@@ -2016,9 +2057,11 @@ local function killMob(offset)
 					end
 				end
 			end
-			localPlayer.Character:PivotTo(
-				workspace.AreaMarkers["Refraction Railway"]["Refraction Railway"].CFrame + Vector3.new(0, -30, 0)
-			)
+			if workspace.AreaMarkers:FindFirstChild("Refraction Railway") then
+				localPlayer.Character:PivotTo(
+					workspace.AreaMarkers["Refraction Railway"]["Refraction Railway"].CFrame + Vector3.new(0, -30, 0)
+				)
+			end
 		end
 	end))
 end
@@ -2492,7 +2535,8 @@ function AutoLibrary.on(offset, floor)
 						gripDebounce = false
 					end)
 				end
-				if localPlayer.Character:FindFirstChild("GripNotInterrupted") then
+
+				if targetTable[1]:FindFirstChild("GettingGripped") then
 					localPlayer.Character.HumanoidRootPart.Anchored = true
 					return
 				end

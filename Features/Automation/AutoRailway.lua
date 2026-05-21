@@ -80,6 +80,18 @@ local function checkForStuffandClick(name)
 	return false
 end
 
+local function getDroppedItems()
+	local tabled = {}
+	for _, item in workspace.Thrown:GetChildren() do
+		for _, prompt in item:GetDescendants() do
+			if prompt:IsA("ProximityPrompt") then
+				table.insert(tabled, item)
+			end
+		end
+	end
+	return tabled
+end
+
 local function splitString(str, sep)
 	sep = sep or ","
 	local result = {}
@@ -110,6 +122,7 @@ local blackListedAnim = {
 }
 local Teleported = false
 local teleportToMerchantdb = false
+local pickingUpItem = false
 local equipedDb = false
 
 local function killMob(offset)
@@ -215,7 +228,6 @@ local function killMob(offset)
 						local behind = targetHRP.CFrame.LookVector * -5
 						local myPos = targetPos + behind
 						localPlayer.Character.HumanoidRootPart:PivotTo(CFrame.lookAt(myPos, targetPos))
-						print("teleported behind")
 					else
 						localPlayer.Character.HumanoidRootPart:PivotTo(
 							targetTable[1].HumanoidRootPart.CFrame * CFrame.Angles(math.rad(90), 0, 0) + offset
@@ -273,6 +285,36 @@ local function killMob(offset)
 				game:GetService("ReplicatedStorage").Events.Equip:FireServer(false)
 				equipedDb = false
 			end
+			if pickingUpItem then
+				return
+			end
+			local droppedItems = getDroppedItems()
+			if #droppedItems ~= 0 then
+				pickingUpItem = true
+				for _, item in droppedItems do
+					if not connection then
+						return
+					end
+					for _, prompt in item:GetDescendants() do
+						if prompt:IsA("ProximityPrompt") then
+							localPlayer.Character:PivotTo(item:GetPivot())
+							fireproximityprompt(prompt)
+							if not connection then
+								return
+							end
+							repeat
+								if not connection then
+									return
+								end
+								localPlayer.Character:PivotTo(item:GetPivot())
+								fireproximityprompt(prompt)
+								task.wait()
+							until not item.Parent
+						end
+					end
+				end
+				pickingUpItem = false
+			end
 			if checkIfStationYet() and not workspace.NPCS:FindFirstChild("Railway Merchant") then
 				if attachmentCounter() == 4 then
 					if checkForStuffandClick("Sing") then
@@ -323,9 +365,11 @@ local function killMob(offset)
 					end
 				end
 			end
-			localPlayer.Character:PivotTo(
-				workspace.AreaMarkers["Refraction Railway"]["Refraction Railway"].CFrame + Vector3.new(0, -30, 0)
-			)
+			if workspace.AreaMarkers:FindFirstChild("Refraction Railway") then
+				localPlayer.Character:PivotTo(
+					workspace.AreaMarkers["Refraction Railway"]["Refraction Railway"].CFrame + Vector3.new(0, -30, 0)
+				)
+			end
 		end
 	end))
 end

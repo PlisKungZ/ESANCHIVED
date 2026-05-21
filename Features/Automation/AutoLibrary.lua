@@ -169,7 +169,8 @@ function AutoLibrary.on(offset, floor)
 						gripDebounce = false
 					end)
 				end
-				if localPlayer.Character:FindFirstChild("GripNotInterrupted") then
+
+				if targetTable[1]:FindFirstChild("GettingGripped") then
 					localPlayer.Character.HumanoidRootPart.Anchored = true
 					return
 				end
