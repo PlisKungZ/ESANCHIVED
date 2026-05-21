@@ -102,6 +102,7 @@ local nothingThereHitAnim = {
 	"rbxassetid://16390234461",
 	"rbxassetid://16390226552",
 	"rbxassetid://15151732756",
+	"rbxassetid://94944102411307",
 }
 
 local function checkAnimations(tabled, animator)

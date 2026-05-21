@@ -1,8 +1,4 @@
--- Bundled by luabundle {"version":"1.7.0"}
--- Bundled by luabundle {"version":"1.7.0"}
-loadstring([[
-    function LPH_NO_VIRTUALIZE(f) return f end;
-]])();
+pcall(function()
 local __bundle_require, __bundle_loaded, __bundle_register, __bundle_modules = (function(superRequire)
 	local loadingPlaceholder = {[{}] = true}
 
@@ -166,8 +162,9 @@ local AutomationTab = require("Menu/Automation")
 local RemovalTab = require("Menu/Removal")
 local TrollTab = require("Menu/Troll")
 local TeleportationTab = require("Menu/Teleportation")
+local AutoSellTab = require("Menu/AutoSell")
 
---[[ local api = loadstring(game:HttpGet("https://sdkapi-public.luarmor.net/library.lua"))()
+local api = loadstring(game:HttpGet("https://sdkapi-public.luarmor.net/library.lua"))()
 
 api.script_id = "567b6e2c33ab5dd588a8a6b7016eec74"
 
@@ -183,7 +180,8 @@ elseif status.code == "KEY_INCORRECT" then
 else
 	game.Players.LocalPlayer:Kick("Key check failed:" .. status.message .. " Code: " .. status.code)
 	return
-end ]]
+end
+
 LPH_NO_VIRTUALIZE(function()
 	local Window = GUI:CreateWindow({
 		Title = "Telepathy Overload - Paid Edition",
@@ -206,6 +204,7 @@ LPH_NO_VIRTUALIZE(function()
 	VisualTab.init(GUI, Window)
 	RemovalTab.init(GUI, Window)
 	TrollTab.init(GUI, Window)
+	AutoSellTab.init(GUI, Window)
 	AutomationTab.init(GUI, Window)
 	local Tabs = {
 		Settings = Window:AddTab({ Title = "Settings", Icon = "settings" }),
@@ -266,6 +265,247 @@ LPH_NO_VIRTUALIZE(function()
 	-- which has been marked to be one that auto loads!
 	SaveManager:LoadAutoloadConfig()
 end)()
+
+end)
+__bundle_register("Menu/AutoSell", function(require, _LOADED, __bundle_register, __bundle_modules)
+local autoSellReq = require("Features/AutoSell/AutoSell")
+local AutoSell = {}
+
+function AutoSell.init()
+	LPH_NO_VIRTUALIZE(function()
+		local Tab = window:AddTab({ Title = "Auto Sell", Icon = "" })
+
+		local autoSellExclude = Tab:AddToggle("autoSellExclude", { Title = "Auto Sell Exclude Mode", Default = false })
+
+		autoSellExclude:OnChanged(function()
+			if Options.autoSellExclude.Value and Options.sellInput then
+				Options.autoSellInclude:SetValue(false)
+				autoSellReq.on("Exclude", Options.sellInput.Value)
+			else
+				autoSellReq.off()
+			end
+		end)
+
+		local autoSellInclude = Tab:AddToggle("autoSellInclude", { Title = "Auto Sell Include Mode", Default = false })
+
+		autoSellInclude:OnChanged(function()
+			if Options.autoSellInclude.Value and Options.sellInput then
+				Options.autoSellExclude:SetValue(false)
+				autoSellReq.on("Include", Options.sellInput.Value)
+			else
+				autoSellReq.off()
+			end
+		end)
+
+		local Input = Tab:AddInput("sellInput", {
+			Title = "Sell Lists",
+			Default = "",
+			Placeholder = "Book,Gear,...",
+			Numeric = false, -- Only allows numbers
+			Finished = true, -- Only calls callback when you press enter
+			Callback = function(Value)
+				if Options.autoSellExclude.Value then
+					Options.autoSellInclude:SetValue(false)
+					autoSellReq.on("Exclude", Value)
+				end
+				if Options.autoSellInclude.Value then
+					Options.autoSellExclude:SetValue(false)
+					autoSellReq.on("Include", Value)
+				end
+			end,
+		})
+	end)()
+end
+
+return AutoSell
+
+end)
+__bundle_register("Features/AutoSell/AutoSell", function(require, _LOADED, __bundle_register, __bundle_modules)
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local VirtualInputManager = game:GetService("VirtualInputManager")
+local localPlayer = Players.LocalPlayer
+
+local autoSell = {}
+
+local function splitString(str, sep)
+	sep = sep or ","
+	local result = {}
+	for item in str:gmatch("[^" .. sep .. "]+") do
+		table.insert(result, item:lower())
+	end
+	return result
+end
+
+local function clickButton(text)
+	for _, frame in game:GetService("Players").LocalPlayer.PlayerGui.Dialogue.MainFrame.Options.Scroll:GetChildren() do
+		if frame:IsA("Frame") then
+			if frame.OptionText.Text == text or frame.OptionText.Text:find(text) then
+				replicatesignal(frame.OptionButton.MouseButton1Click)
+				return true
+			end
+		end
+	end
+	return false
+end
+
+local connection
+local state = false
+getgenv().isSellAble = true
+
+local merchant = {
+	[99831550635699] = "Railway Merchant",
+	[14038329225] = "Restaurant Owner",
+}
+
+getgenv().getSellLists = function(translatedItems, mode)
+	local tabled = {}
+	local modesLists = {
+		["Exclude"] = function()
+			for _, item in localPlayer.Backpack:GetChildren() do
+				if not table.find(translatedItems, item.Name:lower()) and item:FindFirstChild("SellPrice") then
+					if item:FindFirstChild("SellPrice").Value ~= 0 then
+						if not table.find(tabled, item.Name) then
+							table.insert(tabled, item.Name)
+						end
+					end
+				end
+			end
+		end,
+		["Include"] = function()
+			for _, item in localPlayer.Backpack:GetChildren() do
+				if table.find(translatedItems, item.Name:lower()) and item:FindFirstChild("SellPrice") then
+					if item:FindFirstChild("SellPrice").Value ~= 0 then
+						if not table.find(tabled, item.Name) then
+							table.insert(tabled, item.Name)
+						end
+					end
+				end
+			end
+		end,
+	}
+	if localPlayer.Character:FindFirstChildWhichIsA("Tool") then
+		localPlayer.Character:FindFirstChildWhichIsA("Tool").Parent = localPlayer.Character
+	end
+	modesLists[mode]()
+	if #tabled == 0 then
+		isSellAble = false
+	else
+		isSellAble = true
+	end
+	return tabled
+end
+
+function autoSell.on(mode, items)
+	state = true
+	local translatedItems = splitString(items)
+	local talkToNpcDb = false
+	local promptCooldown = false
+	local db = false
+	local modeFunctions = {
+		["Include"] = function() end,
+		["Exclude"] = function()
+			for _, itemName in getSellLists(translatedItems, mode) do
+				if not workspace.NPCS:FindFirstChild(merchant[game.PlaceId]) then
+					db = false
+					return
+				end
+
+				local dist =
+					localPlayer:DistanceFromCharacter(workspace.NPCS[merchant[game.PlaceId]]:GetPivot().Position)
+
+				if dist > 8 then
+					db = false
+					return
+				end
+				if not localPlayer.PlayerGui.Dialogue.Enabled then
+					db = false
+					return
+				end
+				if not state then
+					db = false
+					return
+				end
+
+				if localPlayer.Character:FindFirstChildWhichIsA("Tool") then
+					localPlayer.Character:FindFirstChildWhichIsA("Tool").Parent = localPlayer.Backpack
+				end
+
+				local item = localPlayer.Backpack:FindFirstChild(itemName)
+				if not item then
+					continue
+				end
+
+				item.Parent = localPlayer.Character
+				repeat
+					clickButton("Can")
+					clickButton("All")
+					clickButton("How")
+					if not state then
+						db = false
+						return
+					end
+					if not localPlayer.PlayerGui.Dialogue.Enabled then
+						db = false
+						return
+					end
+					task.wait()
+				until not item.Parent
+			end
+			db = false
+		end,
+	}
+
+	connection = game.RunService.Stepped:Connect(function(deltaTime)
+		if db then
+			return
+		end
+		if not workspace.NPCS:FindFirstChild(merchant[game.PlaceId]) then
+			return
+		end
+
+		local dist = localPlayer:DistanceFromCharacter(workspace.NPCS[merchant[game.PlaceId]]:GetPivot().Position)
+		if dist > 8 then
+			return
+		end
+
+		if not localPlayer.PlayerGui:FindFirstChild("InteractPromptGUI") then
+			return
+		end
+
+		if not localPlayer.Data.IsTalking.Value then
+			if promptCooldown then
+				return
+			end
+			promptCooldown = true
+			fireproximityprompt(
+				workspace.NPCS:FindFirstChild(merchant[game.PlaceId]):FindFirstChildWhichIsA("ProximityPrompt")
+			)
+			task.delay(2, function()
+				promptCooldown = false
+			end)
+		else
+			if db then
+				return
+			end
+			db = true
+			task.spawn(function() -- spawn so task.wait() inside doesn't block Stepped
+				modeFunctions[mode]()
+				db = false
+			end)
+		end
+	end)
+end
+
+function autoSell.off()
+	state = false
+	if connection then
+		connection:Disconnect()
+		connection = nil
+	end
+end
+
+return autoSell
 
 end)
 __bundle_register("Menu/Teleportation", function(require, _LOADED, __bundle_register, __bundle_modules)
@@ -452,11 +692,12 @@ return Troll
 end)
 __bundle_register("Features/Troll/KillAura", function(require, _LOADED, __bundle_register, __bundle_modules)
 local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
 
 local localPlayer = Players.LocalPlayer
 local KillAura = {}
 local track = {}
-
+local connection
 function KillAura.on()
 	KillAura.off()
 	local player = game.Players.LocalPlayer.Character.Humanoid.Animator
@@ -473,9 +714,15 @@ function KillAura.on()
 		animtrack.Looped = true
 		table.insert(track, animtrack)
 	end
+	connection = RunService.RenderStepped:Connect(function(deltaTime)
+		localPlayer.Data.Stamina.Value = 100
+	end)
 end
 
 function KillAura.off()
+	if connection then
+		connection:Disconnect()
+	end
 	game:GetService("ReplicatedStorage").Events.Equip:FireServer(false)
 	for _, anim in track do
 		anim:Stop()
@@ -903,7 +1150,7 @@ end)
 __bundle_register("Menu/Automation", function(require, _LOADED, __bundle_register, __bundle_modules)
 local autoLib = require("Features/Automation/AutoLibrary")
 local autoWarp = require("Features/Automation/AutoWarp")
---local autoRailway = require("Features/Automation/AutoRailway")
+local autoRailway = require("Features/Automation/AutoRailway")
 local autoGrade = require("Features/Automation/AutoGradeEvaluation")
 
 local Automation = {}
@@ -1053,41 +1300,17 @@ function Automation.init()
 				end
 			end,
 		})
-	end)()
-	--[[ 	Tab:AddParagraph({
-		Title = "Auto Railway Usage",
-		Content = "This is only usable when in the Railway itself.",
-	})
+		Tab:AddParagraph({
+			Title = "Auto Railway Usage",
+			Content = "This is only usable when in the Railway itself.",
+		})
 
-	local AutoRailwayToggle = Tab:AddToggle("AutoRailway", { Title = "Auto Railway", Default = false })
-	Options.AutoRailway:SetValue(false)
+		local AutoRailwayToggle = Tab:AddToggle("AutoRailway", { Title = "Auto Railway", Default = false })
+		Options.AutoRailway:SetValue(false)
 
-	AutoRailwayToggle:OnChanged(function()
-		if Options.AutoRailway.Value then
-			local state, err = autoRailway.on(Options.autoRailwayYOffset.Value)
-			if not state then
-				Options.AutoRailway:SetValue(false)
-				GUI:Notify({
-					Title = "Error Occurred.",
-					Content = err,
-					Duration = 8,
-				})
-			end
-		else
-			autoRailway.off()
-		end
-	end)
-
-	local autoRailwayYOffset = Tab:AddSlider("autoRailwayYOffset", {
-		Title = "Y Offset",
-		Description = "Depends on your weapons",
-		Default = -7,
-		Min = -20,
-		Max = 10,
-		Rounding = 0,
-		Callback = function(Value)
+		AutoRailwayToggle:OnChanged(function()
 			if Options.AutoRailway.Value then
-				local state, err = autoRailway.on(Value)
+				local state, err = autoRailway.on(Options.autoRailwayYOffset.Value)
 				if not state then
 					Options.AutoRailway:SetValue(false)
 					GUI:Notify({
@@ -1096,9 +1319,33 @@ function Automation.init()
 						Duration = 8,
 					})
 				end
+			else
+				autoRailway.off()
 			end
-		end,
-	}) ]]
+		end)
+
+		local autoRailwayYOffset = Tab:AddSlider("autoRailwayYOffset", {
+			Title = "Y Offset",
+			Description = "Depends on your weapons",
+			Default = 5,
+			Min = 0,
+			Max = 30,
+			Rounding = 0,
+			Callback = function(Value)
+				if Options.AutoRailway.Value then
+					local state, err = autoRailway.on(Value)
+					if not state then
+						Options.AutoRailway:SetValue(false)
+						GUI:Notify({
+							Title = "Error Occurred.",
+							Content = err,
+							Duration = 8,
+						})
+					end
+				end
+			end,
+		})
+	end)()
 end
 
 return Automation
@@ -1209,6 +1456,7 @@ local nothingThereHitAnim = {
 	"rbxassetid://16390234461",
 	"rbxassetid://16390226552",
 	"rbxassetid://15151732756",
+	"rbxassetid://94944102411307",
 }
 
 local function checkAnimations(tabled, animator)
@@ -1440,6 +1688,394 @@ function AutoGradeEva.off()
 end
 
 return AutoGradeEva
+
+end)
+__bundle_register("Features/Automation/AutoRailway", function(require, _LOADED, __bundle_register, __bundle_modules)
+local VirtualInputManager = game:GetService("VirtualInputManager")
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+
+local localPlayer = Players.LocalPlayer
+
+local AutoRailway = {}
+
+local connection
+local track = {}
+local isM1oneToThreeYet = false
+
+local function clickButton(text)
+	for _, frame in game:GetService("Players").LocalPlayer.PlayerGui.Dialogue.MainFrame.Options.Scroll:GetChildren() do
+		if frame:IsA("Frame") then
+			if frame.OptionText.Text == text or frame.OptionText.Text:find(text) then
+				replicatesignal(frame.OptionButton.MouseButton1Click)
+				return true
+			end
+		end
+	end
+	return false
+end
+
+local function checkAnimations(tabled, animator)
+	for _, track in animator:GetPlayingAnimationTracks() do
+		if track.Animation.AnimationId then
+			if table.find(tabled, track.Animation.AnimationId) then
+				return false
+			end
+		end
+	end
+	return true
+end
+
+local function checkIfStationYet()
+	if not workspace.Map:FindFirstChild("StationDisplay") then
+		return false
+	end
+	for _, something in workspace.Map.StationDisplay:GetChildren() do
+		if something:IsA("Attachment") then
+			if something:FindFirstChildWhichIsA("ProximityPrompt") then
+				if something:FindFirstChildWhichIsA("ProximityPrompt").Enabled then
+					return true
+				end
+			end
+		end
+	end
+	return false
+end
+
+local function attachmentCounter()
+	local count = 0
+	if not workspace.Map:FindFirstChild("StationDisplay") then
+		return 0
+	end
+	for _, v in workspace.Map.StationDisplay:GetChildren() do
+		if v:IsA("Attachment") then
+			count = count + 1
+		end
+	end
+	return count
+end
+
+local function checkForStuffandClick(name)
+	if not workspace.Map:FindFirstChild("StationDisplay") then
+		return false
+	end
+	for _, v in workspace.Map.StationDisplay:GetChildren() do
+		if v:IsA("Attachment") then
+			if v.Name:find(name) or v.Name == name then
+				localPlayer.Character:PivotTo(v.WorldCFrame)
+				if v:FindFirstChildWhichIsA("ProximityPrompt").Enabled then
+					fireproximityprompt(v:FindFirstChildWhichIsA("ProximityPrompt"))
+					return true
+				end
+			end
+		end
+	end
+	return false
+end
+
+local function splitString(str, sep)
+	sep = sep or ","
+	local result = {}
+	for item in str:gmatch("[^" .. sep .. "]+") do
+		table.insert(result, item:lower())
+	end
+	return result
+end
+
+local enemyLists = { "Nothing There", "Sweeper Brute" }
+
+local blackListedAnim = {
+	"rbxassetid://16428863879",
+	"rbxassetid://16390219304",
+	"rbxassetid://16390215619",
+	"rbxassetid://16390221563",
+	"rbxassetid://16390165394",
+	"rbxassetid://16390173071",
+	"rbxassetid://16390234461",
+	"rbxassetid://16390226552",
+	"rbxassetid://15151732756",
+	"rbxassetid://17452190205",
+	"rbxassetid://17450213059",
+	"rbxassetid://17450216584",
+	"rbxassetid://17452468519",
+	"rbxassetid://17457663944",
+	"rbxassetid://17460411925",
+}
+local Teleported = false
+local teleportToMerchantdb = false
+local equipedDb = false
+
+local function killMob(offset)
+	local player = game.Players.LocalPlayer.Character.Humanoid.Animator
+	for i = 1, 3 do
+		local animtrack = player:LoadAnimation(
+			game:GetService("ReplicatedStorage").WeaponINFO[game.Players.LocalPlayer.Data.Weapon.Value]["AttackAnimation" .. tostring(
+				i
+			)]
+		)
+
+		game:GetService("ReplicatedStorage").Events.BegunM1:FireServer(game.Players.LocalPlayer.Data.Weapon.Value)
+
+		animtrack:Play(0, 0.01, 100000)
+		animtrack.Looped = true
+		table.insert(track, animtrack)
+	end
+	connection = RunService.PostSimulation:Connect(LPH_NO_VIRTUALIZE(function(delta)
+		localPlayer.Data.Stamina.Value = 100
+		local targetTable = {}
+		for _, human in workspace.Alive:GetChildren() do
+			if
+				not Players:GetPlayerFromCharacter(human)
+				and human.Humanoid.Health > 0
+				and not human:FindFirstChild("GotGripped")
+			then
+				table.insert(targetTable, human)
+			end
+		end
+
+		table.sort(targetTable, function(a, b)
+			return a.Humanoid.MaxHealth > b.Humanoid.MaxHealth
+		end)
+
+		local offset = Vector3.new(math.random(0, 1), -math.random(offset, offset + 1), math.random(0, 1))
+
+		if #targetTable ~= 0 then
+			if not equipedDb then
+				equipedDb = true
+				game:GetService("ReplicatedStorage").Events.Equip:FireServer(true)
+				for _, anim in track do
+					anim:Stop()
+					anim:Destroy()
+				end
+				table.clear(track)
+				for i = 1, 3 do
+					local animtrack = player:LoadAnimation(
+						game:GetService("ReplicatedStorage").WeaponINFO[game.Players.LocalPlayer.Data.Weapon.Value]["AttackAnimation" .. tostring(
+							i
+						)]
+					)
+
+					game:GetService("ReplicatedStorage").Events.BegunM1
+						:FireServer(game.Players.LocalPlayer.Data.Weapon.Value)
+
+					animtrack:Play(0, 0.01, 100000)
+					animtrack.Looped = true
+					table.insert(track, animtrack)
+				end
+				task.delay(5, function()
+					if connection then
+						for _, anim in track do
+							anim:Stop()
+							anim:Destroy()
+						end
+						game:GetService("ReplicatedStorage").Events.Equip:FireServer(false)
+					end
+					equipedDb = false
+				end)
+			end
+			localPlayer.Character.HumanoidRootPart.Anchored = false
+			for _, animTrack in track do
+				animTrack:AdjustSpeed(100000)
+			end
+			if not m1Debounce then
+				m1Debounce = true
+				game:GetService("ReplicatedStorage").Events.BegunM1
+					:FireServer(game.Players.LocalPlayer.Data.Weapon.Value)
+				task.delay(0.75, function()
+					m1Debounce = false
+				end)
+			end
+			if targetTable[1]:FindFirstChild("Knocked") and not gripDebounce then
+				gripDebounce = true
+				localPlayer.Character.HumanoidRootPart:PivotTo(targetTable[1].HumanoidRootPart.CFrame)
+				game:GetService("ReplicatedStorage")
+					:WaitForChild("Events")
+					:WaitForChild("Grip")
+					:FireServer(localPlayer.Character)
+				task.delay(1, function()
+					gripDebounce = false
+				end)
+			end
+			if localPlayer.Character:FindFirstChild("GripNotInterrupted") then
+				localPlayer.Character.HumanoidRootPart.Anchored = true
+				return
+			end
+			if not table.find(enemyLists, targetTable[1].Name) then
+				if targetTable[1].Name == "Sweeper δ" or targetTable[1].Name == "Sweeper α" then
+					if targetTable[1]:FindFirstChild("Staggered") then
+						local targetHRP = targetTable[1].HumanoidRootPart
+						local targetPos = targetHRP.Position
+						local behind = targetHRP.CFrame.LookVector * -5
+						local myPos = targetPos + behind
+						localPlayer.Character.HumanoidRootPart:PivotTo(CFrame.lookAt(myPos, targetPos))
+						print("teleported behind")
+					else
+						localPlayer.Character.HumanoidRootPart:PivotTo(
+							targetTable[1].HumanoidRootPart.CFrame * CFrame.Angles(math.rad(90), 0, 0) + offset
+						)
+					end
+				elseif targetTable[1].Name == "Gnome" then
+					localPlayer.Character.HumanoidRootPart:PivotTo(
+						targetTable[1].HumanoidRootPart.CFrame * CFrame.Angles(math.rad(90), 0, 0)
+							+ Vector3.new(0, -5, 0)
+					)
+				else
+					localPlayer.Character.HumanoidRootPart:PivotTo(
+						targetTable[1].HumanoidRootPart.CFrame * CFrame.Angles(math.rad(90), 0, 0) + offset
+					)
+				end
+
+				workspace.CurrentCamera.CameraSubject = targetTable[1].Humanoid
+				localPlayer.Character.HumanoidRootPart.AssemblyLinearVelocity = Vector3.zero
+				localPlayer.Character.HumanoidRootPart.AssemblyAngularVelocity = Vector3.zero
+				localPlayer.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Ragdoll, false)
+				if targetTable[1]:FindFirstChild("Knocked") and targetTable[1].Name ~= "Sweeper δ" then
+					localPlayer.Character.HumanoidRootPart:PivotTo(
+						targetTable[1].HumanoidRootPart.CFrame + Vector3.new(0, 4, 0)
+					)
+				elseif targetTable[1]:FindFirstChild("Knocked") then
+					localPlayer.Character.HumanoidRootPart:PivotTo(
+						targetTable[1].HumanoidRootPart.CFrame + Vector3.new(0, -5, 0)
+					)
+				end
+			else
+				if targetTable[1].Name == "Nothing There" then
+					if not checkAnimations(blackListedAnim, targetTable[1].Humanoid.Animator) then
+						localPlayer.Character.HumanoidRootPart:PivotTo(
+							targetTable[1]:GetPivot() + Vector3.new(0, 100, 0)
+						)
+					else
+						localPlayer.Character.HumanoidRootPart:PivotTo(targetTable[1].HumanoidRootPart.CFrame)
+						workspace.CurrentCamera.CameraSubject = targetTable[1].Humanoid
+					end
+				elseif targetTable[1].Name == "Sweeper Brute" then
+					localPlayer.Character.HumanoidRootPart:PivotTo(
+						targetTable[1].HumanoidRootPart.CFrame * CFrame.Angles(math.rad(90), 0, 0)
+							+ Vector3.new(math.random(0, 1), -10, math.random(0, 1))
+					)
+				end
+			end
+		else
+			localPlayer.Character.HumanoidRootPart.Anchored = false
+			workspace.CurrentCamera.CameraSubject = game.Players.LocalPlayer.Character.Humanoid
+			for _, animTrack in track do
+				animTrack:Play()
+				animTrack:AdjustSpeed(0)
+			end
+			if equipedDb then
+				game:GetService("ReplicatedStorage").Events.Equip:FireServer(false)
+				equipedDb = false
+			end
+			if checkIfStationYet() and not workspace.NPCS:FindFirstChild("Railway Merchant") then
+				if attachmentCounter() == 4 then
+					if checkForStuffandClick("Sing") then
+						return
+					end
+					if checkForStuffandClick("Floor") then
+						return
+					end
+					if checkForStuffandClick("Rare") then
+						return
+					end
+					if checkForStuffandClick("Item") then
+						return
+					end
+					if checkForStuffandClick("HugeAhn") then
+						return
+					end
+					if checkForStuffandClick("Ahn") then
+						return
+					end
+					if checkForStuffandClick("Acc") then
+						return
+					end
+					if checkForStuffandClick("HugeExp") then
+						return
+					end
+					if checkForStuffandClick("Exp") then
+						return
+					end
+					if checkForStuffandClick("Heal") then
+						return
+					end
+				end
+			elseif workspace.NPCS:FindFirstChild("Railway Merchant") then
+				if Options.autoSellExclude.Value or Options.autoSellInclude.Value then
+					local translatedString = splitString(Options.sellInput.Value)
+					if Options.autoSellExclude.Value then
+						getSellLists(translatedString, "Exclude")
+					end
+					if Options.autoSellInclude.Value then
+						getSellLists(translatedString, "Include")
+					end
+					if isSellAble then
+						localPlayer.Character:PivotTo(
+							workspace.NPCS:FindFirstChild("Railway Merchant"):GetPivot() + Vector3.new(-0.5, 0, 0)
+						)
+						return
+					end
+				end
+			end
+			localPlayer.Character:PivotTo(
+				workspace.AreaMarkers["Refraction Railway"]["Refraction Railway"].CFrame + Vector3.new(0, -30, 0)
+			)
+		end
+	end))
+end
+
+function AutoRailway.on(offset, floor)
+	AutoRailway.off()
+	for _, anim in track do
+		anim:Stop()
+		anim:Destroy()
+	end
+	table.clear(track)
+	if game.PlaceId ~= 99831550635699 then
+		return false, "Not in the Railway"
+	end
+	if workspace:GetAttribute("ServerType") ~= "RefractionRailway" then
+		return false, "Not in the Railway"
+	end
+
+	local kb = workspace:FindFirstChild("KillBricks")
+	if kb then
+		kb:Destroy()
+	end
+
+	if not localPlayer.Character:FindFirstChild("AirTime") then
+		local airTime = Instance.new("Folder")
+		airTime.Name = "AirTime"
+		airTime.Parent = localPlayer.Character
+	end
+
+	game:GetService("ReplicatedStorage").Events.Equip:FireServer(true)
+
+	killMob(offset)
+
+	return true
+end
+
+function AutoRailway.off()
+	if connection then
+		connection:Disconnect()
+		connection = nil
+		localPlayer.Character:PivotTo(
+			workspace.AreaMarkers["Refraction Railway"]["Refraction Railway"].CFrame + Vector3.new(0, -30, 0)
+		)
+	end
+	for _, anim in track do
+		anim:Stop()
+		anim:Destroy()
+	end
+	table.clear(track)
+	m1Debounce = false
+	gripDebounce = false
+	equipedDb = false
+	localPlayer.Character.HumanoidRootPart.Anchored = false
+	workspace.CurrentCamera.CameraSubject = localPlayer.Character.Humanoid
+end
+
+return AutoRailway
 
 end)
 __bundle_register("Features/Automation/AutoWarp", function(require, _LOADED, __bundle_register, __bundle_modules)
@@ -1751,6 +2387,7 @@ local waitingPeriod = false
 local bossWaited = false
 local pressedOrdeal = false
 local teleported = false
+local gripDebounce = false
 
 function AutoLibrary.on(offset, floor)
 	pcall(function()
@@ -1833,6 +2470,7 @@ function AutoLibrary.on(offset, floor)
 			end)
 
 			if #targetTable ~= 0 then
+				localPlayer.Character.HumanoidRootPart.Anchored = false
 				if not equipDebounce then
 					equipDebounce = true
 					game:GetService("ReplicatedStorage").Events.Equip:FireServer(true)
@@ -1842,6 +2480,22 @@ function AutoLibrary.on(offset, floor)
 				end
 				local offset =
 					Vector3.new(math.random(0, 1), -math.random(offset, offset + math.random(1, 2)), math.random(0, 1))
+
+				if targetTable[1]:FindFirstChild("Knocked") and not gripDebounce then
+					gripDebounce = true
+					localPlayer.Character.HumanoidRootPart:PivotTo(targetTable[1].HumanoidRootPart.CFrame)
+					game:GetService("ReplicatedStorage")
+						:WaitForChild("Events")
+						:WaitForChild("Grip")
+						:FireServer(localPlayer.Character)
+					task.delay(1, function()
+						gripDebounce = false
+					end)
+				end
+				if localPlayer.Character:FindFirstChild("GripNotInterrupted") then
+					localPlayer.Character.HumanoidRootPart.Anchored = true
+					return
+				end
 
 				localPlayer.Character.HumanoidRootPart:PivotTo(
 					targetTable[1].HumanoidRootPart.CFrame * CFrame.Angles(math.rad(90), 0, 0) + offset
@@ -8574,3 +9228,4 @@ end
 
 end)
 return __bundle_require("__root")
+end)

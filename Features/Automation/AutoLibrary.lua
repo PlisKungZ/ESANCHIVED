@@ -64,6 +64,7 @@ local waitingPeriod = false
 local bossWaited = false
 local pressedOrdeal = false
 local teleported = false
+local gripDebounce = false
 
 function AutoLibrary.on(offset, floor)
 	pcall(function()
@@ -146,6 +147,7 @@ function AutoLibrary.on(offset, floor)
 			end)
 
 			if #targetTable ~= 0 then
+				localPlayer.Character.HumanoidRootPart.Anchored = false
 				if not equipDebounce then
 					equipDebounce = true
 					game:GetService("ReplicatedStorage").Events.Equip:FireServer(true)
@@ -155,6 +157,22 @@ function AutoLibrary.on(offset, floor)
 				end
 				local offset =
 					Vector3.new(math.random(0, 1), -math.random(offset, offset + math.random(1, 2)), math.random(0, 1))
+
+				if targetTable[1]:FindFirstChild("Knocked") and not gripDebounce then
+					gripDebounce = true
+					localPlayer.Character.HumanoidRootPart:PivotTo(targetTable[1].HumanoidRootPart.CFrame)
+					game:GetService("ReplicatedStorage")
+						:WaitForChild("Events")
+						:WaitForChild("Grip")
+						:FireServer(localPlayer.Character)
+					task.delay(1, function()
+						gripDebounce = false
+					end)
+				end
+				if localPlayer.Character:FindFirstChild("GripNotInterrupted") then
+					localPlayer.Character.HumanoidRootPart.Anchored = true
+					return
+				end
 
 				localPlayer.Character.HumanoidRootPart:PivotTo(
 					targetTable[1].HumanoidRootPart.CFrame * CFrame.Angles(math.rad(90), 0, 0) + offset

@@ -1,9 +1,10 @@
 local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
 
 local localPlayer = Players.LocalPlayer
 local KillAura = {}
 local track = {}
-
+local connection
 function KillAura.on()
 	KillAura.off()
 	local player = game.Players.LocalPlayer.Character.Humanoid.Animator
@@ -20,9 +21,15 @@ function KillAura.on()
 		animtrack.Looped = true
 		table.insert(track, animtrack)
 	end
+	connection = RunService.RenderStepped:Connect(function(deltaTime)
+		localPlayer.Data.Stamina.Value = 100
+	end)
 end
 
 function KillAura.off()
+	if connection then
+		connection:Disconnect()
+	end
 	game:GetService("ReplicatedStorage").Events.Equip:FireServer(false)
 	for _, anim in track do
 		anim:Stop()

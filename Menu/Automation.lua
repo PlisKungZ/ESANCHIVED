@@ -1,6 +1,6 @@
 local autoLib = require("Features/Automation/AutoLibrary")
 local autoWarp = require("Features/Automation/AutoWarp")
---local autoRailway = require("Features/Automation/AutoRailway")
+local autoRailway = require("Features/Automation/AutoRailway")
 local autoGrade = require("Features/Automation/AutoGradeEvaluation")
 
 local Automation = {}
@@ -150,41 +150,17 @@ function Automation.init()
 				end
 			end,
 		})
-	end)()
-	--[[ 	Tab:AddParagraph({
-		Title = "Auto Railway Usage",
-		Content = "This is only usable when in the Railway itself.",
-	})
+		Tab:AddParagraph({
+			Title = "Auto Railway Usage",
+			Content = "This is only usable when in the Railway itself.",
+		})
 
-	local AutoRailwayToggle = Tab:AddToggle("AutoRailway", { Title = "Auto Railway", Default = false })
-	Options.AutoRailway:SetValue(false)
+		local AutoRailwayToggle = Tab:AddToggle("AutoRailway", { Title = "Auto Railway", Default = false })
+		Options.AutoRailway:SetValue(false)
 
-	AutoRailwayToggle:OnChanged(function()
-		if Options.AutoRailway.Value then
-			local state, err = autoRailway.on(Options.autoRailwayYOffset.Value)
-			if not state then
-				Options.AutoRailway:SetValue(false)
-				GUI:Notify({
-					Title = "Error Occurred.",
-					Content = err,
-					Duration = 8,
-				})
-			end
-		else
-			autoRailway.off()
-		end
-	end)
-
-	local autoRailwayYOffset = Tab:AddSlider("autoRailwayYOffset", {
-		Title = "Y Offset",
-		Description = "Depends on your weapons",
-		Default = -7,
-		Min = -20,
-		Max = 10,
-		Rounding = 0,
-		Callback = function(Value)
+		AutoRailwayToggle:OnChanged(function()
 			if Options.AutoRailway.Value then
-				local state, err = autoRailway.on(Value)
+				local state, err = autoRailway.on(Options.autoRailwayYOffset.Value)
 				if not state then
 					Options.AutoRailway:SetValue(false)
 					GUI:Notify({
@@ -193,9 +169,33 @@ function Automation.init()
 						Duration = 8,
 					})
 				end
+			else
+				autoRailway.off()
 			end
-		end,
-	}) ]]
+		end)
+
+		local autoRailwayYOffset = Tab:AddSlider("autoRailwayYOffset", {
+			Title = "Y Offset",
+			Description = "Depends on your weapons",
+			Default = 5,
+			Min = 0,
+			Max = 30,
+			Rounding = 0,
+			Callback = function(Value)
+				if Options.AutoRailway.Value then
+					local state, err = autoRailway.on(Value)
+					if not state then
+						Options.AutoRailway:SetValue(false)
+						GUI:Notify({
+							Title = "Error Occurred.",
+							Content = err,
+							Duration = 8,
+						})
+					end
+				end
+			end,
+		})
+	end)()
 end
 
 return Automation
