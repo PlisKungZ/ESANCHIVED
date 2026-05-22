@@ -66,7 +66,7 @@ local pressedOrdeal = false
 local teleported = false
 local gripDebounce = false
 
-function AutoLibrary.on(offset, floor)
+function AutoLibrary.on(offset, floor, buff)
 	pcall(function()
 		AutoLibrary.off()
 		state = true
@@ -79,6 +79,16 @@ function AutoLibrary.on(offset, floor)
 		end
 
 		task.wait(1)
+		local bookOfTheLib = localPlayer.Backpack:FindFirstChild("Book Of The Library")
+		if buff and bookOfTheLib and not workspace.Map:FindFirstChild(floorIdentifier[floor]) and not pressedOrdeal then
+			bookOfTheLib.Parent = localPlayer.Character
+			localPlayer.Character:PivotTo(workspace.NPCS["Library Director"]:GetPivot())
+			task.wait(1)
+			workspace.NPCS["Library Director"].TalkToNPC:FireServer()
+			task.wait(1)
+			clickButton("Bye")
+		end
+
 		if not workspace.Map:FindFirstChild(floorIdentifier[floor]) and not pressedOrdeal then
 			localPlayer.Character:PivotTo(CFrame.new(731.274353, 525.687317, 1016.26477))
 			task.wait(1)
@@ -198,7 +208,17 @@ function AutoLibrary.on(offset, floor)
 		end))
 
 		local player = game.Players.LocalPlayer.Character.Humanoid.Animator
-		for i = 1, 3 do
+		local m1Count = 0
+		for _, animation in
+			game:GetService("ReplicatedStorage").WeaponINFO[game.Players.LocalPlayer.Data.Weapon.Value]:GetChildren()
+		do
+			if animation:IsA("Animation") then
+				if animation.Name:find("AttackAnimation") and animation.Name ~= "ChargedAttackAnimation" then
+					m1Count = m1Count + 1
+				end
+			end
+		end
+		for i = 1, m1Count - 1 do
 			local animtrack = player:LoadAnimation(
 				game:GetService("ReplicatedStorage").WeaponINFO[game.Players.LocalPlayer.Data.Weapon.Value]["AttackAnimation" .. tostring(
 					i

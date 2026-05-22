@@ -27,6 +27,32 @@ function AutoSell.init()
 			end
 		end)
 
+		local autoSellCategorySelection = Tab:AddDropdown("autoSellCategorySelection", {
+			Title = "Auto Sell Category Selection",
+			Values = {
+				"Augments",
+				"Books",
+				"Consumable",
+				"General",
+				"Gifts",
+				"Materials",
+				"Rare Materials",
+				"Tickets",
+				"Unique",
+			},
+			Multi = true,
+			Default = {},
+		})
+
+		autoSellCategorySelection:OnChanged(function(Value)
+			if Options.autoSellExclude.Value then
+				autoSellReq.on("Exclude", Options.sellInput.Value)
+			end
+			if Options.autoSellInclude.Value then
+				autoSellReq.on("Include", Options.sellInput.Value)
+			end
+		end)
+
 		local Input = Tab:AddInput("sellInput", {
 			Title = "Sell Lists",
 			Default = "",

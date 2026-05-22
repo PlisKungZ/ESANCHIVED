@@ -18,7 +18,11 @@ function Automation.init()
 
 		autoLibraryToggle:OnChanged(function()
 			if Options.AutoLibrary.Value then
-				local state, err = autoLib.on(Options.autoLibYOffset.Value, Options.libraryFloorSelection.Value)
+				local state, err = autoLib.on(
+					Options.autoLibYOffset.Value,
+					Options.libraryFloorSelection.Value,
+					Options.buffLibrary.Value
+				)
 				if not state then
 					Options.AutoLibrary:SetValue(false)
 					GUI:Notify({
@@ -45,6 +49,8 @@ function Automation.init()
 			Default = 1,
 		})
 
+		local buffLibraryToggle = Tab:AddToggle("buffLibrary", { Title = "Buff Library", Default = false })
+
 		local autoLibraryYOffset = Tab:AddSlider("autoLibYOffset", {
 			Title = "Y Offset",
 			Description = "Depends on your weapons",
@@ -54,7 +60,7 @@ function Automation.init()
 			Rounding = 0,
 			Callback = function(Value)
 				if Options.AutoLibrary.Value then
-					local state, err = autoLib.on(Value)
+					local state, err = autoLib.on(Value, Options.libraryFloorSelection.Value, Options.buffLibrary.Value)
 					if not state then
 						Options.AutoLibrary:SetValue(false)
 						GUI:Notify({

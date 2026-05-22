@@ -1,4 +1,4 @@
-pcall(function()
+-- Bundled by luabundle {"version":"1.7.0"}
 local __bundle_require, __bundle_loaded, __bundle_register, __bundle_modules = (function(superRequire)
 	local loadingPlaceholder = {[{}] = true}
 
@@ -297,6 +297,32 @@ function AutoSell.init()
 			end
 		end)
 
+		local autoSellCategorySelection = Tab:AddDropdown("autoSellCategorySelection", {
+			Title = "Auto Sell Category Selection",
+			Values = {
+				"Augments",
+				"Books",
+				"Consumable",
+				"General",
+				"Gifts",
+				"Materials",
+				"Rare Materials",
+				"Tickets",
+				"Unique",
+			},
+			Multi = true,
+			Default = {},
+		})
+
+		autoSellCategorySelection:OnChanged(function(Value)
+			if Options.autoSellExclude.Value then
+				autoSellReq.on("Exclude", Options.sellInput.Value)
+			end
+			if Options.autoSellInclude.Value then
+				autoSellReq.on("Include", Options.sellInput.Value)
+			end
+		end)
+
 		local Input = Tab:AddInput("sellInput", {
 			Title = "Sell Lists",
 			Default = "",
@@ -357,15 +383,28 @@ local merchant = {
 	[14038329225] = "Restaurant Owner",
 }
 
+local function fetchAutoSellCategory()
+	local tabled = {}
+	for name, _ in Options.autoSellCategorySelection.Value do
+		table.insert(tabled, name)
+	end
+	return tabled
+end
+
 getgenv().getSellLists = function(translatedItems, mode)
 	local tabled = {}
 	local modesLists = {
 		["Exclude"] = function()
 			for _, item in localPlayer.Backpack:GetChildren() do
-				if not table.find(translatedItems, item.Name:lower()) and item:FindFirstChild("SellPrice") then
+				if
+					not table.find(translatedItems, item.Name:lower())
+					and item:FindFirstChild("SellPrice")
+					and not table.find(fetchAutoSellCategory(), item:GetAttribute("ItemCategory"))
+				then
 					if item:FindFirstChild("SellPrice").Value ~= 0 then
 						if not table.find(tabled, item.Name) then
 							table.insert(tabled, item.Name)
+							print(item.Name)
 						end
 					end
 				end
@@ -373,7 +412,11 @@ getgenv().getSellLists = function(translatedItems, mode)
 		end,
 		["Include"] = function()
 			for _, item in localPlayer.Backpack:GetChildren() do
-				if table.find(translatedItems, item.Name:lower()) and item:FindFirstChild("SellPrice") then
+				if
+					table.find(translatedItems, item.Name:lower())
+					and item:FindFirstChild("SellPrice")
+					and table.find(fetchAutoSellCategory(), item:GetAttribute("ItemCategory"))
+				then
 					if item:FindFirstChild("SellPrice").Value ~= 0 then
 						if not table.find(tabled, item.Name) then
 							table.insert(tabled, item.Name)
@@ -388,9 +431,9 @@ getgenv().getSellLists = function(translatedItems, mode)
 	end
 	modesLists[mode]()
 	if #tabled == 0 then
-		isSellAble = false
+		getgenv().isSellAble = false
 	else
-		isSellAble = true
+		getgenv().isSellAble = true
 	end
 	return tabled
 end
@@ -402,7 +445,56 @@ function autoSell.on(mode, items)
 	local promptCooldown = false
 	local db = false
 	local modeFunctions = {
-		["Include"] = function() end,
+		["Include"] = function()
+			for _, itemName in getSellLists(translatedItems, mode) do
+				if not workspace.NPCS:FindFirstChild(merchant[game.PlaceId]) then
+					db = false
+					return
+				end
+
+				local dist =
+					localPlayer:DistanceFromCharacter(workspace.NPCS[merchant[game.PlaceId]]:GetPivot().Position)
+
+				if dist > 8 then
+					db = false
+					return
+				end
+				if not localPlayer.PlayerGui.Dialogue.Enabled then
+					db = false
+					return
+				end
+				if not state then
+					db = false
+					return
+				end
+
+				if localPlayer.Character:FindFirstChildWhichIsA("Tool") then
+					localPlayer.Character:FindFirstChildWhichIsA("Tool").Parent = localPlayer.Backpack
+				end
+
+				local item = localPlayer.Backpack:FindFirstChild(itemName)
+				if not item then
+					continue
+				end
+
+				item.Parent = localPlayer.Character
+				repeat
+					clickButton("Can")
+					clickButton("All")
+					clickButton("How")
+					if not state then
+						db = false
+						return
+					end
+					if not localPlayer.PlayerGui.Dialogue.Enabled then
+						db = false
+						return
+					end
+					task.wait()
+				until not item.Parent
+			end
+			db = false
+		end,
 		["Exclude"] = function()
 			for _, itemName in getSellLists(translatedItems, mode) do
 				if not workspace.NPCS:FindFirstChild(merchant[game.PlaceId]) then
@@ -701,15 +793,22 @@ function KillAura.on()
 	KillAura.off()
 	local player = game.Players.LocalPlayer.Character.Humanoid.Animator
 	game:GetService("ReplicatedStorage").Events.Equip:FireServer(true)
-	for i = 1, 3 do
+	local m1Count = 0
+	for _, animation in
+		game:GetService("ReplicatedStorage").WeaponINFO[game.Players.LocalPlayer.Data.Weapon.Value]:GetChildren()
+	do
+		if animation.Name:find("AttackAnimation") and animation.Name ~= "ChargedAttackAnimation" then
+			m1Count = m1Count + 1
+		end
+	end
+	for i = 1, m1Count - 1 do
 		local animtrack = player:LoadAnimation(
 			game:GetService("ReplicatedStorage").WeaponINFO[game.Players.LocalPlayer.Data.Weapon.Value]["AttackAnimation" .. tostring(
 				i
 			)]
 		)
-
 		game:GetService("ReplicatedStorage").Events.BegunM1:FireServer(game.Players.LocalPlayer.Data.Weapon.Value)
-		animtrack:Play(0, 0.01, 1000)
+		animtrack:Play(0, 0.01, 100000)
 		animtrack.Looped = true
 		table.insert(track, animtrack)
 	end
@@ -1167,7 +1266,11 @@ function Automation.init()
 
 		autoLibraryToggle:OnChanged(function()
 			if Options.AutoLibrary.Value then
-				local state, err = autoLib.on(Options.autoLibYOffset.Value, Options.libraryFloorSelection.Value)
+				local state, err = autoLib.on(
+					Options.autoLibYOffset.Value,
+					Options.libraryFloorSelection.Value,
+					Options.buffLibrary.Value
+				)
 				if not state then
 					Options.AutoLibrary:SetValue(false)
 					GUI:Notify({
@@ -1194,6 +1297,8 @@ function Automation.init()
 			Default = 1,
 		})
 
+		local buffLibraryToggle = Tab:AddToggle("buffLibrary", { Title = "Buff Library", Default = false })
+
 		local autoLibraryYOffset = Tab:AddSlider("autoLibYOffset", {
 			Title = "Y Offset",
 			Description = "Depends on your weapons",
@@ -1203,7 +1308,7 @@ function Automation.init()
 			Rounding = 0,
 			Callback = function(Value)
 				if Options.AutoLibrary.Value then
-					local state, err = autoLib.on(Value)
+					local state, err = autoLib.on(Value, Options.libraryFloorSelection.Value, Options.buffLibrary.Value)
 					if not state then
 						Options.AutoLibrary:SetValue(false)
 						GUI:Notify({
@@ -1471,15 +1576,23 @@ end
 
 local function killBehind(offset)
 	local player = game.Players.LocalPlayer.Character.Humanoid.Animator
-	for i = 1, 3 do
+	local m1Count = 0
+	for _, animation in
+		game:GetService("ReplicatedStorage").WeaponINFO[game.Players.LocalPlayer.Data.Weapon.Value]:GetChildren()
+	do
+		if animation:IsA("Animation") then
+			if animation.Name:find("AttackAnimation") and animation.Name ~= "ChargedAttackAnimation" then
+				m1Count = m1Count + 1
+			end
+		end
+	end
+	for i = 1, m1Count - 1 do
 		local animtrack = player:LoadAnimation(
 			game:GetService("ReplicatedStorage").WeaponINFO[game.Players.LocalPlayer.Data.Weapon.Value]["AttackAnimation" .. tostring(
 				i
 			)]
 		)
-
 		game:GetService("ReplicatedStorage").Events.BegunM1:FireServer(game.Players.LocalPlayer.Data.Weapon.Value)
-
 		animtrack:Play(0, 0.01, 100000)
 		animtrack.Looped = true
 		table.insert(track, animtrack)
@@ -1819,15 +1932,23 @@ local equipedDb = false
 
 local function killMob(offset)
 	local player = game.Players.LocalPlayer.Character.Humanoid.Animator
-	for i = 1, 3 do
+	local m1Count = 0
+	for _, animation in
+		game:GetService("ReplicatedStorage").WeaponINFO[game.Players.LocalPlayer.Data.Weapon.Value]:GetChildren()
+	do
+		if animation:IsA("Animation") then
+			if animation.Name:find("AttackAnimation") and animation.Name ~= "ChargedAttackAnimation" then
+				m1Count = m1Count + 1
+			end
+		end
+	end
+	for i = 1, m1Count - 1 do
 		local animtrack = player:LoadAnimation(
 			game:GetService("ReplicatedStorage").WeaponINFO[game.Players.LocalPlayer.Data.Weapon.Value]["AttackAnimation" .. tostring(
 				i
 			)]
 		)
-
 		game:GetService("ReplicatedStorage").Events.BegunM1:FireServer(game.Players.LocalPlayer.Data.Weapon.Value)
-
 		animtrack:Play(0, 0.01, 100000)
 		animtrack.Looped = true
 		table.insert(track, animtrack)
@@ -1850,7 +1971,7 @@ local function killMob(offset)
 		end)
 
 		local offset = Vector3.new(math.random(0, 1), -math.random(offset, offset + 1), math.random(0, 1))
-
+		localPlayer.Character.HumanoidRootPart.Velocity = Vector3.zero
 		if #targetTable ~= 0 then
 			if not equipedDb then
 				equipedDb = true
@@ -1860,16 +1981,25 @@ local function killMob(offset)
 					anim:Destroy()
 				end
 				table.clear(track)
-				for i = 1, 3 do
+				local m1Count = 0
+				for _, animation in
+					game:GetService("ReplicatedStorage").WeaponINFO[game.Players.LocalPlayer.Data.Weapon.Value]
+						:GetChildren()
+				do
+					if animation:IsA("Animation") then
+						if animation.Name:find("AttackAnimation") and animation.Name ~= "ChargedAttackAnimation" then
+							m1Count = m1Count + 1
+						end
+					end
+				end
+				for i = 1, m1Count - 1 do
 					local animtrack = player:LoadAnimation(
 						game:GetService("ReplicatedStorage").WeaponINFO[game.Players.LocalPlayer.Data.Weapon.Value]["AttackAnimation" .. tostring(
 							i
 						)]
 					)
-
 					game:GetService("ReplicatedStorage").Events.BegunM1
 						:FireServer(game.Players.LocalPlayer.Data.Weapon.Value)
-
 					animtrack:Play(0, 0.01, 100000)
 					animtrack.Looped = true
 					table.insert(track, animtrack)
@@ -1913,8 +2043,12 @@ local function killMob(offset)
 				return
 			end
 			if not table.find(enemyLists, targetTable[1].Name) then
-				if targetTable[1].Name == "Sweeper δ" or targetTable[1].Name == "Sweeper α" then
-					if targetTable[1]:FindFirstChild("Staggered") then
+				if
+					targetTable[1].Name == "Sweeper δ"
+					or targetTable[1].Name == "Sweeper α"
+					or targetTable[1].Name == "Sweeper β"
+				then
+					if math.floor(targetTable[1].Humanoid.Health) == 1 then
 						local targetHRP = targetTable[1].HumanoidRootPart
 						local targetPos = targetHRP.Position
 						local behind = targetHRP.CFrame.LookVector * -5
@@ -1964,6 +2098,7 @@ local function killMob(offset)
 						targetTable[1].HumanoidRootPart.CFrame * CFrame.Angles(math.rad(90), 0, 0)
 							+ Vector3.new(math.random(0, 1), -10, math.random(0, 1))
 					)
+					workspace.CurrentCamera.CameraSubject = targetTable[1].Humanoid
 				end
 			end
 		else
@@ -1985,17 +2120,24 @@ local function killMob(offset)
 				pickingUpItem = true
 				for _, item in droppedItems do
 					if not connection then
+						pickingUpItem = false
 						return
 					end
 					for _, prompt in item:GetDescendants() do
+						if not connection then
+							pickingUpItem = false
+							return
+						end
 						if prompt:IsA("ProximityPrompt") then
 							localPlayer.Character:PivotTo(item:GetPivot())
 							fireproximityprompt(prompt)
 							if not connection then
+								pickingUpItem = false
 								return
 							end
 							repeat
 								if not connection then
+									pickingUpItem = false
 									return
 								end
 								localPlayer.Character:PivotTo(item:GetPivot())
@@ -2057,10 +2199,8 @@ local function killMob(offset)
 					end
 				end
 			end
-			if workspace.AreaMarkers:FindFirstChild("Refraction Railway") then
-				localPlayer.Character:PivotTo(
-					workspace.AreaMarkers["Refraction Railway"]["Refraction Railway"].CFrame + Vector3.new(0, -30, 0)
-				)
+			if workspace.Map:FindFirstChild("Exit") then
+				localPlayer.Character:PivotTo(workspace.Map:FindFirstChild("Exit"):GetPivot())
 			end
 		end
 	end))
@@ -2102,9 +2242,10 @@ function AutoRailway.off()
 	if connection then
 		connection:Disconnect()
 		connection = nil
-		localPlayer.Character:PivotTo(
-			workspace.AreaMarkers["Refraction Railway"]["Refraction Railway"].CFrame + Vector3.new(0, -30, 0)
-		)
+		if workspace.Map:FindFirstChild("Exit") then
+			localPlayer.Character.HumanoidRootPart.Velocity = Vector3.zero
+			localPlayer.Character:PivotTo(workspace.Map:FindFirstChild("Exit"):GetPivot())
+		end
 	end
 	for _, anim in track do
 		anim:Stop()
@@ -2114,6 +2255,7 @@ function AutoRailway.off()
 	m1Debounce = false
 	gripDebounce = false
 	equipedDb = false
+	pickingUpItem = false
 	localPlayer.Character.HumanoidRootPart.Anchored = false
 	workspace.CurrentCamera.CameraSubject = localPlayer.Character.Humanoid
 end
@@ -2171,15 +2313,23 @@ local equippedDebounce = false
 local gripDebounce = false
 local function killMob(offset)
 	local player = game.Players.LocalPlayer.Character.Humanoid.Animator
-	for i = 1, 3 do
+	local m1Count = 0
+	for _, animation in
+		game:GetService("ReplicatedStorage").WeaponINFO[game.Players.LocalPlayer.Data.Weapon.Value]:GetChildren()
+	do
+		if animation:IsA("Animation") then
+			if animation.Name:find("AttackAnimation") and animation.Name ~= "ChargedAttackAnimation" then
+				m1Count = m1Count + 1
+			end
+		end
+	end
+	for i = 1, m1Count - 1 do
 		local animtrack = player:LoadAnimation(
 			game:GetService("ReplicatedStorage").WeaponINFO[game.Players.LocalPlayer.Data.Weapon.Value]["AttackAnimation" .. tostring(
 				i
 			)]
 		)
-
 		game:GetService("ReplicatedStorage").Events.BegunM1:FireServer(game.Players.LocalPlayer.Data.Weapon.Value)
-
 		animtrack:Play(0, 0.01, 100000)
 		animtrack.Looped = true
 		table.insert(track, animtrack)
@@ -2432,7 +2582,7 @@ local pressedOrdeal = false
 local teleported = false
 local gripDebounce = false
 
-function AutoLibrary.on(offset, floor)
+function AutoLibrary.on(offset, floor, buff)
 	pcall(function()
 		AutoLibrary.off()
 		state = true
@@ -2445,6 +2595,16 @@ function AutoLibrary.on(offset, floor)
 		end
 
 		task.wait(1)
+		local bookOfTheLib = localPlayer.Backpack:FindFirstChild("Book Of The Library")
+		if buff and bookOfTheLib and not workspace.Map:FindFirstChild(floorIdentifier[floor]) and not pressedOrdeal then
+			bookOfTheLib.Parent = localPlayer.Character
+			localPlayer.Character:PivotTo(workspace.NPCS["Library Director"]:GetPivot())
+			task.wait(1)
+			workspace.NPCS["Library Director"].TalkToNPC:FireServer()
+			task.wait(1)
+			clickButton("Bye")
+		end
+
 		if not workspace.Map:FindFirstChild(floorIdentifier[floor]) and not pressedOrdeal then
 			localPlayer.Character:PivotTo(CFrame.new(731.274353, 525.687317, 1016.26477))
 			task.wait(1)
@@ -2564,7 +2724,17 @@ function AutoLibrary.on(offset, floor)
 		end))
 
 		local player = game.Players.LocalPlayer.Character.Humanoid.Animator
-		for i = 1, 3 do
+		local m1Count = 0
+		for _, animation in
+			game:GetService("ReplicatedStorage").WeaponINFO[game.Players.LocalPlayer.Data.Weapon.Value]:GetChildren()
+		do
+			if animation:IsA("Animation") then
+				if animation.Name:find("AttackAnimation") and animation.Name ~= "ChargedAttackAnimation" then
+					m1Count = m1Count + 1
+				end
+			end
+		end
+		for i = 1, m1Count - 1 do
 			local animtrack = player:LoadAnimation(
 				game:GetService("ReplicatedStorage").WeaponINFO[game.Players.LocalPlayer.Data.Weapon.Value]["AttackAnimation" .. tostring(
 					i
@@ -9272,4 +9442,3 @@ end
 
 end)
 return __bundle_require("__root")
-end)

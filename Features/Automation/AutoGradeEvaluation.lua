@@ -118,15 +118,23 @@ end
 
 local function killBehind(offset)
 	local player = game.Players.LocalPlayer.Character.Humanoid.Animator
-	for i = 1, 3 do
+	local m1Count = 0
+	for _, animation in
+		game:GetService("ReplicatedStorage").WeaponINFO[game.Players.LocalPlayer.Data.Weapon.Value]:GetChildren()
+	do
+		if animation:IsA("Animation") then
+			if animation.Name:find("AttackAnimation") and animation.Name ~= "ChargedAttackAnimation" then
+				m1Count = m1Count + 1
+			end
+		end
+	end
+	for i = 1, m1Count - 1 do
 		local animtrack = player:LoadAnimation(
 			game:GetService("ReplicatedStorage").WeaponINFO[game.Players.LocalPlayer.Data.Weapon.Value]["AttackAnimation" .. tostring(
 				i
 			)]
 		)
-
 		game:GetService("ReplicatedStorage").Events.BegunM1:FireServer(game.Players.LocalPlayer.Data.Weapon.Value)
-
 		animtrack:Play(0, 0.01, 100000)
 		animtrack.Looped = true
 		table.insert(track, animtrack)

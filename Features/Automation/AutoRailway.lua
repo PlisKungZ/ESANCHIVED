@@ -127,15 +127,23 @@ local equipedDb = false
 
 local function killMob(offset)
 	local player = game.Players.LocalPlayer.Character.Humanoid.Animator
-	for i = 1, 3 do
+	local m1Count = 0
+	for _, animation in
+		game:GetService("ReplicatedStorage").WeaponINFO[game.Players.LocalPlayer.Data.Weapon.Value]:GetChildren()
+	do
+		if animation:IsA("Animation") then
+			if animation.Name:find("AttackAnimation") and animation.Name ~= "ChargedAttackAnimation" then
+				m1Count = m1Count + 1
+			end
+		end
+	end
+	for i = 1, m1Count - 1 do
 		local animtrack = player:LoadAnimation(
 			game:GetService("ReplicatedStorage").WeaponINFO[game.Players.LocalPlayer.Data.Weapon.Value]["AttackAnimation" .. tostring(
 				i
 			)]
 		)
-
 		game:GetService("ReplicatedStorage").Events.BegunM1:FireServer(game.Players.LocalPlayer.Data.Weapon.Value)
-
 		animtrack:Play(0, 0.01, 100000)
 		animtrack.Looped = true
 		table.insert(track, animtrack)
@@ -158,7 +166,7 @@ local function killMob(offset)
 		end)
 
 		local offset = Vector3.new(math.random(0, 1), -math.random(offset, offset + 1), math.random(0, 1))
-
+		localPlayer.Character.HumanoidRootPart.Velocity = Vector3.zero
 		if #targetTable ~= 0 then
 			if not equipedDb then
 				equipedDb = true
@@ -168,16 +176,25 @@ local function killMob(offset)
 					anim:Destroy()
 				end
 				table.clear(track)
-				for i = 1, 3 do
+				local m1Count = 0
+				for _, animation in
+					game:GetService("ReplicatedStorage").WeaponINFO[game.Players.LocalPlayer.Data.Weapon.Value]
+						:GetChildren()
+				do
+					if animation:IsA("Animation") then
+						if animation.Name:find("AttackAnimation") and animation.Name ~= "ChargedAttackAnimation" then
+							m1Count = m1Count + 1
+						end
+					end
+				end
+				for i = 1, m1Count - 1 do
 					local animtrack = player:LoadAnimation(
 						game:GetService("ReplicatedStorage").WeaponINFO[game.Players.LocalPlayer.Data.Weapon.Value]["AttackAnimation" .. tostring(
 							i
 						)]
 					)
-
 					game:GetService("ReplicatedStorage").Events.BegunM1
 						:FireServer(game.Players.LocalPlayer.Data.Weapon.Value)
-
 					animtrack:Play(0, 0.01, 100000)
 					animtrack.Looped = true
 					table.insert(track, animtrack)
@@ -221,8 +238,12 @@ local function killMob(offset)
 				return
 			end
 			if not table.find(enemyLists, targetTable[1].Name) then
-				if targetTable[1].Name == "Sweeper δ" or targetTable[1].Name == "Sweeper α" then
-					if targetTable[1]:FindFirstChild("Staggered") then
+				if
+					targetTable[1].Name == "Sweeper δ"
+					or targetTable[1].Name == "Sweeper α"
+					or targetTable[1].Name == "Sweeper β"
+				then
+					if math.floor(targetTable[1].Humanoid.Health) == 1 then
 						local targetHRP = targetTable[1].HumanoidRootPart
 						local targetPos = targetHRP.Position
 						local behind = targetHRP.CFrame.LookVector * -5
@@ -272,6 +293,7 @@ local function killMob(offset)
 						targetTable[1].HumanoidRootPart.CFrame * CFrame.Angles(math.rad(90), 0, 0)
 							+ Vector3.new(math.random(0, 1), -10, math.random(0, 1))
 					)
+					workspace.CurrentCamera.CameraSubject = targetTable[1].Humanoid
 				end
 			end
 		else
@@ -293,17 +315,24 @@ local function killMob(offset)
 				pickingUpItem = true
 				for _, item in droppedItems do
 					if not connection then
+						pickingUpItem = false
 						return
 					end
 					for _, prompt in item:GetDescendants() do
+						if not connection then
+							pickingUpItem = false
+							return
+						end
 						if prompt:IsA("ProximityPrompt") then
 							localPlayer.Character:PivotTo(item:GetPivot())
 							fireproximityprompt(prompt)
 							if not connection then
+								pickingUpItem = false
 								return
 							end
 							repeat
 								if not connection then
+									pickingUpItem = false
 									return
 								end
 								localPlayer.Character:PivotTo(item:GetPivot())
@@ -365,10 +394,8 @@ local function killMob(offset)
 					end
 				end
 			end
-			if workspace.AreaMarkers:FindFirstChild("Refraction Railway") then
-				localPlayer.Character:PivotTo(
-					workspace.AreaMarkers["Refraction Railway"]["Refraction Railway"].CFrame + Vector3.new(0, -30, 0)
-				)
+			if workspace.Map:FindFirstChild("Exit") then
+				localPlayer.Character:PivotTo(workspace.Map:FindFirstChild("Exit"):GetPivot())
 			end
 		end
 	end))
@@ -410,9 +437,10 @@ function AutoRailway.off()
 	if connection then
 		connection:Disconnect()
 		connection = nil
-		localPlayer.Character:PivotTo(
-			workspace.AreaMarkers["Refraction Railway"]["Refraction Railway"].CFrame + Vector3.new(0, -30, 0)
-		)
+		if workspace.Map:FindFirstChild("Exit") then
+			localPlayer.Character.HumanoidRootPart.Velocity = Vector3.zero
+			localPlayer.Character:PivotTo(workspace.Map:FindFirstChild("Exit"):GetPivot())
+		end
 	end
 	for _, anim in track do
 		anim:Stop()
@@ -422,6 +450,7 @@ function AutoRailway.off()
 	m1Debounce = false
 	gripDebounce = false
 	equipedDb = false
+	pickingUpItem = false
 	localPlayer.Character.HumanoidRootPart.Anchored = false
 	workspace.CurrentCamera.CameraSubject = localPlayer.Character.Humanoid
 end
