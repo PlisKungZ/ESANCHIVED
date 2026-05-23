@@ -206,7 +206,7 @@ function AutoLibrary.on(offset, floor, buff)
 					end
 				end
 				for i = 1, m1Count - 1 do
-					local animtrack = player:LoadAnimation(
+					local animtrack = localPlayer.Character.Humanoid.Animator:LoadAnimation(
 						game:GetService("ReplicatedStorage").WeaponINFO[game.Players.LocalPlayer.Data.Weapon.Value]["AttackAnimation" .. tostring(
 							i
 						)]
