@@ -51,6 +51,22 @@ function Automation.init()
 
 		local buffLibraryToggle = Tab:AddToggle("buffLibrary", { Title = "Buff Library", Default = false })
 
+		buffLibraryToggle:OnChanged(function()
+			if Options.AutoLibrary.Value then
+				local state, err = autoLib.on(
+					Options.autoLibYOffset.Value,
+					Options.libraryFloorSelection.Value,
+					Options.buffLibrary.Value
+				)
+				if not state then
+					GUI:Notify({
+						Title = "Error Occurred.",
+						Content = err,
+						Duration = 8,
+					})
+				end
+			end
+		end)
 		local autoLibraryYOffset = Tab:AddSlider("autoLibYOffset", {
 			Title = "Y Offset",
 			Description = "Depends on your weapons",

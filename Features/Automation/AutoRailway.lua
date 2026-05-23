@@ -149,6 +149,14 @@ local function killMob(offset)
 		table.insert(track, animtrack)
 	end
 	connection = RunService.PostSimulation:Connect(LPH_NO_VIRTUALIZE(function(delta)
+		local checkKingVon = workspace:FindFirstChild("Part")
+		if checkKingVon then
+			local texture = checkKingVon:FindFirstChildWhichIsA("Decal")
+			if texture then
+				print("found kingvon")
+				return
+			end
+		end
 		localPlayer.Data.Stamina.Value = 100
 		local targetTable = {}
 		for _, human in workspace.Alive:GetChildren() do
