@@ -23,7 +23,6 @@ function KillAura.on()
 				i
 			)]
 		)
-		game:GetService("ReplicatedStorage").Events.BegunM1:FireServer(game.Players.LocalPlayer.Data.Weapon.Value)
 		animtrack:Play(0, 0.01, 100000)
 		animtrack.Looped = true
 		table.insert(track, animtrack)

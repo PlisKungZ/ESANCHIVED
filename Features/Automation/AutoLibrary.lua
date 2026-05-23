@@ -115,17 +115,48 @@ function AutoLibrary.on(offset, floor, buff)
 		localPlayer.Character:PivotTo(CFrame.new(731.274353, 525.687317, 1016.26477))
 		task.wait(1)
 		workspace.NPCS["Ordeal Entrance"].TalkToNPC:FireServer()
+		if not localPlayer.Data.IsTalking.Value then
+			repeat
+				localPlayer.Character:PivotTo(CFrame.new(731.274353, 525.687317, 1016.26477))
+				workspace.NPCS["Ordeal Entrance"].TalkToNPC:FireServer()
+				task.wait(0.5)
+			until localPlayer.Data.IsTalking.Value
+		end
 		task.wait(1)
 		if clickButton("Begin") then
 			pressedOrdeal = true
 		else
-			clickButton("Select")
-			task.wait(1)
-			clickButton(floor)
+			local select = false
+			repeat
+				task.wait()
+				if clickButton("Select") then
+					select = true
+				end
+			until select
+			local floorSelect = false
+			repeat
+				task.wait()
+				if clickButton(floor) then
+					floorSelect = true
+				end
+			until floorSelect
 			task.wait(1)
 			workspace.NPCS["Ordeal Entrance"].TalkToNPC:FireServer()
+			if not localPlayer.Data.IsTalking.Value then
+				repeat
+					localPlayer.Character:PivotTo(CFrame.new(731.274353, 525.687317, 1016.26477))
+					workspace.NPCS["Ordeal Entrance"].TalkToNPC:FireServer()
+					task.wait(0.5)
+				until localPlayer.Data.IsTalking.Value
+			end
 			task.wait(1)
-			clickButton("Begin")
+			local begin = false
+			repeat
+				task.wait()
+				if clickButton("Begin") then
+					begin = true
+				end
+			until begin
 			pressedOrdeal = true
 		end
 	else
@@ -211,8 +242,6 @@ function AutoLibrary.on(offset, floor, buff)
 							i
 						)]
 					)
-					game:GetService("ReplicatedStorage").Events.BegunM1
-						:FireServer(game.Players.LocalPlayer.Data.Weapon.Value)
 					animtrack:Play(0, 0.01, 100000)
 					animtrack.Looped = true
 					table.insert(track, animtrack)
@@ -223,13 +252,13 @@ function AutoLibrary.on(offset, floor, buff)
 							anim:Stop()
 							anim:Destroy()
 						end
+						table.clear(track)
 						game:GetService("ReplicatedStorage").Events.Equip:FireServer(false)
 					end
 					equipDebounce = false
 				end)
 			end
-			local offset =
-				Vector3.new(math.random(0, 1), -math.random(offset, offset + math.random(1, 2)), math.random(0, 1))
+			local offset = Vector3.new(0, -Options.autoLibYOffset.Value, 0)
 
 			if targetTable[1]:FindFirstChild("Knocked") and not gripDebounce then
 				gripDebounce = true
@@ -269,29 +298,6 @@ function AutoLibrary.on(offset, floor, buff)
 			end
 		end
 	end))
-
-	local player = game.Players.LocalPlayer.Character.Humanoid.Animator
-	local m1Count = 0
-	for _, animation in
-		game:GetService("ReplicatedStorage").WeaponINFO[game.Players.LocalPlayer.Data.Weapon.Value]:GetChildren()
-	do
-		if animation:IsA("Animation") then
-			if animation.Name:find("AttackAnimation") and animation.Name ~= "ChargedAttackAnimation" then
-				m1Count = m1Count + 1
-			end
-		end
-	end
-	for i = 1, m1Count - 1 do
-		local animtrack = player:LoadAnimation(
-			game:GetService("ReplicatedStorage").WeaponINFO[game.Players.LocalPlayer.Data.Weapon.Value]["AttackAnimation" .. tostring(
-				i
-			)]
-		)
-		game:GetService("ReplicatedStorage").Events.BegunM1:FireServer(game.Players.LocalPlayer.Data.Weapon.Value)
-		animtrack:Play(0, 0.01, 100000)
-		animtrack.Looped = true
-		table.insert(track, animtrack)
-	end
 	return true
 end
 

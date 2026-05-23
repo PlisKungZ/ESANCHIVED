@@ -126,28 +126,6 @@ local pickingUpItem = false
 local equipedDb = false
 
 local function killMob(offset)
-	local player = game.Players.LocalPlayer.Character.Humanoid.Animator
-	local m1Count = 0
-	for _, animation in
-		game:GetService("ReplicatedStorage").WeaponINFO[game.Players.LocalPlayer.Data.Weapon.Value]:GetChildren()
-	do
-		if animation:IsA("Animation") then
-			if animation.Name:find("AttackAnimation") and animation.Name ~= "ChargedAttackAnimation" then
-				m1Count = m1Count + 1
-			end
-		end
-	end
-	for i = 1, m1Count - 1 do
-		local animtrack = player:LoadAnimation(
-			game:GetService("ReplicatedStorage").WeaponINFO[game.Players.LocalPlayer.Data.Weapon.Value]["AttackAnimation" .. tostring(
-				i
-			)]
-		)
-		game:GetService("ReplicatedStorage").Events.BegunM1:FireServer(game.Players.LocalPlayer.Data.Weapon.Value)
-		animtrack:Play(0, 0.01, 100000)
-		animtrack.Looped = true
-		table.insert(track, animtrack)
-	end
 	connection = RunService.PostSimulation:Connect(LPH_NO_VIRTUALIZE(function(delta)
 		local checkKingVon = workspace:FindFirstChild("Part")
 		if checkKingVon then
@@ -173,7 +151,7 @@ local function killMob(offset)
 			return a.Humanoid.MaxHealth > b.Humanoid.MaxHealth
 		end)
 
-		local offset = Vector3.new(math.random(0, 1), -math.random(offset, offset + 1), math.random(0, 1))
+		local offset = Vector3.new(0, -offset, 0)
 		localPlayer.Character.HumanoidRootPart.Velocity = Vector3.zero
 		if #targetTable ~= 0 then
 			if not equipedDb then
@@ -196,13 +174,11 @@ local function killMob(offset)
 					end
 				end
 				for i = 1, m1Count - 1 do
-					local animtrack = player:LoadAnimation(
+					local animtrack = localPlayer.Character.Humanoid.Animator:LoadAnimation(
 						game:GetService("ReplicatedStorage").WeaponINFO[game.Players.LocalPlayer.Data.Weapon.Value]["AttackAnimation" .. tostring(
 							i
 						)]
 					)
-					game:GetService("ReplicatedStorage").Events.BegunM1
-						:FireServer(game.Players.LocalPlayer.Data.Weapon.Value)
 					animtrack:Play(0, 0.01, 100000)
 					animtrack.Looped = true
 					table.insert(track, animtrack)
@@ -213,6 +189,7 @@ local function killMob(offset)
 							anim:Stop()
 							anim:Destroy()
 						end
+						table.clear(track)
 						game:GetService("ReplicatedStorage").Events.Equip:FireServer(false)
 					end
 					equipedDb = false
@@ -224,8 +201,6 @@ local function killMob(offset)
 			end
 			if not m1Debounce then
 				m1Debounce = true
-				game:GetService("ReplicatedStorage").Events.BegunM1
-					:FireServer(game.Players.LocalPlayer.Data.Weapon.Value)
 				task.delay(0.75, function()
 					m1Debounce = false
 				end)
@@ -299,7 +274,7 @@ local function killMob(offset)
 				elseif targetTable[1].Name == "Sweeper Brute" then
 					localPlayer.Character.HumanoidRootPart:PivotTo(
 						targetTable[1].HumanoidRootPart.CFrame * CFrame.Angles(math.rad(90), 0, 0)
-							+ Vector3.new(math.random(0, 1), -10, math.random(0, 1))
+							+ Vector3.new(0, -10, 0)
 					)
 					workspace.CurrentCamera.CameraSubject = targetTable[1].Humanoid
 				end

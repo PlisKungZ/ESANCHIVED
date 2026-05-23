@@ -27,20 +27,6 @@ local equipedDb = false
 local state = false
 
 local function killMob(offset)
-	local player = game.Players.LocalPlayer.Character.Humanoid.Animator
-	for i = 1, 3 do
-		local animtrack = player:LoadAnimation(
-			game:GetService("ReplicatedStorage").WeaponINFO[game.Players.LocalPlayer.Data.Weapon.Value]["AttackAnimation" .. tostring(
-				i
-			)]
-		)
-
-		game:GetService("ReplicatedStorage").Events.BegunM1:FireServer(game.Players.LocalPlayer.Data.Weapon.Value)
-
-		animtrack:Play(0, 0.01, 100000)
-		animtrack.Looped = true
-		table.insert(track, animtrack)
-	end
 	connection = RunService.PostSimulation:Connect(function(delta)
 		localPlayer.Data.Stamina.Value = 100
 		local targetTable = {}
@@ -60,14 +46,50 @@ local function killMob(offset)
 
 		if #targetTable ~= 0 then
 			if not equipedDb then
-				game:GetService("ReplicatedStorage").Events.Equip:FireServer(true)
 				equipedDb = true
+				game:GetService("ReplicatedStorage").Events.Equip:FireServer(true)
+				for _, anim in track do
+					anim:Stop()
+					anim:Destroy()
+				end
+				table.clear(track)
+				local m1Count = 0
+				for _, animation in
+					game:GetService("ReplicatedStorage").WeaponINFO[game.Players.LocalPlayer.Data.Weapon.Value]
+						:GetChildren()
+				do
+					if animation:IsA("Animation") then
+						if animation.Name:find("AttackAnimation") and animation.Name ~= "ChargedAttackAnimation" then
+							m1Count = m1Count + 1
+						end
+					end
+				end
+				for i = 1, m1Count - 1 do
+					local animtrack = localPlayer.Character.Humanoid.Animator:LoadAnimation(
+						game:GetService("ReplicatedStorage").WeaponINFO[game.Players.LocalPlayer.Data.Weapon.Value]["AttackAnimation" .. tostring(
+							i
+						)]
+					)
+					animtrack:Play(0, 0.01, 100000)
+					animtrack.Looped = true
+					table.insert(track, animtrack)
+				end
+				task.delay(5, function()
+					if connection then
+						for _, anim in track do
+							anim:Stop()
+							anim:Destroy()
+						end
+						table.clear(track)
+						game:GetService("ReplicatedStorage").Events.Equip:FireServer(false)
+					end
+					equipedDb = false
+				end)
 			end
 			for _, animTrack in track do
 				animTrack:AdjustSpeed(1000)
 			end
-			local offset = Vector3.new(math.random(0, 1), math.random(offset, offset + 1), math.random(0, 1))
-			game:GetService("ReplicatedStorage").Events.BegunM1:FireServer(game.Players.LocalPlayer.Data.Weapon.Value)
+			local offset = Vector3.new(0, -offset, 0)
 
 			localPlayer.Character.HumanoidRootPart:PivotTo(
 				targetTable[1].HumanoidRootPart.CFrame * CFrame.Angles(math.rad(90), 0, 0) + offset
@@ -134,7 +156,6 @@ local function killBehind(offset)
 				i
 			)]
 		)
-		game:GetService("ReplicatedStorage").Events.BegunM1:FireServer(game.Players.LocalPlayer.Data.Weapon.Value)
 		animtrack:Play(0, 0.01, 100000)
 		animtrack.Looped = true
 		table.insert(track, animtrack)
@@ -166,7 +187,6 @@ local function killBehind(offset)
 			end
 			local backDirection = -targetTable[1].HumanoidRootPart.CFrame.LookVector
 			local teleportPosition = targetTable[1].HumanoidRootPart.CFrame.Position + (backDirection * 3)
-			game:GetService("ReplicatedStorage").Events.BegunM1:FireServer(game.Players.LocalPlayer.Data.Weapon.Value)
 			if not checkAnimations(nothingThereHitAnim, targetTable[1].Humanoid.Animator) then
 				localPlayer.Character.HumanoidRootPart:PivotTo(targetTable[1]:GetPivot() + Vector3.new(0, 100, 0))
 			else

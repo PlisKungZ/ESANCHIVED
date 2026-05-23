@@ -10,6 +10,7 @@ local connection
 local track = {}
 local state = false
 local killingMob = false
+local talkRemoteCd = false
 
 local function clickButton(text)
 	for _, frame in game:GetService("Players").LocalPlayer.PlayerGui.Dialogue.MainFrame.Options.Scroll:GetChildren() do
@@ -46,28 +47,6 @@ local m1Debounce = false
 local equippedDebounce = false
 local gripDebounce = false
 local function killMob(offset)
-	local player = game.Players.LocalPlayer.Character.Humanoid.Animator
-	local m1Count = 0
-	for _, animation in
-		game:GetService("ReplicatedStorage").WeaponINFO[game.Players.LocalPlayer.Data.Weapon.Value]:GetChildren()
-	do
-		if animation:IsA("Animation") then
-			if animation.Name:find("AttackAnimation") and animation.Name ~= "ChargedAttackAnimation" then
-				m1Count = m1Count + 1
-			end
-		end
-	end
-	for i = 1, m1Count - 1 do
-		local animtrack = player:LoadAnimation(
-			game:GetService("ReplicatedStorage").WeaponINFO[game.Players.LocalPlayer.Data.Weapon.Value]["AttackAnimation" .. tostring(
-				i
-			)]
-		)
-		game:GetService("ReplicatedStorage").Events.BegunM1:FireServer(game.Players.LocalPlayer.Data.Weapon.Value)
-		animtrack:Play(0, 0.01, 100000)
-		animtrack.Looped = true
-		table.insert(track, animtrack)
-	end
 	connection = RunService.PostSimulation:Connect(LPH_NO_VIRTUALIZE(function(delta)
 		-- only run logic every 0.1s instead of every frame
 
@@ -89,8 +68,45 @@ local function killMob(offset)
 
 		if #targetTable ~= 0 then
 			if not equippedDebounce then
-				equippedDebounce = true
+				equipDebounce = true
 				game:GetService("ReplicatedStorage").Events.Equip:FireServer(true)
+				for _, anim in track do
+					anim:Stop()
+					anim:Destroy()
+				end
+				table.clear(track)
+				local m1Count = 0
+				for _, animation in
+					game:GetService("ReplicatedStorage").WeaponINFO[game.Players.LocalPlayer.Data.Weapon.Value]
+						:GetChildren()
+				do
+					if animation:IsA("Animation") then
+						if animation.Name:find("AttackAnimation") and animation.Name ~= "ChargedAttackAnimation" then
+							m1Count = m1Count + 1
+						end
+					end
+				end
+				for i = 1, m1Count - 1 do
+					local animtrack = localPlayer.Character.Humanoid.Animator:LoadAnimation(
+						game:GetService("ReplicatedStorage").WeaponINFO[game.Players.LocalPlayer.Data.Weapon.Value]["AttackAnimation" .. tostring(
+							i
+						)]
+					)
+					animtrack:Play(0, 0.01, 100000)
+					animtrack.Looped = true
+					table.insert(track, animtrack)
+				end
+				task.delay(5, function()
+					if connection then
+						for _, anim in track do
+							anim:Stop()
+							anim:Destroy()
+						end
+						table.clear(track)
+						game:GetService("ReplicatedStorage").Events.Equip:FireServer(false)
+					end
+					equipDebounce = false
+				end)
 			end
 			localPlayer.Character.HumanoidRootPart.Anchored = false
 			killingMob = true
@@ -99,12 +115,10 @@ local function killMob(offset)
 				animTrack:Play()
 				animTrack:AdjustSpeed(1000)
 			end
-			local offset = Vector3.new(math.random(0, 1), -math.random(offset, offset + 1), math.random(0, 1))
+			local offset = Vector3.new(0, -offset, 0)
 			if not m1Debounce then
 				m1Debounce = true
-				game:GetService("ReplicatedStorage").Events.BegunM1
-					:FireServer(game.Players.LocalPlayer.Data.Weapon.Value)
-				task.delay(0.75, function()
+				task.delay(1.5, function()
 					m1Debounce = false
 				end)
 			end
@@ -162,15 +176,21 @@ local function killMob(offset)
 					:WaitForChild("The Prince of the Parade")
 					:GetPivot()
 			)
-			workspace
-				:WaitForChild("NPCS")
-				:WaitForChild("PrinceFight")
-				:WaitForChild("The Prince of the Parade")
-				:WaitForChild("TalkToNPC")
-				:FireServer()
-			clickButton("I'm here to end")
-			clickButton("...")
-			clickButton("What")
+			if not talkRemoteCd then
+				talkRemoteCd = true
+				workspace
+					:WaitForChild("NPCS")
+					:WaitForChild("PrinceFight")
+					:WaitForChild("The Prince of the Parade")
+					:WaitForChild("TalkToNPC")
+					:FireServer()
+				clickButton("I'm here to end")
+				clickButton("...")
+				clickButton("What")
+				task.delay(1, function()
+					talkRemoteCd = false
+				end)
+			end
 		end
 	end))
 end
