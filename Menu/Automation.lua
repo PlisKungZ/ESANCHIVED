@@ -14,7 +14,6 @@ function Automation.init()
 		})
 
 		local autoLibraryToggle = Tab:AddToggle("AutoLibrary", { Title = "Auto Library", Default = false })
-		Options.AutoLibrary:SetValue(false)
 
 		autoLibraryToggle:OnChanged(function()
 			if Options.AutoLibrary.Value then
@@ -24,7 +23,6 @@ function Automation.init()
 					Options.buffLibrary.Value
 				)
 				if not state then
-					Options.AutoLibrary:SetValue(false)
 					GUI:Notify({
 						Title = "Error Occurred.",
 						Content = err,
@@ -178,7 +176,6 @@ function Automation.init()
 		})
 
 		local AutoRailwayToggle = Tab:AddToggle("AutoRailway", { Title = "Auto Railway", Default = false })
-		Options.AutoRailway:SetValue(false)
 
 		AutoRailwayToggle:OnChanged(function()
 			if Options.AutoRailway.Value then

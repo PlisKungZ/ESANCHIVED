@@ -274,7 +274,7 @@ local function killMob(offset)
 				elseif targetTable[1].Name == "Sweeper Brute" then
 					localPlayer.Character.HumanoidRootPart:PivotTo(
 						targetTable[1].HumanoidRootPart.CFrame * CFrame.Angles(math.rad(90), 0, 0)
-							+ Vector3.new(0, -10, 0)
+							+ Vector3.new(0, -11, 0)
 					)
 					workspace.CurrentCamera.CameraSubject = targetTable[1].Humanoid
 				end

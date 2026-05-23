@@ -404,7 +404,6 @@ getgenv().getSellLists = function(translatedItems, mode)
 					if item:FindFirstChild("SellPrice").Value ~= 0 then
 						if not table.find(tabled, item.Name) then
 							table.insert(tabled, item.Name)
-							print(item.Name)
 						end
 					end
 				end
@@ -1261,7 +1260,6 @@ function Automation.init()
 		})
 
 		local autoLibraryToggle = Tab:AddToggle("AutoLibrary", { Title = "Auto Library", Default = false })
-		Options.AutoLibrary:SetValue(false)
 
 		autoLibraryToggle:OnChanged(function()
 			if Options.AutoLibrary.Value then
@@ -1271,7 +1269,6 @@ function Automation.init()
 					Options.buffLibrary.Value
 				)
 				if not state then
-					Options.AutoLibrary:SetValue(false)
 					GUI:Notify({
 						Title = "Error Occurred.",
 						Content = err,
@@ -1425,7 +1422,6 @@ function Automation.init()
 		})
 
 		local AutoRailwayToggle = Tab:AddToggle("AutoRailway", { Title = "Auto Railway", Default = false })
-		Options.AutoRailway:SetValue(false)
 
 		AutoRailwayToggle:OnChanged(function()
 			if Options.AutoRailway.Value then
@@ -2114,7 +2110,7 @@ local function killMob(offset)
 				elseif targetTable[1].Name == "Sweeper Brute" then
 					localPlayer.Character.HumanoidRootPart:PivotTo(
 						targetTable[1].HumanoidRootPart.CFrame * CFrame.Angles(math.rad(90), 0, 0)
-							+ Vector3.new(0, -10, 0)
+							+ Vector3.new(0, -11, 0)
 					)
 					workspace.CurrentCamera.CameraSubject = targetTable[1].Humanoid
 				end
@@ -2771,6 +2767,19 @@ function AutoLibrary.on(offset, floor, buff)
 
 		if #targetTable ~= 0 then
 			localPlayer.Character.HumanoidRootPart.Anchored = false
+			local isAllAlerted = true
+			for _, target in targetTable do
+				if target.Target.Value ~= localPlayer.Character then
+					localPlayer.Character.HumanoidRootPart:PivotTo(
+						targetTable[1].HumanoidRootPart.CFrame * CFrame.Angles(math.rad(90), 0, 0)
+							+ Vector3.new(0, 10, 0)
+					)
+					isAllAlerted = false
+				end
+			end
+			if not isAllAlerted then
+				return
+			end
 			if not equipDebounce then
 				equipDebounce = true
 				game:GetService("ReplicatedStorage").Events.Equip:FireServer(true)
@@ -2830,7 +2839,12 @@ function AutoLibrary.on(offset, floor, buff)
 				localPlayer.Character.HumanoidRootPart.Anchored = true
 				return
 			end
-
+			if targetTable[1].Target.Value ~= localPlayer.Character then
+				localPlayer.Character.HumanoidRootPart:PivotTo(
+					targetTable[1].HumanoidRootPart.CFrame * CFrame.Angles(math.rad(90), 0, 0) + Vector3.new(0, 5, 0)
+				)
+				return
+			end
 			localPlayer.Character.HumanoidRootPart:PivotTo(
 				targetTable[1].HumanoidRootPart.CFrame * CFrame.Angles(math.rad(90), 0, 0) + offset
 			)

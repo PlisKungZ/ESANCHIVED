@@ -217,6 +217,19 @@ function AutoLibrary.on(offset, floor, buff)
 
 		if #targetTable ~= 0 then
 			localPlayer.Character.HumanoidRootPart.Anchored = false
+			local isAllAlerted = true
+			for _, target in targetTable do
+				if target.Target.Value ~= localPlayer.Character then
+					localPlayer.Character.HumanoidRootPart:PivotTo(
+						targetTable[1].HumanoidRootPart.CFrame * CFrame.Angles(math.rad(90), 0, 0)
+							+ Vector3.new(0, 10, 0)
+					)
+					isAllAlerted = false
+				end
+			end
+			if not isAllAlerted then
+				return
+			end
 			if not equipDebounce then
 				equipDebounce = true
 				game:GetService("ReplicatedStorage").Events.Equip:FireServer(true)
@@ -276,7 +289,12 @@ function AutoLibrary.on(offset, floor, buff)
 				localPlayer.Character.HumanoidRootPart.Anchored = true
 				return
 			end
-
+			if targetTable[1].Target.Value ~= localPlayer.Character then
+				localPlayer.Character.HumanoidRootPart:PivotTo(
+					targetTable[1].HumanoidRootPart.CFrame * CFrame.Angles(math.rad(90), 0, 0) + Vector3.new(0, 5, 0)
+				)
+				return
+			end
 			localPlayer.Character.HumanoidRootPart:PivotTo(
 				targetTable[1].HumanoidRootPart.CFrame * CFrame.Angles(math.rad(90), 0, 0) + offset
 			)

@@ -55,7 +55,6 @@ getgenv().getSellLists = function(translatedItems, mode)
 					if item:FindFirstChild("SellPrice").Value ~= 0 then
 						if not table.find(tabled, item.Name) then
 							table.insert(tabled, item.Name)
-							print(item.Name)
 						end
 					end
 				end
