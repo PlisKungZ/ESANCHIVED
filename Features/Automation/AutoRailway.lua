@@ -84,7 +84,7 @@ local function getDroppedItems()
 	local tabled = {}
 	for _, item in workspace.Thrown:GetChildren() do
 		for _, prompt in item:GetDescendants() do
-			if prompt:IsA("ProximityPrompt") then
+			if prompt:IsA("ProximityPrompt") and prompt.ObjectText:find("Serum") then
 				table.insert(tabled, item)
 			end
 		end
@@ -124,17 +124,22 @@ local Teleported = false
 local teleportToMerchantdb = false
 local pickingUpItem = false
 local equipedDb = false
+local currentExitPos
 
 local function killMob(offset)
+	local fuckKingVon
 	connection = RunService.PostSimulation:Connect(LPH_NO_VIRTUALIZE(function(delta)
-		local checkKingVon = workspace:FindFirstChild("Part")
+		localPlayer.Character.HumanoidRootPart.Anchored = false
+		if localPlayer.Character:FindFirstChild("Grabbed") then
+			return
+		end
+		--[[ 		local checkKingVon = workspace:FindFirstChild("Part")
 		if checkKingVon then
 			local texture = checkKingVon:FindFirstChildWhichIsA("Decal")
 			if texture then
-				print("found kingvon")
 				return
 			end
-		end
+		end ]]
 		localPlayer.Data.Stamina.Value = 100
 		local targetTable = {}
 		for _, human in workspace.Alive:GetChildren() do
@@ -329,10 +334,15 @@ local function killMob(offset)
 			end
 			if checkIfStationYet() and not workspace.NPCS:FindFirstChild("Railway Merchant") then
 				if attachmentCounter() == 4 then
-					if checkForStuffandClick("Sing") then
+					for _, chosen in ipairs(autoRailwayLootPriority) do
+						if checkForStuffandClick(chosen) then
+							return
+						end
+					end
+					--[[ 					if checkForStuffandClick("Sing") then
 						return
 					end
-					if checkForStuffandClick("Floor") then
+					if checkForStuffandClick("SkipFloors") then
 						return
 					end
 					if checkForStuffandClick("Rare") then
@@ -350,15 +360,15 @@ local function killMob(offset)
 					if checkForStuffandClick("Acc") then
 						return
 					end
-					if checkForStuffandClick("HugeExp") then
+					if checkForStuffandClick("HugeExperience") then
 						return
 					end
-					if checkForStuffandClick("Exp") then
+					if checkForStuffandClick("Experience") then
 						return
 					end
 					if checkForStuffandClick("Heal") then
 						return
-					end
+					end ]]
 				end
 			elseif workspace.NPCS:FindFirstChild("Railway Merchant") then
 				if Options.autoSellExclude.Value or Options.autoSellInclude.Value then
@@ -378,6 +388,7 @@ local function killMob(offset)
 				end
 			end
 			if workspace.Map:FindFirstChild("Exit") then
+				currentExitPos = workspace.Map:FindFirstChild("Exit"):GetPivot()
 				localPlayer.Character:PivotTo(workspace.Map:FindFirstChild("Exit"):GetPivot())
 			end
 		end
@@ -421,6 +432,7 @@ function AutoRailway.off()
 		connection:Disconnect()
 		connection = nil
 		if workspace.Map:FindFirstChild("Exit") then
+			currentExitPos = workspace.Map:FindFirstChild("Exit"):GetPivot()
 			localPlayer.Character.HumanoidRootPart.Velocity = Vector3.zero
 			localPlayer.Character:PivotTo(workspace.Map:FindFirstChild("Exit"):GetPivot())
 		end

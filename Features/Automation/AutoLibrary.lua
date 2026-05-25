@@ -76,7 +76,9 @@ function AutoLibrary.on(offset, floor, buff)
 	if not workspace:GetAttribute("ServerType") == "Library" then
 		return false, "Not in the library"
 	end
-
+	if not workspace.NPCS:FindFirstChild("Library Director") then
+		return false, "Not in the library"
+	end
 	task.wait(1)
 	if not state then
 		return
@@ -96,6 +98,16 @@ function AutoLibrary.on(offset, floor, buff)
 			return
 		end
 		workspace.NPCS["Library Director"].TalkToNPC:FireServer()
+		if not localPlayer.Data.IsTalking.Value then
+			repeat
+				localPlayer.Character:PivotTo(workspace.NPCS["Library Director"]:GetPivot())
+				workspace.NPCS["Library Director"].TalkToNPC:FireServer()
+				if not state then
+					return
+				end
+				task.wait(0.5)
+			until localPlayer.Data.IsTalking.Value
+		end
 		if not state then
 			return
 		end
@@ -103,7 +115,16 @@ function AutoLibrary.on(offset, floor, buff)
 		if not state then
 			return
 		end
-		clickButton("Bye")
+		local clickBye = false
+		repeat
+			task.wait()
+			if not state then
+				return
+			end
+			if clickButton("Bye") then
+				clickBye = true
+			end
+		until clickBye
 		if not state then
 			return
 		end
@@ -117,6 +138,9 @@ function AutoLibrary.on(offset, floor, buff)
 		workspace.NPCS["Ordeal Entrance"].TalkToNPC:FireServer()
 		if not localPlayer.Data.IsTalking.Value then
 			repeat
+				if not state then
+					return
+				end
 				localPlayer.Character:PivotTo(CFrame.new(731.274353, 525.687317, 1016.26477))
 				workspace.NPCS["Ordeal Entrance"].TalkToNPC:FireServer()
 				task.wait(0.5)
@@ -129,6 +153,9 @@ function AutoLibrary.on(offset, floor, buff)
 			local select = false
 			repeat
 				task.wait()
+				if not state then
+					return
+				end
 				if clickButton("Select") then
 					select = true
 				end
@@ -139,11 +166,17 @@ function AutoLibrary.on(offset, floor, buff)
 				if clickButton(floor) then
 					floorSelect = true
 				end
+				if not state then
+					return
+				end
 			until floorSelect
 			task.wait(1)
 			workspace.NPCS["Ordeal Entrance"].TalkToNPC:FireServer()
 			if not localPlayer.Data.IsTalking.Value then
 				repeat
+					if not state then
+						return
+					end
 					localPlayer.Character:PivotTo(CFrame.new(731.274353, 525.687317, 1016.26477))
 					workspace.NPCS["Ordeal Entrance"].TalkToNPC:FireServer()
 					task.wait(0.5)
@@ -153,6 +186,9 @@ function AutoLibrary.on(offset, floor, buff)
 			local begin = false
 			repeat
 				task.wait()
+				if not state then
+					return
+				end
 				if clickButton("Begin") then
 					begin = true
 				end

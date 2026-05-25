@@ -2,8 +2,16 @@ local autoLib = require("Features/Automation/AutoLibrary")
 local autoWarp = require("Features/Automation/AutoWarp")
 local autoRailway = require("Features/Automation/AutoRailway")
 local autoGrade = require("Features/Automation/AutoGradeEvaluation")
+local autoLCorp = require("Features/Automation/AutoLCorpBosses")
 
 local Automation = {}
+getgenv().autoRailwayLootPriority = {}
+
+if isfile("TelepathyOverload/Archived/loot_priority.txt") then
+	for item in readfile("TelepathyOverload/Archived/loot_priority.txt"):gmatch("[^,]+") do
+		table.insert(autoRailwayLootPriority, item)
+	end
+end
 
 function Automation.init()
 	LPH_NO_VIRTUALIZE(function()
@@ -213,6 +221,109 @@ function Automation.init()
 					end
 				end
 			end,
+		})
+
+		local autoRailwayLootSelection = Tab:AddDropdown("autoRailwayLootSelection", {
+			Title = "Item Priority Selection",
+			Values = {
+				"Singularity",
+				"SkipFloors",
+				"RareItems",
+				"Item",
+				"HugeAhn",
+				"Ahn",
+				"RareAccessories",
+				"Accessories",
+				"HugeExperience",
+				"Experience",
+				"Heal",
+			},
+			Multi = true,
+			Default = {},
+			Callback = function(Value)
+				autoRailwayLootPriority = {}
+				if isfile("TelepathyOverload/Archived/loot_priority.txt") then
+					for item in readfile("TelepathyOverload/Archived/loot_priority.txt"):gmatch("[^,]+") do
+						if Value[item] == true then -- only keep if fluent also has it checked
+							table.insert(autoRailwayLootPriority, item)
+						end
+					end
+				end
+
+				-- real user click
+				local savedPriority = {}
+				if isfile("TelepathyOverload/Archived/loot_priority.txt") then
+					for item in readfile("TelepathyOverload/Archived/loot_priority.txt"):gmatch("[^,]+") do
+						table.insert(savedPriority, item)
+					end
+				end
+
+				for i = #savedPriority, 1, -1 do
+					if not Value[savedPriority[i]] then
+						table.remove(savedPriority, i)
+					end
+				end
+
+				for item, selected in pairs(Value) do
+					if selected then
+						local found = false
+						for _, v in ipairs(savedPriority) do
+							if v == item then
+								found = true
+								break
+							end
+						end
+						if not found then
+							table.insert(savedPriority, item)
+						end
+					end
+				end
+
+				autoRailwayLootPriority = savedPriority
+				writefile("TelepathyOverload/Archived/loot_priority.txt", table.concat(autoRailwayLootPriority, ","))
+
+				local display = table.concat(autoRailwayLootPriority, ", ")
+				GUI:Notify({
+					Title = "Current Item Priority",
+					Content = display ~= "" and display or "None selected",
+					Duration = 8,
+				})
+			end,
+		})
+
+		local AutoLCorpToggle = Tab:AddToggle("AutoLCorp", { Title = "Auto L Corp Bosses", Default = false })
+
+		AutoLCorpToggle:OnChanged(function()
+			if Options.AutoLCorp.Value then
+				autoLCorp.on()
+			else
+				autoLCorp.off()
+			end
+		end)
+
+		local AutoLCorpYOffset = Tab:AddSlider("AutoLCorpYOffset", {
+			Title = "Y Offset",
+			Description = "Depends on your weapons",
+			Default = 5,
+			Min = 0,
+			Max = 30,
+			Rounding = 0,
+		})
+
+		local LCorpBossSelection = Tab:AddDropdown("lCorpBossSelection", {
+			Title = "Boss Selection",
+			Values = {
+				"Lei Heng",
+				"Gloom",
+				"Pride",
+				"Wrath",
+				"Desire",
+				"Sloth",
+				"Envy",
+				"Gluttony",
+			},
+			Multi = false,
+			Default = "Lei Heng",
 		})
 	end)()
 end

@@ -68,7 +68,7 @@ local function killMob(offset)
 
 		if #targetTable ~= 0 then
 			if not equippedDebounce then
-				equipDebounce = true
+				equippedDebounce = true
 				game:GetService("ReplicatedStorage").Events.Equip:FireServer(true)
 				for _, anim in track do
 					anim:Stop()
@@ -105,7 +105,7 @@ local function killMob(offset)
 						table.clear(track)
 						game:GetService("ReplicatedStorage").Events.Equip:FireServer(false)
 					end
-					equipDebounce = false
+					equippedDebounce = false
 				end)
 			end
 			localPlayer.Character.HumanoidRootPart.Anchored = false

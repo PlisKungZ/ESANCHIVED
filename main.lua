@@ -196,7 +196,6 @@ LPH_NO_VIRTUALIZE(function()
 		Content = "Invite is set to your clipboard join in.",
 		Duration = 8,
 	})
-
 	setclipboard("https://discord.gg/8Ae4Axagq6")
 	if request then
 		request({ Url = "https://discord.gg/8Ae4Axagq6" })
@@ -220,4 +219,9 @@ LPH_NO_VIRTUALIZE(function()
 	-- You can use the SaveManager:LoadAutoloadConfig() to load a config
 	-- which has been marked to be one that auto loads!
 	SaveManager:LoadAutoloadConfig()
+	getgenv().loaded = true
+	game.Players.LocalPlayer.Idled:Connect(function()
+		game:GetService("VirtualUser"):CaptureController()
+		game:GetService("VirtualUser"):ClickButton2(Vector2.new())
+	end)
 end)()
