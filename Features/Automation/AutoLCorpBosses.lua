@@ -338,7 +338,7 @@ function AutoLCorpBosses.on()
 								end
 								localPlayer.Character:PivotTo(item:GetPivot())
 								fireproximityprompt(prompt)
-								task.wait()
+								task.wait(1)
 							until not item.Parent
 						end
 					end
@@ -347,11 +347,11 @@ function AutoLCorpBosses.on()
 			else
 				local clickExtract = false
 				repeat
-					task.wait(0.5)
+					task.wait(1.25)
 					localPlayer.Character:PivotTo(CFrame.new(103.09710693359375, 981.3513793945312, -84.36695098876953))
 				until workspace.NPCS:FindFirstChild("Elevator Door")
 				repeat
-					task.wait(0.5)
+					task.wait(1.25)
 					workspace.NPCS["Elevator Door"].TalkToNPC:FireServer()
 					if clickButton("Extract") then
 						clickExtract = true

@@ -2,7 +2,16 @@ local HttpService = game:GetService("HttpService")
 local Players = game:GetService("Players")
 local localPlayer = Players.LocalPlayer
 
-function sendWebhook()
+local Webhook = {}
+local splitString = LPH_NO_VIRTUALIZE(function(str, sep)
+	sep = sep or ","
+	local result = {}
+	for item in str:gmatch("[^" .. sep .. "]+") do
+		table.insert(result, item:lower())
+	end
+	return result
+end)
+local function sendWebhook()
 	local inventory = ""
 	local itemNames = {}
 	for _, item in localPlayer.Backpack:GetChildren() do
@@ -38,6 +47,7 @@ function sendWebhook()
 		["Content-Type"] = "application/json",
 	}
 	local embed = {
+		["content"] = Options.mentionText.Value,
 		["title"] = "Telepathy Overload | Archived",
 		["description"] = "",
 		["color"] = 65280,
@@ -66,7 +76,6 @@ function sendWebhook()
 	local isInserted = {}
 
 	for categoryName, items in categorized do
-		print(categoryName)
 		if not table.find(isInserted, categoryName) then
 			table.insert(isInserted, categoryName)
 			local text = ""
@@ -78,7 +87,7 @@ function sendWebhook()
 	end
 
 	local data = {
-		["content"] = "kuy rai sus",
+		["content"] = Options.mentionText.Value,
 		["embeds"] = {
 			{
 				["title"] = embed.title,
@@ -93,11 +102,68 @@ function sendWebhook()
 	}
 	local body = HttpService:JSONEncode(data)
 	local response = request({
-		Url = url,
+		Url = Options.webHookUrl.Value,
 		Method = "POST",
 		Headers = headers,
 		Body = body,
 	})
 end
 
-sendWebhook()
+local fetchedTable = {}
+local connection
+connection = localPlayer.Backpack.ChildAdded:Connect(function(child)
+	if game.PlaceId ~= 99831550635699 then
+		return
+	end
+	if Options.webHookState.Value then
+		local translatedItems = splitString(Options.itemNotifyList.Value)
+		if table.find(translatedItems, child.Name:lower()) then
+			sendWebhook()
+		end
+	end
+end)
+
+task.spawn(function()
+	while true do
+		task.wait(1)
+		if GUI.Unloaded then
+			connection:Disconnect()
+			break
+		end
+	end
+end)
+
+function Webhook.init()
+	LPH_NO_VIRTUALIZE(function()
+		local Tab = window:AddTab({ Title = "Webhook", Icon = "" })
+
+		local webHookState = Tab:AddToggle("webHookState", { Title = "Webhook Notify", Default = false })
+
+		local webHookUrl = Tab:AddInput("webHookUrl", {
+			Title = "Webhook Url",
+			Default = "",
+			Placeholder = "https://discord.com/api/...",
+			Numeric = false,
+			Finished = true,
+			Callback = function(Value) end,
+		})
+		local mentionText = Tab:AddInput("mentionText", {
+			Title = "Text Content When Notify",
+			Default = "",
+			Placeholder = "<@676767676767>",
+			Numeric = false,
+			Finished = true,
+			Callback = function(Value) end,
+		})
+		local itemNotifyList = Tab:AddInput("itemNotifyList", {
+			Title = "Item Notify Lists",
+			Default = "",
+			Placeholder = "Book,Gear,...",
+			Numeric = false,
+			Finished = true,
+			Callback = function(Value) end,
+		})
+	end)()
+end
+
+return Webhook

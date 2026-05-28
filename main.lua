@@ -1,22 +1,25 @@
-if not game:IsLoaded() then
+LPH_NO_VIRTUALIZE(function()
+	if not game:IsLoaded() then
+		repeat
+		until task.wait()
+		game:IsLoaded()
+	end
+
 	repeat
-	until task.wait()
-	game:IsLoaded()
-end
+		task.wait()
+	until game.Players.LocalPlayer
+	repeat
+		task.wait()
+	until game.Players.LocalPlayer.Character
 
-repeat
-	task.wait()
-until game.Players.LocalPlayer
-repeat
-	task.wait()
-until game.Players.LocalPlayer.Character
+	local whiteListedPlaceId = { 99831550635699, 14038329225 }
 
-local whiteListedPlaceId = { 99831550635699, 14038329225 }
+	if not table.find(whiteListedPlaceId, game.PlaceId) then
+		return
+	end
+end)()
 
-if not table.find(whiteListedPlaceId, game.PlaceId) then
-	return
-end
-task.spawn(function()
+task.spawn(LPH_NO_VIRTUALIZE(function()
 	local Adonis = {
 		Name = "Adonis",
 		Game = "*",
@@ -100,7 +103,7 @@ task.spawn(function()
 		task.wait()
 		Adonis.Detect()
 	until Adonis.Bypass()
-end)
+end))
 
 local GUI
 local SaveManager
@@ -119,6 +122,7 @@ local RemovalTab = require("Menu/Removal")
 local TrollTab = require("Menu/Troll")
 local TeleportationTab = require("Menu/Teleportation")
 local AutoSellTab = require("Menu/AutoSell")
+local webhookTab = require("Menu/Webhook")
 
 local api = loadstring(game:HttpGet("https://sdkapi-public.luarmor.net/library.lua"))()
 
@@ -162,6 +166,7 @@ LPH_NO_VIRTUALIZE(function()
 	TrollTab.init(GUI, Window)
 	AutoSellTab.init(GUI, Window)
 	AutomationTab.init(GUI, Window)
+	webhookTab.init()
 	local Tabs = {
 		Settings = Window:AddTab({ Title = "Settings", Icon = "settings" }),
 	}

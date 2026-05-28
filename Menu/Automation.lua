@@ -3,6 +3,7 @@ local autoWarp = require("Features/Automation/AutoWarp")
 local autoRailway = require("Features/Automation/AutoRailway")
 local autoGrade = require("Features/Automation/AutoGradeEvaluation")
 local autoLCorp = require("Features/Automation/AutoLCorpBosses")
+local autoRicardo = require("Features/Automation/AutoRicardo")
 
 local Automation = {}
 getgenv().autoRailwayLootPriority = {}
@@ -324,6 +325,25 @@ function Automation.init()
 			},
 			Multi = false,
 			Default = "Lei Heng",
+		})
+
+		local AutoRicardoToggle = Tab:AddToggle("AutoRicardo", { Title = "Auto Ricardo", Default = false })
+
+		AutoRicardoToggle:OnChanged(function()
+			if Options.AutoRicardo.Value then
+				autoRicardo.on()
+			else
+				autoRicardo.off()
+			end
+		end)
+
+		local AutoRicardoYOffset = Tab:AddSlider("AutoRicardoYOffset", {
+			Title = "Y Offset",
+			Description = "Depends on your weapons",
+			Default = 5,
+			Min = 0,
+			Max = 30,
+			Rounding = 0,
 		})
 	end)()
 end

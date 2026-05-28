@@ -19,12 +19,11 @@ local camera = workspace.CurrentCamera
 local RunService = game:GetService("RunService")
 
 -- ─── Drawing helpers ────────────────────────────────────────────────────────
-
-local function SafeColor(c)
+local SafeColor = LPH_NO_VIRTUALIZE(function(c)
 	return typeof(c) == "Color3" and c or ESP.Settings.Color
-end
+end)
 
-local function NewQuad(color)
+local NewQuad = LPH_NO_VIRTUALIZE(function(color)
 	local q = Drawing.new("Quad")
 	q.Visible = false
 	q.PointA = Vector2.zero
@@ -36,9 +35,9 @@ local function NewQuad(color)
 	q.Thickness = 1
 	q.Transparency = ESP.Settings.BoxTransparency
 	return q
-end
+end)
 
-local function NewTextLine(color)
+local NewTextLine = LPH_NO_VIRTUALIZE(function(color)
 	local t = Drawing.new("Text")
 	t.Visible = false
 	t.Size = ESP.Settings.TextSize
@@ -47,40 +46,39 @@ local function NewTextLine(color)
 	t.OutlineColor = Color3.fromRGB(0, 0, 0)
 	t.Center = true
 	return t
-end
+end)
 
-local function RemoveDrawings(drawings)
+local RemoveDrawings = LPH_NO_VIRTUALIZE(function(drawings)
 	for _, d in pairs(drawings) do
 		d:Remove()
 	end
-end
+end)
 
-local function SetQuadsVisible(quads, v)
+local SetQuadsVisible = LPH_NO_VIRTUALIZE(function(quads, v)
 	quads.quad1.Visible = v
 	quads.quad2.Visible = v
 	quads.quad3.Visible = v
 	quads.quad4.Visible = v
 	quads.quad5.Visible = v
 	quads.quad6.Visible = v
-end
+end)
 
-local function Colorize(quads, c)
+local Colorize = LPH_NO_VIRTUALIZE(function(quads, c)
 	quads.quad1.Color = c
 	quads.quad2.Color = c
 	quads.quad3.Color = c
 	quads.quad4.Color = c
 	quads.quad5.Color = c
 	quads.quad6.Color = c
-end
+end)
 
 -- ─── Quad geometry ──────────────────────────────────────────────────────────
-
-local function vp(v)
+local vp = LPH_NO_VIRTUALIZE(function(v)
 	local p = camera:WorldToViewportPoint(v)
 	return Vector2.new(p.X, p.Y)
-end
+end)
 
-local function UpdateQuads(quads, cf, sX, sY, sZ)
+local UpdateQuads = LPH_NO_VIRTUALIZE(function(quads, cf, sX, sY, sZ)
 	local p = cf.Position
 	local rX = cf.RightVector * sX
 	local rY = cf.UpVector * sY
@@ -131,11 +129,9 @@ local function UpdateQuads(quads, cf, sX, sY, sZ)
 	q6.PointB = Top1
 	q6.PointC = Bot1
 	q6.PointD = Bot4
-end
-
+end)
 -- ─── Internal per-entry update ──────────────────────────────────────────────
-
-local function UpdateEntry(entry, camCF, camPos)
+local UpdateEntry = LPH_NO_VIRTUALIZE(function(entry, camCF, camPos)
 	local part = entry.part
 
 	-- check alive
@@ -206,11 +202,9 @@ local function UpdateEntry(entry, camCF, camPos)
 			end
 		end
 	end
-end
-
+end)
 -- ─── Tag loop management ────────────────────────────────────────────────────
-
-local function EnsureTagLoop(tag)
+local EnsureTagLoop = LPH_NO_VIRTUALIZE(function(tag)
 	if tagLoops[tag] then
 		return
 	end
@@ -220,40 +214,36 @@ local function EnsureTagLoop(tag)
 
 	local bindName = "ESP_Tag_" .. tag
 
-	RunService:BindToRenderStep(
-		bindName,
-		Enum.RenderPriority.Camera.Value + 1,
-		LPH_NO_VIRTUALIZE(function()
-			local entries = loop.entries
-			if #entries == 0 then
-				return
-			end
+	RunService:BindToRenderStep(bindName, Enum.RenderPriority.Camera.Value + 1, function()
+		local entries = loop.entries
+		if #entries == 0 then
+			return
+		end
 
-			local camCF = camera.CFrame
-			local camPos = camCF.Position
+		local camCF = camera.CFrame
+		local camPos = camCF.Position
 
-			local i = 1
-			while i <= #entries do
-				local entry = entries[i]
-				UpdateEntry(entry, camCF, camPos)
+		local i = 1
+		while i <= #entries do
+			local entry = entries[i]
+			UpdateEntry(entry, camCF, camPos)
 
-				if entry.dead then
-					-- clean up and remove from list
-					RemoveDrawings(entry.quads)
-					for _, l in ipairs(entry.textLines) do
-						l:Remove()
-					end
-					table.remove(entries, i)
-				-- don't increment i
-				else
-					i = i + 1
+			if entry.dead then
+				-- clean up and remove from list
+				RemoveDrawings(entry.quads)
+				for _, l in ipairs(entry.textLines) do
+					l:Remove()
 				end
+				table.remove(entries, i)
+				-- don't increment i
+			else
+				i = i + 1
 			end
-		end)
-	)
+		end
+	end)
 
 	loop.bindName = bindName
-end
+end)
 
 -- ─── Public API ─────────────────────────────────────────────────────────────
 

@@ -42,25 +42,28 @@ local __bundle_require, __bundle_loaded, __bundle_register, __bundle_modules = (
 	return require, loaded, register, modules
 end)(require)
 __bundle_register("__root", function(require, _LOADED, __bundle_register, __bundle_modules)
-if not game:IsLoaded() then
+LPH_NO_VIRTUALIZE(function()
+	if not game:IsLoaded() then
+		repeat
+		until task.wait()
+		game:IsLoaded()
+	end
+
 	repeat
-	until task.wait()
-	game:IsLoaded()
-end
+		task.wait()
+	until game.Players.LocalPlayer
+	repeat
+		task.wait()
+	until game.Players.LocalPlayer.Character
 
-repeat
-	task.wait()
-until game.Players.LocalPlayer
-repeat
-	task.wait()
-until game.Players.LocalPlayer.Character
+	local whiteListedPlaceId = { 99831550635699, 14038329225 }
 
-local whiteListedPlaceId = { 99831550635699, 14038329225 }
+	if not table.find(whiteListedPlaceId, game.PlaceId) then
+		return
+	end
+end)()
 
-if not table.find(whiteListedPlaceId, game.PlaceId) then
-	return
-end
-task.spawn(function()
+task.spawn(LPH_NO_VIRTUALIZE(function()
 	local Adonis = {
 		Name = "Adonis",
 		Game = "*",
@@ -144,7 +147,7 @@ task.spawn(function()
 		task.wait()
 		Adonis.Detect()
 	until Adonis.Bypass()
-end)
+end))
 
 local GUI
 local SaveManager
@@ -163,6 +166,7 @@ local RemovalTab = require("Menu/Removal")
 local TrollTab = require("Menu/Troll")
 local TeleportationTab = require("Menu/Teleportation")
 local AutoSellTab = require("Menu/AutoSell")
+local webhookTab = require("Menu/Webhook")
 
 local api = loadstring(game:HttpGet("https://sdkapi-public.luarmor.net/library.lua"))()
 
@@ -206,6 +210,7 @@ LPH_NO_VIRTUALIZE(function()
 	TrollTab.init(GUI, Window)
 	AutoSellTab.init(GUI, Window)
 	AutomationTab.init(GUI, Window)
+	webhookTab.init()
 	local Tabs = {
 		Settings = Window:AddTab({ Title = "Settings", Icon = "settings" }),
 	}
@@ -269,6 +274,178 @@ LPH_NO_VIRTUALIZE(function()
 		game:GetService("VirtualUser"):ClickButton2(Vector2.new())
 	end)
 end)()
+
+end)
+__bundle_register("Menu/Webhook", function(require, _LOADED, __bundle_register, __bundle_modules)
+local HttpService = game:GetService("HttpService")
+local Players = game:GetService("Players")
+local localPlayer = Players.LocalPlayer
+
+local Webhook = {}
+local splitString = LPH_NO_VIRTUALIZE(function(str, sep)
+	sep = sep or ","
+	local result = {}
+	for item in str:gmatch("[^" .. sep .. "]+") do
+		table.insert(result, item:lower())
+	end
+	return result
+end)
+local function sendWebhook()
+	local inventory = ""
+	local itemNames = {}
+	for _, item in localPlayer.Backpack:GetChildren() do
+		if item:IsA("Tool") then
+			if not itemNames[item.Name] then
+				itemNames[item.Name] = 1
+			else
+				itemNames[item.Name] = itemNames[item.Name] + 1
+			end
+		end
+	end
+
+	local categorized = {}
+	for itemName, amount in itemNames do
+		local item = localPlayer.Backpack:FindFirstChild(itemName)
+		if item then
+			if not categorized[item:GetAttribute("ItemCategory")] then
+				categorized[item:GetAttribute("ItemCategory")] = {}
+				table.insert(
+					categorized[item:GetAttribute("ItemCategory")],
+					{ ["Name"] = itemName, ["Amount"] = amount }
+				)
+			else
+				table.insert(
+					categorized[item:GetAttribute("ItemCategory")],
+					{ ["Name"] = itemName, ["Amount"] = amount }
+				)
+			end
+		end
+	end
+
+	local headers = {
+		["Content-Type"] = "application/json",
+	}
+	local embed = {
+		["content"] = Options.mentionText.Value,
+		["title"] = "Telepathy Overload | Archived",
+		["description"] = "",
+		["color"] = 65280,
+		["fields"] = {
+			{
+				["name"] = "Player Info",
+				["value"] = string.format(
+					"**Username** : ||%s||\n**Slot Order** : %s\n**Ahn** : %s\n**Lunacy** : %s",
+					localPlayer.Name,
+					localPlayer:GetAttribute("Slot"),
+					localPlayer.PlayerGui.CurrencyGUI.List.Ahn.Amount.Text,
+					localPlayer.PlayerGui.CurrencyGUI.List.Lunacy.Amount.Text
+				),
+			},
+			{
+				["name"] = "Player Inventory",
+				["value"] = inventory,
+			},
+		},
+		["footer"] = {
+			["text"] = "📦 Archived • " .. os.date("%m/%d/%Y %I:%M %p"),
+		},
+		["timestamp"] = os.date("!%Y-%m-%dT%H:%M:%SZ"),
+	}
+
+	local isInserted = {}
+
+	for categoryName, items in categorized do
+		if not table.find(isInserted, categoryName) then
+			table.insert(isInserted, categoryName)
+			local text = ""
+			for _, item in items do
+				text = text .. string.format(" %s %sx\n", item.Name, item.Amount)
+			end
+			table.insert(embed.fields, { ["name"] = categoryName, ["value"] = text })
+		end
+	end
+
+	local data = {
+		["content"] = Options.mentionText.Value,
+		["embeds"] = {
+			{
+				["title"] = embed.title,
+				["description"] = embed.description,
+				["color"] = embed.color,
+				["fields"] = embed.fields,
+				["footer"] = {
+					["text"] = embed.footer.text,
+				},
+			},
+		},
+	}
+	local body = HttpService:JSONEncode(data)
+	local response = request({
+		Url = Options.webHookUrl.Value,
+		Method = "POST",
+		Headers = headers,
+		Body = body,
+	})
+end
+
+local fetchedTable = {}
+local connection
+connection = localPlayer.Backpack.ChildAdded:Connect(function(child)
+	if game.PlaceId ~= 99831550635699 then
+		return
+	end
+	if Options.webHookState.Value then
+		local translatedItems = splitString(Options.itemNotifyList.Value)
+		if table.find(translatedItems, child.Name:lower()) then
+			sendWebhook()
+		end
+	end
+end)
+
+task.spawn(function()
+	while true do
+		task.wait(1)
+		if GUI.Unloaded then
+			connection:Disconnect()
+			break
+		end
+	end
+end)
+
+function Webhook.init()
+	LPH_NO_VIRTUALIZE(function()
+		local Tab = window:AddTab({ Title = "Webhook", Icon = "" })
+
+		local webHookState = Tab:AddToggle("webHookState", { Title = "Webhook Notify", Default = false })
+
+		local webHookUrl = Tab:AddInput("webHookUrl", {
+			Title = "Webhook Url",
+			Default = "",
+			Placeholder = "https://discord.com/api/...",
+			Numeric = false,
+			Finished = true,
+			Callback = function(Value) end,
+		})
+		local mentionText = Tab:AddInput("mentionText", {
+			Title = "Text Content When Notify",
+			Default = "",
+			Placeholder = "<@676767676767>",
+			Numeric = false,
+			Finished = true,
+			Callback = function(Value) end,
+		})
+		local itemNotifyList = Tab:AddInput("itemNotifyList", {
+			Title = "Item Notify Lists",
+			Default = "",
+			Placeholder = "Book,Gear,...",
+			Numeric = false,
+			Finished = true,
+			Callback = function(Value) end,
+		})
+	end)()
+end
+
+return Webhook
 
 end)
 __bundle_register("Menu/AutoSell", function(require, _LOADED, __bundle_register, __bundle_modules)
@@ -1253,6 +1430,7 @@ local autoWarp = require("Features/Automation/AutoWarp")
 local autoRailway = require("Features/Automation/AutoRailway")
 local autoGrade = require("Features/Automation/AutoGradeEvaluation")
 local autoLCorp = require("Features/Automation/AutoLCorpBosses")
+local autoRicardo = require("Features/Automation/AutoRicardo")
 
 local Automation = {}
 getgenv().autoRailwayLootPriority = {}
@@ -1575,10 +1753,246 @@ function Automation.init()
 			Multi = false,
 			Default = "Lei Heng",
 		})
+
+		local AutoRicardoToggle = Tab:AddToggle("AutoRicardo", { Title = "Auto Ricardo", Default = false })
+
+		AutoRicardoToggle:OnChanged(function()
+			if Options.AutoRicardo.Value then
+				autoRicardo.on()
+			else
+				autoRicardo.off()
+			end
+		end)
+
+		local AutoRicardoYOffset = Tab:AddSlider("AutoRicardoYOffset", {
+			Title = "Y Offset",
+			Description = "Depends on your weapons",
+			Default = 5,
+			Min = 0,
+			Max = 30,
+			Rounding = 0,
+		})
 	end)()
 end
 
 return Automation
+
+end)
+__bundle_register("Features/Automation/AutoRicardo", function(require, _LOADED, __bundle_register, __bundle_modules)
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+
+local localPlayer = Players.LocalPlayer
+local AutoRicardo = {}
+
+local connection
+local track = {}
+local state = false
+
+local function clickButton(text)
+	for _, frame in game:GetService("Players").LocalPlayer.PlayerGui.Dialogue.MainFrame.Options.Scroll:GetChildren() do
+		if frame:IsA("Frame") then
+			if frame.OptionText.Text == text or frame.OptionText.Text:find(text) then
+				replicatesignal(frame.OptionButton.MouseButton1Click)
+				return true
+			end
+		end
+	end
+	return false
+end
+
+local gripDebounce = false
+
+function AutoRicardo.on(offset, floor, buff)
+	AutoRicardo.off()
+	state = true
+	local teleported = false
+	if game.PlaceId ~= 99831550635699 then
+		return false, "Not in the library"
+	end
+	if not workspace:GetAttribute("ServerType") == "Ricardo" then
+		return false, "Not in the library"
+	end
+
+	local kb = workspace:FindFirstChild("KillBricks")
+	if kb then
+		kb:Destroy()
+	end
+
+	if not localPlayer.Character:FindFirstChild("AirTime") then
+		local airTime = Instance.new("Folder")
+		airTime.Name = "AirTime"
+		airTime.Parent = localPlayer.Character
+	end
+	local talkPart = workspace.NPCS:FindFirstChild("RicardoChallengePart")
+	if talkPart and not workspace.Alive:FindFirstChild("Big Brother Of The Middle") then
+		local mainPart = talkPart:FindFirstChild("MainPart")
+		if mainPart then
+			local clickBring = false
+			repeat
+				task.wait()
+				localPlayer.Character:PivotTo(mainPart:GetPivot())
+				fireproximityprompt(talkPart.InteractPrompt)
+				if clickButton("Bring") then
+					clickBring = true
+				end
+			until clickBring
+		end
+	end
+
+	game:GetService("ReplicatedStorage").Events.Equip:FireServer(true)
+	local equipDebounce = false
+	connection = RunService.PostSimulation:Connect(LPH_NO_VIRTUALIZE(function(delta)
+		if not state then
+			return
+		end
+		if math.floor(workspace.DistributedGameTime) < 0 then
+			game:GetService("ReplicatedStorage").Events.Equip:FireServer(false)
+			for _, animTrack in track do
+				animTrack:AdjustSpeed(0)
+			end
+			workspace.CurrentCamera.CameraSubject = localPlayer.Character.Humanoid
+			localPlayer.Character:PivotTo(CFrame.new(-12874, -11, 1070))
+			return true
+		end
+		teleported = false
+		localPlayer.Data.Stamina.Value = 100
+		local targetTable = {}
+
+		for _, human in workspace.Alive:GetChildren() do
+			if
+				not Players:GetPlayerFromCharacter(human)
+				and human.Humanoid.Health > 0
+				and not human:FindFirstChild("GotGripped")
+			then
+				table.insert(targetTable, human)
+			end
+		end
+
+		table.sort(targetTable, function(a, b)
+			return a.Humanoid.MaxHealth > b.Humanoid.MaxHealth
+		end)
+
+		if #targetTable ~= 0 then
+			localPlayer.Character.HumanoidRootPart.Anchored = false
+			local isAllAlerted = true
+			for _, target in targetTable do
+				if target.Target.Value ~= localPlayer.Character then
+					localPlayer.Character.HumanoidRootPart:PivotTo(
+						targetTable[1].HumanoidRootPart.CFrame * CFrame.Angles(math.rad(90), 0, 0)
+							+ Vector3.new(0, 10, 0)
+					)
+					isAllAlerted = false
+				end
+			end
+			if not isAllAlerted then
+				return
+			end
+			if not equipDebounce then
+				equipDebounce = true
+				game:GetService("ReplicatedStorage").Events.Equip:FireServer(true)
+				for _, anim in track do
+					anim:Stop()
+					anim:Destroy()
+				end
+				table.clear(track)
+				local m1Count = 0
+				for _, animation in
+					game:GetService("ReplicatedStorage").WeaponINFO[game.Players.LocalPlayer.Data.Weapon.Value]
+						:GetChildren()
+				do
+					if animation:IsA("Animation") then
+						if animation.Name:find("AttackAnimation") and animation.Name ~= "ChargedAttackAnimation" then
+							m1Count = m1Count + 1
+						end
+					end
+				end
+				for i = 1, m1Count - 1 do
+					local animtrack = localPlayer.Character.Humanoid.Animator:LoadAnimation(
+						game:GetService("ReplicatedStorage").WeaponINFO[game.Players.LocalPlayer.Data.Weapon.Value]["AttackAnimation" .. tostring(
+							i
+						)]
+					)
+					animtrack:Play(0, 0.01, 100000)
+					animtrack.Looped = true
+					table.insert(track, animtrack)
+				end
+				task.delay(2.5, function()
+					if connection then
+						for _, anim in track do
+							anim:Stop()
+							anim:Destroy()
+						end
+						table.clear(track)
+						game:GetService("ReplicatedStorage").Events.Equip:FireServer(false)
+					end
+					equipDebounce = false
+				end)
+			end
+			local offset = Vector3.new(0, -Options.AutoRicardoYOffset.Value, 0)
+
+			if targetTable[1]:FindFirstChild("Knocked") and not gripDebounce then
+				gripDebounce = true
+				localPlayer.Character.HumanoidRootPart:PivotTo(targetTable[1].HumanoidRootPart.CFrame)
+				game:GetService("ReplicatedStorage")
+					:WaitForChild("Events")
+					:WaitForChild("Grip")
+					:FireServer(localPlayer.Character)
+				task.delay(1, function()
+					gripDebounce = false
+				end)
+			end
+
+			if targetTable[1]:FindFirstChild("GettingGripped") then
+				localPlayer.Character.HumanoidRootPart.Anchored = true
+				return
+			end
+			if targetTable[1].Target.Value ~= localPlayer.Character then
+				localPlayer.Character.HumanoidRootPart:PivotTo(
+					targetTable[1].HumanoidRootPart.CFrame * CFrame.Angles(math.rad(90), 0, 0) + Vector3.new(0, 5, 0)
+				)
+				return
+			end
+			localPlayer.Character.HumanoidRootPart:PivotTo(
+				targetTable[1].HumanoidRootPart.CFrame * CFrame.Angles(math.rad(90), 0, 0) + offset
+			)
+			workspace.CurrentCamera.CameraSubject = targetTable[1].Humanoid
+			localPlayer.Character.HumanoidRootPart.AssemblyLinearVelocity = Vector3.zero
+			localPlayer.Character.HumanoidRootPart.AssemblyAngularVelocity = Vector3.zero
+			localPlayer.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Ragdoll, false)
+		else
+			if not teleported then
+				teleported = true
+				equipDebounce = false
+				localPlayer.Character:PivotTo(CFrame.new(-12874, -11, 1070))
+				game:GetService("ReplicatedStorage").Events.Equip:FireServer(false)
+				for _, animTrack in track do
+					animTrack:AdjustSpeed(0)
+				end
+				workspace.CurrentCamera.CameraSubject = localPlayer.Character.Humanoid
+				localPlayer.Character:PivotTo(CFrame.new(-12874, -11, 1070))
+			end
+		end
+	end))
+	return true
+end
+
+function AutoRicardo.off(floor)
+	state = false
+	if connection then
+		connection:Disconnect()
+		connection = nil
+	end
+	for _, anim in track do
+		anim:Stop()
+		anim:Destroy()
+	end
+	table.clear(track)
+	workspace.CurrentCamera.CameraSubject = localPlayer.Character.Humanoid
+	localPlayer.Character.HumanoidRootPart.Anchored = false
+end
+
+return AutoRicardo
 
 end)
 __bundle_register("Features/Automation/AutoLCorpBosses", function(require, _LOADED, __bundle_register, __bundle_modules)
@@ -1922,7 +2336,7 @@ function AutoLCorpBosses.on()
 								end
 								localPlayer.Character:PivotTo(item:GetPivot())
 								fireproximityprompt(prompt)
-								task.wait()
+								task.wait(1)
 							until not item.Parent
 						end
 					end
@@ -1931,11 +2345,11 @@ function AutoLCorpBosses.on()
 			else
 				local clickExtract = false
 				repeat
-					task.wait(0.5)
+					task.wait(1.25)
 					localPlayer.Character:PivotTo(CFrame.new(103.09710693359375, 981.3513793945312, -84.36695098876953))
 				until workspace.NPCS:FindFirstChild("Elevator Door")
 				repeat
-					task.wait(0.5)
+					task.wait(1.25)
 					workspace.NPCS["Elevator Door"].TalkToNPC:FireServer()
 					if clickButton("Extract") then
 						clickExtract = true
@@ -2101,7 +2515,7 @@ local equipedDb = false
 local state = false
 
 local function killMob(offset)
-	connection = RunService.PostSimulation:Connect(function(delta)
+	connection = RunService.PostSimulation:Connect(LPH_NO_VIRTUALIZE(function(delta)
 		localPlayer.Data.Stamina.Value = 100
 		local targetTable = {}
 		for _, human in workspace.Alive:GetChildren() do
@@ -2183,7 +2597,7 @@ local function killMob(offset)
 			connection:Disconnect()
 			workspace.CurrentCamera.CameraSubject = localPlayer.Character.Humanoid
 		end
-	end)
+	end))
 end
 
 local animationLists = {}
@@ -2234,7 +2648,7 @@ local function killBehind(offset)
 		animtrack.Looped = true
 		table.insert(track, animtrack)
 	end
-	connection = RunService.PostSimulation:Connect(function(delta)
+	connection = RunService.PostSimulation:Connect(LPH_NO_VIRTUALIZE(function(delta)
 		localPlayer.Data.Stamina.Value = 100
 		local targetTable = {}
 		for _, human in workspace.Alive:GetChildren() do
@@ -2283,7 +2697,7 @@ local function killBehind(offset)
 			connection:Disconnect()
 			workspace.CurrentCamera.CameraSubject = localPlayer.Character.Humanoid
 		end
-	end)
+	end))
 end
 
 local function goUpElavator()
@@ -3726,42 +4140,43 @@ local localPlayer = Players.LocalPlayer
 local playerGui = localPlayer.PlayerGui
 
 local GradePoint = {}
-GradePoint.GradePointsReq = {
-	10000,
-	3000,
-	2000,
-	1900,
-	1500,
-	1300,
-	1200,
-	500,
-	250,
-}
+LPH_NO_VIRTUALIZE(function()
+	GradePoint.GradePointsReq = {
+		10000,
+		3000,
+		2000,
+		1900,
+		1500,
+		1300,
+		1200,
+		500,
+		250,
+	}
 
-local connection
-local mouseEnter, mouseLeave
+	local connection
+	local mouseEnter, mouseLeave
 
-function GradePoint.on()
-	GradePoint.off()
-	connection = RunService.Heartbeat:Connect(LPH_NO_VIRTUALIZE(function(deltaTime)
-		playerGui.Stats.UI.GradeSlider.Visible = true
-		playerGui.Stats.UI.GradeSlider.SliderClip.Size = UDim2.fromScale(
-			localPlayer:WaitForChild("Data"):WaitForChild("GradeUpPoints").Value
-				/ GradePoint.GradePointsReq[localPlayer.Data.Grade.Value],
-			1
-		)
-	end))
+	function GradePoint.on()
+		GradePoint.off()
+		connection = RunService.Heartbeat:Connect(function(deltaTime)
+			playerGui.Stats.UI.GradeSlider.Visible = true
+			playerGui.Stats.UI.GradeSlider.SliderClip.Size = UDim2.fromScale(
+				localPlayer:WaitForChild("Data"):WaitForChild("GradeUpPoints").Value
+					/ GradePoint.GradePointsReq[localPlayer.Data.Grade.Value],
+				1
+			)
+		end)
 
-	mouseEnter = localPlayer
-end
-
-function GradePoint.off()
-	playerGui.Stats.UI.GradeSlider.Visible = false
-	if connection then
-		connection:Disconnect()
+		mouseEnter = localPlayer
 	end
-end
 
+	function GradePoint.off()
+		playerGui.Stats.UI.GradeSlider.Visible = false
+		if connection then
+			connection:Disconnect()
+		end
+	end
+end)()
 return GradePoint
 
 end)
@@ -3868,66 +4283,66 @@ local Players = game:GetService("Players")
 local localPlayer = Players.LocalPlayer
 
 local ESPNpc = {}
+LPH_NO_VIRTUALIZE(function()
+	local function characterESP(mob, espTag, color)
+		local part = Instance.new("Part")
+		part.Size = Vector3.new(4, 5, 4)
+		part.Anchored = true
+		part.Transparency = 1
+		part.CanCollide = false
+		part.CFrame = mob:GetPivot()
 
-local function characterESP(mob, espTag, color)
-	local part = Instance.new("Part")
-	part.Size = Vector3.new(4, 5, 4)
-	part.Anchored = true
-	part.Transparency = 1
-	part.CanCollide = false
-	part.CFrame = mob:GetPivot()
-
-	local isAlive = function()
-		if mob and mob.Parent then
-			-- keep part following mob
-			part.CFrame = mob:GetPivot()
-			return true
+		local isAlive = function()
+			if mob and mob.Parent then
+				-- keep part following mob
+				part.CFrame = mob:GetPivot()
+				return true
+			end
+			return false
 		end
-		return false
+
+		ESP.ESPPart(part, {
+			tag = espTag,
+			isAlive = isAlive,
+			getLines = function(distance)
+				return {
+					mob.Name,
+					tostring(distance) .. "m",
+				}
+			end,
+			getColor = function()
+				return color
+			end,
+		})
 	end
 
-	ESP.ESPPart(part, {
-		tag = espTag,
-		isAlive = isAlive,
-		getLines = function(distance)
-			return {
-				mob.Name,
-				tostring(distance) .. "m",
-			}
-		end,
-		getColor = function()
-			return color
-		end,
-	})
-end
+	local connection
 
-local connection
-
-function ESPNpc.on(color)
-	if connection then
-		connection:Disconnect()
-	end
-
-	connection = workspace.NPCS.ChildAdded:Connect(function(mob)
-		if mob:IsA("Model") then
-			characterESP(mob, "npc", color)
+	function ESPNpc.on(color)
+		if connection then
+			connection:Disconnect()
 		end
-	end)
 
-	for _, mob in workspace.NPCS:GetChildren() do
-		if mob:IsA("Model") then
-			characterESP(mob, "npc", color)
+		connection = workspace.NPCS.ChildAdded:Connect(function(mob)
+			if mob:IsA("Model") then
+				characterESP(mob, "npc", color)
+			end
+		end)
+
+		for _, mob in workspace.NPCS:GetChildren() do
+			if mob:IsA("Model") then
+				characterESP(mob, "npc", color)
+			end
 		end
 	end
-end
 
-function ESPNpc.off()
-	if connection then
-		connection:Disconnect()
+	function ESPNpc.off()
+		if connection then
+			connection:Disconnect()
+		end
+		ESP.Disable("npc")
 	end
-	ESP.Disable("npc")
-end
-
+end)()
 return ESPNpc
 
 end)
@@ -3953,12 +4368,11 @@ local camera = workspace.CurrentCamera
 local RunService = game:GetService("RunService")
 
 -- ─── Drawing helpers ────────────────────────────────────────────────────────
-
-local function SafeColor(c)
+local SafeColor = LPH_NO_VIRTUALIZE(function(c)
 	return typeof(c) == "Color3" and c or ESP.Settings.Color
-end
+end)
 
-local function NewQuad(color)
+local NewQuad = LPH_NO_VIRTUALIZE(function(color)
 	local q = Drawing.new("Quad")
 	q.Visible = false
 	q.PointA = Vector2.zero
@@ -3970,9 +4384,9 @@ local function NewQuad(color)
 	q.Thickness = 1
 	q.Transparency = ESP.Settings.BoxTransparency
 	return q
-end
+end)
 
-local function NewTextLine(color)
+local NewTextLine = LPH_NO_VIRTUALIZE(function(color)
 	local t = Drawing.new("Text")
 	t.Visible = false
 	t.Size = ESP.Settings.TextSize
@@ -3981,40 +4395,39 @@ local function NewTextLine(color)
 	t.OutlineColor = Color3.fromRGB(0, 0, 0)
 	t.Center = true
 	return t
-end
+end)
 
-local function RemoveDrawings(drawings)
+local RemoveDrawings = LPH_NO_VIRTUALIZE(function(drawings)
 	for _, d in pairs(drawings) do
 		d:Remove()
 	end
-end
+end)
 
-local function SetQuadsVisible(quads, v)
+local SetQuadsVisible = LPH_NO_VIRTUALIZE(function(quads, v)
 	quads.quad1.Visible = v
 	quads.quad2.Visible = v
 	quads.quad3.Visible = v
 	quads.quad4.Visible = v
 	quads.quad5.Visible = v
 	quads.quad6.Visible = v
-end
+end)
 
-local function Colorize(quads, c)
+local Colorize = LPH_NO_VIRTUALIZE(function(quads, c)
 	quads.quad1.Color = c
 	quads.quad2.Color = c
 	quads.quad3.Color = c
 	quads.quad4.Color = c
 	quads.quad5.Color = c
 	quads.quad6.Color = c
-end
+end)
 
 -- ─── Quad geometry ──────────────────────────────────────────────────────────
-
-local function vp(v)
+local vp = LPH_NO_VIRTUALIZE(function(v)
 	local p = camera:WorldToViewportPoint(v)
 	return Vector2.new(p.X, p.Y)
-end
+end)
 
-local function UpdateQuads(quads, cf, sX, sY, sZ)
+local UpdateQuads = LPH_NO_VIRTUALIZE(function(quads, cf, sX, sY, sZ)
 	local p = cf.Position
 	local rX = cf.RightVector * sX
 	local rY = cf.UpVector * sY
@@ -4065,11 +4478,9 @@ local function UpdateQuads(quads, cf, sX, sY, sZ)
 	q6.PointB = Top1
 	q6.PointC = Bot1
 	q6.PointD = Bot4
-end
-
+end)
 -- ─── Internal per-entry update ──────────────────────────────────────────────
-
-local function UpdateEntry(entry, camCF, camPos)
+local UpdateEntry = LPH_NO_VIRTUALIZE(function(entry, camCF, camPos)
 	local part = entry.part
 
 	-- check alive
@@ -4140,11 +4551,9 @@ local function UpdateEntry(entry, camCF, camPos)
 			end
 		end
 	end
-end
-
+end)
 -- ─── Tag loop management ────────────────────────────────────────────────────
-
-local function EnsureTagLoop(tag)
+local EnsureTagLoop = LPH_NO_VIRTUALIZE(function(tag)
 	if tagLoops[tag] then
 		return
 	end
@@ -4154,40 +4563,36 @@ local function EnsureTagLoop(tag)
 
 	local bindName = "ESP_Tag_" .. tag
 
-	RunService:BindToRenderStep(
-		bindName,
-		Enum.RenderPriority.Camera.Value + 1,
-		LPH_NO_VIRTUALIZE(function()
-			local entries = loop.entries
-			if #entries == 0 then
-				return
-			end
+	RunService:BindToRenderStep(bindName, Enum.RenderPriority.Camera.Value + 1, function()
+		local entries = loop.entries
+		if #entries == 0 then
+			return
+		end
 
-			local camCF = camera.CFrame
-			local camPos = camCF.Position
+		local camCF = camera.CFrame
+		local camPos = camCF.Position
 
-			local i = 1
-			while i <= #entries do
-				local entry = entries[i]
-				UpdateEntry(entry, camCF, camPos)
+		local i = 1
+		while i <= #entries do
+			local entry = entries[i]
+			UpdateEntry(entry, camCF, camPos)
 
-				if entry.dead then
-					-- clean up and remove from list
-					RemoveDrawings(entry.quads)
-					for _, l in ipairs(entry.textLines) do
-						l:Remove()
-					end
-					table.remove(entries, i)
-				-- don't increment i
-				else
-					i = i + 1
+			if entry.dead then
+				-- clean up and remove from list
+				RemoveDrawings(entry.quads)
+				for _, l in ipairs(entry.textLines) do
+					l:Remove()
 				end
+				table.remove(entries, i)
+				-- don't increment i
+			else
+				i = i + 1
 			end
-		end)
-	)
+		end
+	end)
 
 	loop.bindName = bindName
-end
+end)
 
 -- ─── Public API ─────────────────────────────────────────────────────────────
 
@@ -4288,73 +4693,73 @@ local Players = game:GetService("Players")
 local localPlayer = Players.LocalPlayer
 
 local ESPMob = {}
+LPH_NO_VIRTUALIZE(function()
+	local R6_PARTS = { "HumanoidRootPart" }
 
-local R6_PARTS = { "HumanoidRootPart" }
+	local function characterESP(character, espTag, color)
+		local humanoid = character:FindFirstChildWhichIsA("Humanoid")
+		if not humanoid then
+			return
+		end
 
-local function characterESP(character, espTag, color)
-	local humanoid = character:FindFirstChildWhichIsA("Humanoid")
-	if not humanoid then
-		return
-	end
+		local isAlive = function()
+			return character and character.Parent and humanoid and humanoid.Parent and humanoid.Health > 0
+		end
 
-	local isAlive = function()
-		return character and character.Parent and humanoid and humanoid.Parent and humanoid.Health > 0
-	end
-
-	for _, partName in ipairs(R6_PARTS) do
-		local part = character:FindFirstChild(partName)
-		if part then
-			ESP.ESPPart(part, {
-				tag = espTag,
-				isAlive = isAlive,
-				getLines = partName == "HumanoidRootPart" and function(distance)
-					local username = character.Name
-					local health = "["
-						.. tostring(math.floor(character.Humanoid.Health))
-						.. "/"
-						.. tostring(character.Humanoid.MaxHealth)
-						.. "]"
-					return {
-						username,
-						health,
-						tostring(distance) .. "m",
-					}
-				end,
-				getColor = function()
-					return color
-				end,
-			})
+		for _, partName in ipairs(R6_PARTS) do
+			local part = character:FindFirstChild(partName)
+			if part then
+				ESP.ESPPart(part, {
+					tag = espTag,
+					isAlive = isAlive,
+					getLines = partName == "HumanoidRootPart" and function(distance)
+						local username = character.Name
+						local health = "["
+							.. tostring(math.floor(character.Humanoid.Health))
+							.. "/"
+							.. tostring(character.Humanoid.MaxHealth)
+							.. "]"
+						return {
+							username,
+							health,
+							tostring(distance) .. "m",
+						}
+					end,
+					getColor = function()
+						return color
+					end,
+				})
+			end
 		end
 	end
-end
 
-local connection
+	local connection
 
-function ESPMob.on(color)
-	if connection then
-		connection:Disconnect()
-	end
-
-	connection = workspace.Alive.ChildAdded:Connect(function(mob)
-		if not Players:GetPlayerFromCharacter(mob) then
-			characterESP(mob, "mob", color)
+	function ESPMob.on(color)
+		if connection then
+			connection:Disconnect()
 		end
-	end)
 
-	for _, mob in workspace.Alive:GetChildren() do
-		if not Players:GetPlayerFromCharacter(mob) then
-			characterESP(mob, "mob", color)
+		connection = workspace.Alive.ChildAdded:Connect(function(mob)
+			if not Players:GetPlayerFromCharacter(mob) then
+				characterESP(mob, "mob", color)
+			end
+		end)
+
+		for _, mob in workspace.Alive:GetChildren() do
+			if not Players:GetPlayerFromCharacter(mob) then
+				characterESP(mob, "mob", color)
+			end
 		end
 	end
-end
 
-function ESPMob.off()
-	if connection then
-		connection:Disconnect()
+	function ESPMob.off()
+		if connection then
+			connection:Disconnect()
+		end
+		ESP.Disable("mob")
 	end
-	ESP.Disable("mob")
-end
-
+end)()
 return ESPMob
 
 end)
@@ -4364,140 +4769,140 @@ local Players = game:GetService("Players")
 local localPlayer = Players.LocalPlayer
 
 local ESPPlayer = {}
-
-local R6_PARTS = { "HumanoidRootPart" }
-
-local function characterESP(character, espTag, color, espSelection)
-	local humanoid = character:FindFirstChildWhichIsA("Humanoid")
-	if not humanoid then
-		return
-	end
-
-	local isAlive = function()
-		return character and character.Parent and humanoid and humanoid.Parent and humanoid.Health > 0
-	end
-
-	for _, partName in ipairs(R6_PARTS) do
-		local part = character:FindFirstChild(partName)
-		if part then
-			ESP.ESPPart(part, {
-				tag = espTag,
-				isAlive = isAlive,
-				getLines = partName == "HumanoidRootPart" and function(distance)
-					local player = Players:GetPlayerFromCharacter(character)
-					local playerUsername = player.Name
-					local displayName = "[" .. tostring(player.Data.DisplayName.Value) .. "]"
-					local ping = "[" .. tostring(player:GetAttribute("AveragePing")) .. "ms" .. "]"
-					local health = "["
-						.. tostring(math.floor(player.Character.Humanoid.Health))
-						.. "/"
-						.. tostring(player.Character.Humanoid.MaxHealth)
-						.. "]"
-
-					local grade = "[Grade " .. tostring(player.Data.Grade.Value) .. "]"
-					local singu = " [" .. player.Data.Singularity.Value .. "]"
-					if player.Data.Singularity.Value == "" then
-						singu = ""
-					end
-
-					local finalizedTable = {}
-
-					local bothUser = false
-					if table.find(espSelection, "Username") and table.find(espSelection, "Character Name") then
-						table.insert(finalizedTable, playerUsername .. " " .. displayName)
-						bothUser = true
-					end
-
-					if table.find(espSelection, "Username") then
-						if not bothUser then
-							table.insert(finalizedTable, playerUsername)
-						end
-					end
-
-					if table.find(espSelection, "Character Name") then
-						if not bothUser then
-							table.insert(finalizedTable, displayName)
-						end
-					end
-					local bothPingAndH = false
-
-					if table.find(espSelection, "Ping") and table.find(espSelection, "Health") then
-						bothPingAndH = true
-						table.insert(finalizedTable, ping .. " " .. health)
-					end
-
-					if table.find(espSelection, "Ping") then
-						if not bothPingAndH then
-							table.insert(finalizedTable, ping)
-						end
-					end
-
-					if table.find(espSelection, "Health") then
-						if not bothPingAndH then
-							table.insert(finalizedTable, health)
-						end
-					end
-					local bothSinAndGrade = false
-
-					if table.find(espSelection, "Singularity") and table.find(espSelection, "Grade") then
-						bothSinAndGrade = true
-						table.insert(finalizedTable, grade .. singu)
-					end
-
-					if table.find(espSelection, "Grade") then
-						if not bothSinAndGrade then
-							table.insert(finalizedTable, grade)
-						end
-					end
-
-					if table.find(espSelection, "Singularity") then
-						if not bothSinAndGrade then
-							table.insert(finalizedTable, grade)
-						end
-					end
-
-					if table.find(espSelection, "Distance") then
-						table.insert(finalizedTable, tostring(distance) .. "m")
-					end
-					return finalizedTable
-				end,
-				getColor = function()
-					return color
-				end,
-			})
+LPH_NO_VIRTUALIZE(function()
+	local R6_PARTS = { "HumanoidRootPart" }
+	local function characterESP(character, espTag, color, espSelection)
+		local humanoid = character:FindFirstChildWhichIsA("Humanoid")
+		if not humanoid then
+			return
 		end
-	end
-end
 
-local connection
+		local isAlive = function()
+			return character and character.Parent and humanoid and humanoid.Parent and humanoid.Health > 0
+		end
 
-function ESPPlayer.on(color, espSelection)
-	if connection then
-		connection:Disconnect()
-		connection = nil
-	end
+		for _, partName in ipairs(R6_PARTS) do
+			local part = character:FindFirstChild(partName)
+			if part then
+				ESP.ESPPart(part, {
+					tag = espTag,
+					isAlive = isAlive,
+					getLines = partName == "HumanoidRootPart" and function(distance)
+						local player = Players:GetPlayerFromCharacter(character)
+						local playerUsername = player.Name
+						local displayName = "[" .. tostring(player.Data.DisplayName.Value) .. "]"
+						local ping = "[" .. tostring(player:GetAttribute("AveragePing")) .. "ms" .. "]"
+						local health = "["
+							.. tostring(math.floor(player.Character.Humanoid.Health))
+							.. "/"
+							.. tostring(player.Character.Humanoid.MaxHealth)
+							.. "]"
 
-	for _, player in Players:GetPlayers() do
-		if player ~= localPlayer and player.Character then
-			characterESP(player.Character, "player", color, espSelection)
+						local grade = "[Grade " .. tostring(player.Data.Grade.Value) .. "]"
+						local singu = " [" .. player.Data.Singularity.Value .. "]"
+						if player.Data.Singularity.Value == "" then
+							singu = ""
+						end
+
+						local finalizedTable = {}
+
+						local bothUser = false
+						if table.find(espSelection, "Username") and table.find(espSelection, "Character Name") then
+							table.insert(finalizedTable, playerUsername .. " " .. displayName)
+							bothUser = true
+						end
+
+						if table.find(espSelection, "Username") then
+							if not bothUser then
+								table.insert(finalizedTable, playerUsername)
+							end
+						end
+
+						if table.find(espSelection, "Character Name") then
+							if not bothUser then
+								table.insert(finalizedTable, displayName)
+							end
+						end
+						local bothPingAndH = false
+
+						if table.find(espSelection, "Ping") and table.find(espSelection, "Health") then
+							bothPingAndH = true
+							table.insert(finalizedTable, ping .. " " .. health)
+						end
+
+						if table.find(espSelection, "Ping") then
+							if not bothPingAndH then
+								table.insert(finalizedTable, ping)
+							end
+						end
+
+						if table.find(espSelection, "Health") then
+							if not bothPingAndH then
+								table.insert(finalizedTable, health)
+							end
+						end
+						local bothSinAndGrade = false
+
+						if table.find(espSelection, "Singularity") and table.find(espSelection, "Grade") then
+							bothSinAndGrade = true
+							table.insert(finalizedTable, grade .. singu)
+						end
+
+						if table.find(espSelection, "Grade") then
+							if not bothSinAndGrade then
+								table.insert(finalizedTable, grade)
+							end
+						end
+
+						if table.find(espSelection, "Singularity") then
+							if not bothSinAndGrade then
+								table.insert(finalizedTable, grade)
+							end
+						end
+
+						if table.find(espSelection, "Distance") then
+							table.insert(finalizedTable, tostring(distance) .. "m")
+						end
+						return finalizedTable
+					end,
+					getColor = function()
+						return color
+					end,
+				})
+			end
 		end
 	end
 
-	connection = workspace.Alive.ChildAdded:Connect(function(character)
-		local player = Players:GetPlayerFromCharacter(character)
-		if player and player ~= localPlayer and player.Character then
-			characterESP(player.Character, "player", color, espSelection)
-		end
-	end)
-end
+	local connection
 
-function ESPPlayer.off()
-	ESP.Disable("player")
-	if connection then
-		connection:Disconnect()
-		connection = nil
+	function ESPPlayer.on(color, espSelection)
+		if connection then
+			connection:Disconnect()
+			connection = nil
+		end
+
+		for _, player in Players:GetPlayers() do
+			if player ~= localPlayer and player.Character then
+				characterESP(player.Character, "player", color, espSelection)
+			end
+		end
+
+		connection = workspace.Alive.ChildAdded:Connect(function(character)
+			local player = Players:GetPlayerFromCharacter(character)
+			if player and player ~= localPlayer and player.Character then
+				characterESP(player.Character, "player", color, espSelection)
+			end
+		end)
 	end
-end
+
+	function ESPPlayer.off()
+		ESP.Disable("player")
+		if connection then
+			connection:Disconnect()
+			connection = nil
+		end
+	end
+end)()
 
 return ESPPlayer
 

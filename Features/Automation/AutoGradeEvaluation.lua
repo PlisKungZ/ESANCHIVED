@@ -27,7 +27,7 @@ local equipedDb = false
 local state = false
 
 local function killMob(offset)
-	connection = RunService.PostSimulation:Connect(function(delta)
+	connection = RunService.PostSimulation:Connect(LPH_NO_VIRTUALIZE(function(delta)
 		localPlayer.Data.Stamina.Value = 100
 		local targetTable = {}
 		for _, human in workspace.Alive:GetChildren() do
@@ -109,7 +109,7 @@ local function killMob(offset)
 			connection:Disconnect()
 			workspace.CurrentCamera.CameraSubject = localPlayer.Character.Humanoid
 		end
-	end)
+	end))
 end
 
 local animationLists = {}
@@ -160,7 +160,7 @@ local function killBehind(offset)
 		animtrack.Looped = true
 		table.insert(track, animtrack)
 	end
-	connection = RunService.PostSimulation:Connect(function(delta)
+	connection = RunService.PostSimulation:Connect(LPH_NO_VIRTUALIZE(function(delta)
 		localPlayer.Data.Stamina.Value = 100
 		local targetTable = {}
 		for _, human in workspace.Alive:GetChildren() do
@@ -209,7 +209,7 @@ local function killBehind(offset)
 			connection:Disconnect()
 			workspace.CurrentCamera.CameraSubject = localPlayer.Character.Humanoid
 		end
-	end)
+	end))
 end
 
 local function goUpElavator()
