@@ -42,6 +42,8 @@ local function fetchAutoSellCategory()
 	return tabled
 end
 
+local notSellAbleLists = {}
+
 getgenv().getSellLists = function(translatedItems, mode)
 	local tabled = {}
 	local modesLists = {
@@ -51,6 +53,9 @@ getgenv().getSellLists = function(translatedItems, mode)
 					not table.find(translatedItems, item.Name:lower())
 					and item:FindFirstChild("SellPrice")
 					and not table.find(fetchAutoSellCategory(), item:GetAttribute("ItemCategory"))
+					and not item:FindFirstChild("SingularityStored")
+					and item.Name ~= "Singularity"
+					and not table.find(notSellAbleLists, item.Name)
 				then
 					if item:FindFirstChild("SellPrice").Value ~= 0 then
 						if not table.find(tabled, item.Name) then
@@ -66,6 +71,9 @@ getgenv().getSellLists = function(translatedItems, mode)
 					table.find(translatedItems, item.Name:lower())
 					and item:FindFirstChild("SellPrice")
 					and table.find(fetchAutoSellCategory(), item:GetAttribute("ItemCategory"))
+					and not item:FindFirstChild("SingularityStored")
+					and item.Name ~= "Singularity"
+					and not table.find(notSellAbleLists, item.Name)
 				then
 					if item:FindFirstChild("SellPrice").Value ~= 0 then
 						if not table.find(tabled, item.Name) then
@@ -128,6 +136,7 @@ function autoSell.on(mode, items)
 				end
 
 				item.Parent = localPlayer.Character
+				countdown = false
 				repeat
 					clickButton("Can")
 					clickButton("All")
@@ -140,7 +149,16 @@ function autoSell.on(mode, items)
 						db = false
 						return
 					end
-					task.wait()
+					task.wait(0.5)
+					if not countdown then
+						countdown = true
+						task.delay(2, function()
+							if item.Parent then
+								db = false
+								table.insert(notSellAbleLists, item.Name)
+							end
+						end)
+					end
 				until not item.Parent
 			end
 			db = false
@@ -178,6 +196,7 @@ function autoSell.on(mode, items)
 				end
 
 				item.Parent = localPlayer.Character
+				local countdown = false
 				repeat
 					clickButton("Can")
 					clickButton("All")
@@ -190,7 +209,16 @@ function autoSell.on(mode, items)
 						db = false
 						return
 					end
-					task.wait()
+					task.wait(0.5)
+					if not countdown then
+						countdown = true
+						task.delay(2, function()
+							if item.Parent then
+								db = false
+								table.insert(notSellAbleLists, item.Name)
+							end
+						end)
+					end
 				until not item.Parent
 			end
 			db = false

@@ -347,16 +347,16 @@ function AutoLCorpBosses.on()
 			else
 				local clickExtract = false
 				repeat
-					task.wait(1.25)
+					task.wait(1)
 					localPlayer.Character:PivotTo(CFrame.new(103.09710693359375, 981.3513793945312, -84.36695098876953))
 				until workspace.NPCS:FindFirstChild("Elevator Door")
 				repeat
-					task.wait(1.25)
+					task.wait()
 					workspace.NPCS["Elevator Door"].TalkToNPC:FireServer()
+					localPlayer.Character:PivotTo(CFrame.new(103.09710693359375, 981.3513793945312, -84.36695098876953))
 					if clickButton("Extract") then
 						clickExtract = true
 					end
-					localPlayer.Character:PivotTo(CFrame.new(103.09710693359375, 981.3513793945312, -84.36695098876953))
 				until clickExtract
 			end
 			db = false

@@ -65,6 +65,19 @@ local bossWaited = false
 local pressedOrdeal = false
 local teleported = false
 local gripDebounce = false
+local pickingUpItem = false
+
+local function getDroppedItems()
+	local tabled = {}
+	for _, item in workspace.Thrown:GetChildren() do
+		for _, prompt in item:GetDescendants() do
+			if prompt:IsA("ProximityPrompt") and localPlayer:DistanceFromCharacter(item:GetPivot().Position) < 500 then
+				table.insert(tabled, item)
+			end
+		end
+	end
+	return tabled
+end
 
 function AutoLibrary.on(offset, floor, buff)
 	AutoLibrary.off()
@@ -309,16 +322,21 @@ function AutoLibrary.on(offset, floor, buff)
 			end
 			local offset = Vector3.new(0, -Options.autoLibYOffset.Value, 0)
 
-			if targetTable[1]:FindFirstChild("Knocked") and not gripDebounce then
-				gripDebounce = true
-				localPlayer.Character.HumanoidRootPart:PivotTo(targetTable[1].HumanoidRootPart.CFrame)
-				game:GetService("ReplicatedStorage")
-					:WaitForChild("Events")
-					:WaitForChild("Grip")
-					:FireServer(localPlayer.Character)
-				task.delay(1, function()
-					gripDebounce = false
-				end)
+			if targetTable[1]:FindFirstChild("Knocked") then
+				if not gripDebounce then
+					gripDebounce = true
+					game:GetService("ReplicatedStorage")
+						:WaitForChild("Events")
+						:WaitForChild("Grip")
+						:FireServer(localPlayer.Character)
+					task.delay(1, function()
+						gripDebounce = false
+					end)
+				end
+				localPlayer.Character.HumanoidRootPart:PivotTo(
+					targetTable[1].HumanoidRootPart.CFrame + Vector3.new(0, 1, 0)
+				)
+				return
 			end
 
 			if targetTable[1]:FindFirstChild("GettingGripped") then
@@ -339,6 +357,44 @@ function AutoLibrary.on(offset, floor, buff)
 			localPlayer.Character.HumanoidRootPart.AssemblyAngularVelocity = Vector3.zero
 			localPlayer.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Ragdoll, false)
 		else
+			if pickingUpItem then
+				return
+			end
+			local droppedItems = getDroppedItems()
+			if #droppedItems ~= 0 then
+				pickingUpItem = true
+				for _, item in droppedItems do
+					if not connection then
+						pickingUpItem = false
+						return
+					end
+					for _, prompt in item:GetDescendants() do
+						if not connection then
+							pickingUpItem = false
+							return
+						end
+						if prompt:IsA("ProximityPrompt") then
+							localPlayer.Character:PivotTo(item:GetPivot())
+							fireproximityprompt(prompt)
+							if not connection then
+								pickingUpItem = false
+								return
+							end
+							repeat
+								if not connection then
+									pickingUpItem = false
+									return
+								end
+								localPlayer.Character:PivotTo(item:GetPivot())
+								fireproximityprompt(prompt)
+								task.wait()
+							until not item.Parent
+						end
+					end
+				end
+				pickingUpItem = false
+			end
+
 			if not teleported then
 				teleported = true
 				equipDebounce = false

@@ -1,103 +1,113 @@
-local HttpService = game:GetService("HttpService")
-local Players = game:GetService("Players")
-local localPlayer = Players.LocalPlayer
-
-function sendWebhook()
-	local inventory = ""
-	local itemNames = {}
-	for _, item in localPlayer.Backpack:GetChildren() do
-		if item:IsA("Tool") then
-			if not itemNames[item.Name] then
-				itemNames[item.Name] = 1
-			else
-				itemNames[item.Name] = itemNames[item.Name] + 1
-			end
+getgenv().hooked = true
+print("runned")
+local oldCd
+repeat
+	task.wait()
+until getrenv()._G.HandleCD
+oldCd = hookfunction(
+	getrenv()._G.HandleCD,
+	newcclosure(function(...)
+		if getgenv().hooked then
+			return
 		end
-	end
-
-	local categorized = {}
-	for itemName, amount in itemNames do
-		local item = localPlayer.Backpack:FindFirstChild(itemName)
-		if item then
-			if not categorized[item:GetAttribute("ItemCategory")] then
-				categorized[item:GetAttribute("ItemCategory")] = {}
-				table.insert(
-					categorized[item:GetAttribute("ItemCategory")],
-					{ ["Name"] = itemName, ["Amount"] = amount }
-				)
-			else
-				table.insert(
-					categorized[item:GetAttribute("ItemCategory")],
-					{ ["Name"] = itemName, ["Amount"] = amount }
-				)
-			end
+		return oldCd(...)
+	end)
+)
+repeat
+	task.wait()
+until getrenv()._G.PriorityCD
+local oldProrityCD
+oldProrityCD = hookfunction(
+	getrenv()._G.PriorityCD,
+	newcclosure(function(...)
+		if getgenv().hooked then
+			return
 		end
+		return oldProrityCD(...)
+	end)
+)
+
+for _, script in getloadedmodules() do
+	if script.Name == "CoolDownModule" then
+		local oldSkillCD
+		oldSkillCD = hookfunction(
+			require(script)["CD"],
+			newcclosure(function(character, tool, cooldown)
+				if getgenv().hooked then
+					return oldSkillCD(character, tool, cooldown / 2)
+				end
+				return oldSkillCD(character, tool, cooldown)
+			end)
+		)
 	end
-
-	local headers = {
-		["Content-Type"] = "application/json",
-	}
-	local embed = {
-		["title"] = "Telepathy Overload | Archived",
-		["description"] = "",
-		["color"] = 65280,
-		["fields"] = {
-			{
-				["name"] = "Player Info",
-				["value"] = string.format(
-					"**Username** : ||%s||\n**Slot Order** : %s\n**Ahn** : %s\n**Lunacy** : %s",
-					localPlayer.Name,
-					localPlayer:GetAttribute("Slot"),
-					localPlayer.PlayerGui.CurrencyGUI.List.Ahn.Amount.Text,
-					localPlayer.PlayerGui.CurrencyGUI.List.Lunacy.Amount.Text
-				),
-			},
-			{
-				["name"] = "Player Inventory",
-				["value"] = inventory,
-			},
-		},
-		["footer"] = {
-			["text"] = "📦 Archived • " .. os.date("%m/%d/%Y %I:%M %p"),
-		},
-		["timestamp"] = os.date("!%Y-%m-%dT%H:%M:%SZ"),
-	}
-
-	local isInserted = {}
-
-	for categoryName, items in categorized do
-		print(categoryName)
-		if not table.find(isInserted, categoryName) then
-			table.insert(isInserted, categoryName)
-			local text = ""
-			for _, item in items do
-				text = text .. string.format(" %s %sx\n", item.Name, item.Amount)
+end
+for _, v in getconnections(game:GetService("CollectionService"):GetInstanceAddedSignal("OnCD")) do
+	local handler
+	handler = hookfunction(
+		v.Function,
+		newcclosure(function(...)
+			if getgenv().hooked then
+				return
 			end
-			table.insert(embed.fields, { ["name"] = categoryName, ["value"] = text })
-		end
-	end
-
-	local data = {
-		["content"] = "kuy rai sus",
-		["embeds"] = {
-			{
-				["title"] = embed.title,
-				["description"] = embed.description,
-				["color"] = embed.color,
-				["fields"] = embed.fields,
-				["footer"] = {
-					["text"] = embed.footer.text,
-				},
-			},
-		},
-	}
-	local body = HttpService:JSONEncode(data)
-	local response = request({
-		Url = url,
-		Method = "POST",
-		Headers = headers,
-		Body = body,
-	})
+			return handler(...)
+		end)
+	)
 end
 
-sendWebhook()
+local hookedLists = {}
+
+local function hookCD(tool)
+	if table.find(hookedLists, tool) then
+		return
+	end
+	local targetRemote = tool:FindFirstChild("RemoteEvent")
+	if not targetRemote or not tool:GetAttribute("CD") then
+		return
+	end
+	table.insert(hookedLists, tool)
+
+	local oldFireServer
+	oldFireServer = hookfunction(
+		targetRemote.FireServer,
+		newcclosure(function(self, ...)
+			if self == targetRemote and getgenv().hooked then
+				print("CD FIRE MODIFIED", ...)
+				local args = { ... }
+				args[1] = args[1] / 2
+				return oldFireServer(self, table.unpack(args)) -- ✅ sends 0 to server instead
+			else
+				return oldFireServer(self, ...)
+			end
+		end)
+	)
+end
+
+for _, tool in game.Players.LocalPlayer.Backpack:GetChildren() do
+	hookCD(tool)
+end
+
+game.Players.LocalPlayer.Backpack.ChildAdded:Connect(function(tool)
+	hookCD(tool)
+end)
+
+local oldTaskDelay = task.delay
+
+makewritable(task)
+
+oldTaskDelay = hookfunction(
+	task.delay,
+	newcclosure(function(t, f, ...)
+		local caller = getcallingscript()
+		if
+			caller
+			and caller.Parent
+			and caller.Parent:IsA("Tool")
+			and caller.Parent:GetAttribute("CD")
+			and getgenv().hooked
+		then
+			print("halved", caller:GetFullName())
+			return oldTaskDelay(t / 2, f, ...)
+		end
+		return oldTaskDelay(t, f, ...)
+	end)
+)

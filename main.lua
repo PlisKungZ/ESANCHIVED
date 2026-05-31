@@ -121,6 +121,7 @@ local AutomationTab = require("Menu/Automation")
 local RemovalTab = require("Menu/Removal")
 local TrollTab = require("Menu/Troll")
 local TeleportationTab = require("Menu/Teleportation")
+local AutoOpenCacheTab = require("Menu/AutoOpenCache")
 local AutoSellTab = require("Menu/AutoSell")
 local webhookTab = require("Menu/Webhook")
 
@@ -165,6 +166,7 @@ LPH_NO_VIRTUALIZE(function()
 	RemovalTab.init(GUI, Window)
 	TrollTab.init(GUI, Window)
 	AutoSellTab.init(GUI, Window)
+	AutoOpenCacheTab.init()
 	AutomationTab.init(GUI, Window)
 	webhookTab.init()
 	local Tabs = {
@@ -201,10 +203,6 @@ LPH_NO_VIRTUALIZE(function()
 		Content = "Invite is set to your clipboard join in.",
 		Duration = 8,
 	})
-	setclipboard("https://discord.gg/8Ae4Axagq6")
-	if request then
-		request({ Url = "https://discord.gg/8Ae4Axagq6" })
-	end
 	task.spawn(function()
 		while true do
 			task.wait(1)

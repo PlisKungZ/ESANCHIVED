@@ -84,7 +84,11 @@ local function getDroppedItems()
 	local tabled = {}
 	for _, item in workspace.Thrown:GetChildren() do
 		for _, prompt in item:GetDescendants() do
-			if prompt:IsA("ProximityPrompt") and prompt.ObjectText:find("Serum") then
+			if
+				prompt:IsA("ProximityPrompt")
+				and localPlayer:DistanceFromCharacter(item:GetPivot().Position) < 300
+				and item.Name ~= "DestroyedParts"
+			then
 				table.insert(tabled, item)
 			end
 		end
@@ -313,6 +317,7 @@ local function killMob(offset)
 						end
 						if prompt:IsA("ProximityPrompt") then
 							localPlayer.Character:PivotTo(item:GetPivot())
+							print(item:GetFullName())
 							fireproximityprompt(prompt)
 							if not connection then
 								pickingUpItem = false
@@ -325,7 +330,7 @@ local function killMob(offset)
 								end
 								localPlayer.Character:PivotTo(item:GetPivot())
 								fireproximityprompt(prompt)
-								task.wait()
+								task.wait(0.5)
 							until not item.Parent
 						end
 					end

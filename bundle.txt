@@ -165,6 +165,7 @@ local AutomationTab = require("Menu/Automation")
 local RemovalTab = require("Menu/Removal")
 local TrollTab = require("Menu/Troll")
 local TeleportationTab = require("Menu/Teleportation")
+local AutoOpenCacheTab = require("Menu/AutoOpenCache")
 local AutoSellTab = require("Menu/AutoSell")
 local webhookTab = require("Menu/Webhook")
 
@@ -209,6 +210,7 @@ LPH_NO_VIRTUALIZE(function()
 	RemovalTab.init(GUI, Window)
 	TrollTab.init(GUI, Window)
 	AutoSellTab.init(GUI, Window)
+	AutoOpenCacheTab.init()
 	AutomationTab.init(GUI, Window)
 	webhookTab.init()
 	local Tabs = {
@@ -245,10 +247,6 @@ LPH_NO_VIRTUALIZE(function()
 		Content = "Invite is set to your clipboard join in.",
 		Duration = 8,
 	})
-	setclipboard("https://discord.gg/8Ae4Axagq6")
-	if request then
-		request({ Url = "https://discord.gg/8Ae4Axagq6" })
-	end
 	task.spawn(function()
 		while true do
 			task.wait(1)
@@ -572,6 +570,8 @@ local function fetchAutoSellCategory()
 	return tabled
 end
 
+local notSellAbleLists = {}
+
 getgenv().getSellLists = function(translatedItems, mode)
 	local tabled = {}
 	local modesLists = {
@@ -581,6 +581,9 @@ getgenv().getSellLists = function(translatedItems, mode)
 					not table.find(translatedItems, item.Name:lower())
 					and item:FindFirstChild("SellPrice")
 					and not table.find(fetchAutoSellCategory(), item:GetAttribute("ItemCategory"))
+					and not item:FindFirstChild("SingularityStored")
+					and item.Name ~= "Singularity"
+					and not table.find(notSellAbleLists, item.Name)
 				then
 					if item:FindFirstChild("SellPrice").Value ~= 0 then
 						if not table.find(tabled, item.Name) then
@@ -596,6 +599,9 @@ getgenv().getSellLists = function(translatedItems, mode)
 					table.find(translatedItems, item.Name:lower())
 					and item:FindFirstChild("SellPrice")
 					and table.find(fetchAutoSellCategory(), item:GetAttribute("ItemCategory"))
+					and not item:FindFirstChild("SingularityStored")
+					and item.Name ~= "Singularity"
+					and not table.find(notSellAbleLists, item.Name)
 				then
 					if item:FindFirstChild("SellPrice").Value ~= 0 then
 						if not table.find(tabled, item.Name) then
@@ -658,6 +664,7 @@ function autoSell.on(mode, items)
 				end
 
 				item.Parent = localPlayer.Character
+				countdown = false
 				repeat
 					clickButton("Can")
 					clickButton("All")
@@ -670,7 +677,16 @@ function autoSell.on(mode, items)
 						db = false
 						return
 					end
-					task.wait()
+					task.wait(0.5)
+					if not countdown then
+						countdown = true
+						task.delay(2, function()
+							if item.Parent then
+								db = false
+								table.insert(notSellAbleLists, item.Name)
+							end
+						end)
+					end
 				until not item.Parent
 			end
 			db = false
@@ -708,6 +724,7 @@ function autoSell.on(mode, items)
 				end
 
 				item.Parent = localPlayer.Character
+				local countdown = false
 				repeat
 					clickButton("Can")
 					clickButton("All")
@@ -720,7 +737,16 @@ function autoSell.on(mode, items)
 						db = false
 						return
 					end
-					task.wait()
+					task.wait(0.5)
+					if not countdown then
+						countdown = true
+						task.delay(2, function()
+							if item.Parent then
+								db = false
+								table.insert(notSellAbleLists, item.Name)
+							end
+						end)
+					end
 				until not item.Parent
 			end
 			db = false
@@ -777,6 +803,121 @@ function autoSell.off()
 end
 
 return autoSell
+
+end)
+__bundle_register("Menu/AutoOpenCache", function(require, _LOADED, __bundle_register, __bundle_modules)
+local AutoOpenContainerReq = require("Features/AutoOpenContainer/AutoOpenContainer")
+
+local AutoOpenCache = {}
+
+function AutoOpenCache.init()
+	LPH_NO_VIRTUALIZE(function()
+		local Tab = window:AddTab({ Title = "Auto Open Container", Icon = "" })
+
+		local autoOpenContainer = Tab:AddToggle("autoOpenContainer", { Title = "Auto Open Container", Default = false })
+
+		autoOpenContainer:OnChanged(function()
+			if Options.autoOpenContainer.Value and #Options.autoOpenContainerSelection.Values ~= 0 then
+				AutoOpenContainerReq.on()
+			else
+				AutoOpenContainerReq.off()
+			end
+		end)
+
+		local autoOpenContainerSelection = Tab:AddDropdown("autoOpenContainerSelection", {
+			Title = "Auto Open Container Selection",
+			Values = {
+				"Caches",
+				"Seed Of Light",
+				"Fixer's Note",
+				"Exp Ticket",
+			},
+			Multi = true,
+			Default = {},
+		})
+	end)()
+end
+
+return AutoOpenCache
+
+end)
+__bundle_register("Features/AutoOpenContainer/AutoOpenContainer", function(require, _LOADED, __bundle_register, __bundle_modules)
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+
+local localPlayer = Players.LocalPlayer
+
+local AutoOpenContainer = {}
+
+local connection
+local onCd = false
+
+local itemListsKeyword = {
+	["Caches"] = "Cache",
+	["Seed Of Light"] = "Seed Of Light",
+	["Fixer's Note"] = "Fixer's Note",
+	["Exp Ticket"] = "Training Ticket",
+}
+
+local ignoreLists = {}
+
+function AutoOpenContainer.on()
+	AutoOpenContainer.off()
+	connection = RunService.Heartbeat:Connect(function(deltaTime)
+		if onCd then
+			return
+		end
+		local oldTool = localPlayer.Character:FindFirstAncestorWhichIsA("Tool")
+		if oldTool then
+			oldTool.Parent = localPlayer.Backpack
+		end
+		onCd = true
+		for _, item in localPlayer.Backpack:GetChildren() do
+			for _, value in Options.autoOpenContainerSelection.Values do
+				if
+					item.Name:find(itemListsKeyword[value])
+					and not item:FindFirstChild("SingularityStored")
+					and not table.find(ignoreLists, item)
+				then
+					if not connection then
+						break
+					end
+					local failSafe = false
+					local breakLoop = false
+					repeat
+						if not connection then
+							break
+						end
+						if breakLoop then
+							break
+						end
+						task.wait()
+						item.Parent = localPlayer.Character
+						firesignal(item.Activated)
+						if not failSafe then
+							failSafe = true
+							task.delay(5, function()
+								if item.Parent then
+									breakLoop = true
+									table.insert(ignoreLists, item)
+								end
+							end)
+						end
+					until not item.Parent
+				end
+			end
+		end
+		onCd = false
+	end)
+end
+
+function AutoOpenContainer.off()
+	if connection then
+		connection:Disconnect()
+	end
+end
+
+return AutoOpenContainer
 
 end)
 __bundle_register("Menu/Teleportation", function(require, _LOADED, __bundle_register, __bundle_modules)
@@ -2345,16 +2486,16 @@ function AutoLCorpBosses.on()
 			else
 				local clickExtract = false
 				repeat
-					task.wait(1.25)
+					task.wait(1)
 					localPlayer.Character:PivotTo(CFrame.new(103.09710693359375, 981.3513793945312, -84.36695098876953))
 				until workspace.NPCS:FindFirstChild("Elevator Door")
 				repeat
-					task.wait(1.25)
+					task.wait()
 					workspace.NPCS["Elevator Door"].TalkToNPC:FireServer()
+					localPlayer.Character:PivotTo(CFrame.new(103.09710693359375, 981.3513793945312, -84.36695098876953))
 					if clickButton("Extract") then
 						clickExtract = true
 					end
-					localPlayer.Character:PivotTo(CFrame.new(103.09710693359375, 981.3513793945312, -84.36695098876953))
 				until clickExtract
 			end
 			db = false
@@ -2939,7 +3080,11 @@ local function getDroppedItems()
 	local tabled = {}
 	for _, item in workspace.Thrown:GetChildren() do
 		for _, prompt in item:GetDescendants() do
-			if prompt:IsA("ProximityPrompt") and prompt.ObjectText:find("Serum") then
+			if
+				prompt:IsA("ProximityPrompt")
+				and localPlayer:DistanceFromCharacter(item:GetPivot().Position) < 300
+				and item.Name ~= "DestroyedParts"
+			then
 				table.insert(tabled, item)
 			end
 		end
@@ -3168,6 +3313,7 @@ local function killMob(offset)
 						end
 						if prompt:IsA("ProximityPrompt") then
 							localPlayer.Character:PivotTo(item:GetPivot())
+							print(item:GetFullName())
 							fireproximityprompt(prompt)
 							if not connection then
 								pickingUpItem = false
@@ -3180,7 +3326,7 @@ local function killMob(offset)
 								end
 								localPlayer.Character:PivotTo(item:GetPivot())
 								fireproximityprompt(prompt)
-								task.wait()
+								task.wait(0.5)
 							until not item.Parent
 						end
 					end
@@ -3646,6 +3792,19 @@ local bossWaited = false
 local pressedOrdeal = false
 local teleported = false
 local gripDebounce = false
+local pickingUpItem = false
+
+local function getDroppedItems()
+	local tabled = {}
+	for _, item in workspace.Thrown:GetChildren() do
+		for _, prompt in item:GetDescendants() do
+			if prompt:IsA("ProximityPrompt") and localPlayer:DistanceFromCharacter(item:GetPivot().Position) < 500 then
+				table.insert(tabled, item)
+			end
+		end
+	end
+	return tabled
+end
 
 function AutoLibrary.on(offset, floor, buff)
 	AutoLibrary.off()
@@ -3890,16 +4049,21 @@ function AutoLibrary.on(offset, floor, buff)
 			end
 			local offset = Vector3.new(0, -Options.autoLibYOffset.Value, 0)
 
-			if targetTable[1]:FindFirstChild("Knocked") and not gripDebounce then
-				gripDebounce = true
-				localPlayer.Character.HumanoidRootPart:PivotTo(targetTable[1].HumanoidRootPart.CFrame)
-				game:GetService("ReplicatedStorage")
-					:WaitForChild("Events")
-					:WaitForChild("Grip")
-					:FireServer(localPlayer.Character)
-				task.delay(1, function()
-					gripDebounce = false
-				end)
+			if targetTable[1]:FindFirstChild("Knocked") then
+				if not gripDebounce then
+					gripDebounce = true
+					game:GetService("ReplicatedStorage")
+						:WaitForChild("Events")
+						:WaitForChild("Grip")
+						:FireServer(localPlayer.Character)
+					task.delay(1, function()
+						gripDebounce = false
+					end)
+				end
+				localPlayer.Character.HumanoidRootPart:PivotTo(
+					targetTable[1].HumanoidRootPart.CFrame + Vector3.new(0, 1, 0)
+				)
+				return
 			end
 
 			if targetTable[1]:FindFirstChild("GettingGripped") then
@@ -3920,6 +4084,44 @@ function AutoLibrary.on(offset, floor, buff)
 			localPlayer.Character.HumanoidRootPart.AssemblyAngularVelocity = Vector3.zero
 			localPlayer.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Ragdoll, false)
 		else
+			if pickingUpItem then
+				return
+			end
+			local droppedItems = getDroppedItems()
+			if #droppedItems ~= 0 then
+				pickingUpItem = true
+				for _, item in droppedItems do
+					if not connection then
+						pickingUpItem = false
+						return
+					end
+					for _, prompt in item:GetDescendants() do
+						if not connection then
+							pickingUpItem = false
+							return
+						end
+						if prompt:IsA("ProximityPrompt") then
+							localPlayer.Character:PivotTo(item:GetPivot())
+							fireproximityprompt(prompt)
+							if not connection then
+								pickingUpItem = false
+								return
+							end
+							repeat
+								if not connection then
+									pickingUpItem = false
+									return
+								end
+								localPlayer.Character:PivotTo(item:GetPivot())
+								fireproximityprompt(prompt)
+								task.wait()
+							until not item.Parent
+						end
+					end
+				end
+				pickingUpItem = false
+			end
+
 			if not teleported then
 				teleported = true
 				equipDebounce = false
