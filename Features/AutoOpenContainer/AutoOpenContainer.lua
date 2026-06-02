@@ -12,7 +12,7 @@ local itemListsKeyword = {
 	["Caches"] = "Cache",
 	["Seed Of Light"] = "Seed Of Light",
 	["Fixer's Note"] = "Fixer's Note",
-	["Exp Ticket"] = "Training Ticket",
+	["Exp Ticket"] = "Training",
 }
 
 local ignoreLists = {}
@@ -20,6 +20,11 @@ local ignoreLists = {}
 function AutoOpenContainer.on()
 	AutoOpenContainer.off()
 	connection = RunService.Heartbeat:Connect(function(deltaTime)
+		localPlayer.PlayerGui.PageSelection.Enabled = false
+		local usedBook = localPlayer.Character:FindFirstChild("UsedBook")
+		if usedBook then
+			usedBook:Destroy()
+		end
 		if onCd then
 			return
 		end
@@ -48,7 +53,6 @@ function AutoOpenContainer.on()
 							break
 						end
 						task.wait()
-						item.Parent = localPlayer.Character
 						firesignal(item.Activated)
 						if not failSafe then
 							failSafe = true
@@ -71,6 +75,7 @@ function AutoOpenContainer.off()
 	if connection then
 		connection:Disconnect()
 	end
+	localPlayer.PlayerGui.PageSelection.Enabled = true
 end
 
 return AutoOpenContainer

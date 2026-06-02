@@ -401,7 +401,7 @@ function AutoLibrary.on(offset, floor, buff)
 				localPlayer.Character.HumanoidRootPart:PivotTo(safeZone[floor])
 				game:GetService("ReplicatedStorage").Events.Equip:FireServer(false)
 				for _, animTrack in track do
-					animTrack:AdjustSpeed(0)
+					animTrack:Stop()
 				end
 				workspace.CurrentCamera.CameraSubject = localPlayer.Character.Humanoid
 				localPlayer.Character:PivotTo(safeZone[floor])

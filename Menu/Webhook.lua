@@ -64,7 +64,7 @@ local function sendWebhook()
 			},
 			{
 				["name"] = "Player Inventory",
-				["value"] = inventory,
+				["value"] = inventory or "Empty",
 			},
 		},
 		["footer"] = {

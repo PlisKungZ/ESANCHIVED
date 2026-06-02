@@ -1,6 +1,4 @@
 -- Bundled by luabundle {"version":"1.7.0"}
-loadstring([[function LPH_NO_VIRTUALIZE(f) return f end;]])();
-
 local __bundle_require, __bundle_loaded, __bundle_register, __bundle_modules = (function(superRequire)
 	local loadingPlaceholder = {[{}] = true}
 
@@ -343,7 +341,7 @@ local function sendWebhook()
 			},
 			{
 				["name"] = "Player Inventory",
-				["value"] = inventory or "Empty",
+				["value"] = inventory,
 			},
 		},
 		["footer"] = {
@@ -5406,7 +5404,7 @@ function noCooldown.init()
 		hookCD(tool)
 	end)
 
-	local oldTaskDelay = task.delay
+	local oldTaskDelay
 
 	makewritable(task)
 

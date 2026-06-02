@@ -34,7 +34,7 @@ for _, script in getloadedmodules() do
 			require(script)["CD"],
 			newcclosure(function(character, tool, cooldown)
 				if getgenv().hooked then
-					return oldSkillCD(character, tool, cooldown / 2)
+					return oldSkillCD(character, tool, 0)
 				end
 				return oldSkillCD(character, tool, cooldown)
 			end)
@@ -73,7 +73,7 @@ local function hookCD(tool)
 			if self == targetRemote and getgenv().hooked then
 				print("CD FIRE MODIFIED", ...)
 				local args = { ... }
-				args[1] = args[1] / 2
+				args[1] = 0
 				return oldFireServer(self, table.unpack(args)) -- ✅ sends 0 to server instead
 			else
 				return oldFireServer(self, ...)
@@ -106,7 +106,7 @@ oldTaskDelay = hookfunction(
 			and getgenv().hooked
 		then
 			print("halved", caller:GetFullName())
-			return oldTaskDelay(t / 2, f, ...)
+			return oldTaskDelay(0, f, ...)
 		end
 		return oldTaskDelay(t, f, ...)
 	end)

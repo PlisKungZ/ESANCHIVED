@@ -73,7 +73,7 @@ getgenv().getSellLists = function(translatedItems, mode)
 					and table.find(fetchAutoSellCategory(), item:GetAttribute("ItemCategory"))
 					and not item:FindFirstChild("SingularityStored")
 					and item.Name ~= "Singularity"
-					and not table.find(notSellAbleLists, item.Name)
+					and not table.find(notSellAbleLists, item)
 				then
 					if item:FindFirstChild("SellPrice").Value ~= 0 then
 						if not table.find(tabled, item.Name) then
@@ -149,13 +149,13 @@ function autoSell.on(mode, items)
 						db = false
 						return
 					end
-					task.wait(0.5)
+					task.wait()
 					if not countdown then
 						countdown = true
-						task.delay(2, function()
+						task.delay(10, function()
 							if item.Parent then
 								db = false
-								table.insert(notSellAbleLists, item.Name)
+								table.insert(notSellAbleLists, item)
 							end
 						end)
 					end
@@ -209,13 +209,13 @@ function autoSell.on(mode, items)
 						db = false
 						return
 					end
-					task.wait(0.5)
+					task.wait()
 					if not countdown then
 						countdown = true
-						task.delay(2, function()
+						task.delay(10, function()
 							if item.Parent then
 								db = false
-								table.insert(notSellAbleLists, item.Name)
+								table.insert(notSellAbleLists, item)
 							end
 						end)
 					end

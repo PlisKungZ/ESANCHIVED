@@ -5,7 +5,7 @@ local noRagdoll = require("Features/Character/RagdollCancel")
 local fly = require("Features/Character/Fly")
 local hitFloat = require("Features/Character/hitFloat")
 local bringBackHitRotate = require("Features/Character/BringBackHitRotate")
-
+local noCooldown = require("Features/Character/noCooldown")
 local Character = {}
 
 function Character.init()
@@ -114,6 +114,17 @@ function Character.init()
 			end
 		end)
 
+		local SkillCooldownSelection = Tab:AddDropdown("SkillCooldownSelection", {
+			Title = "Skill Cooldown Selection",
+			Values = {
+				"Half",
+				"Normal",
+				"None",
+			},
+			Multi = false,
+			Default = "Normal",
+		})
+		noCooldown.init()
 		Tab:AddButton({
 			Title = "Instant Log",
 			Description = "Instantly leave the game.",
