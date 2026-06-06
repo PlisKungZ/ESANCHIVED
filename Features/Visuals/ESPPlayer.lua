@@ -230,7 +230,7 @@ LPH_NO_VIRTUALIZE(function()
 			connection = nil
 		end
 	end
-	print("ye")
+	print("e")
 end)()
 
 return ESPPlayer
