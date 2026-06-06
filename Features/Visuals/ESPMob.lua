@@ -3,44 +3,17 @@ local Players = game:GetService("Players")
 local localPlayer = Players.LocalPlayer
 
 local ESPMob = {}
+
+local mobESPTable = {}
+
 LPH_NO_VIRTUALIZE(function()
-	local R6_PARTS = { "HumanoidRootPart" }
+	local function getText(mob)
+		local humanoid = mob:FindFirstChildWhichIsA("Humanoid")
+		local health = humanoid
+				and "[" .. tostring(math.floor(humanoid.Health)) .. "/" .. tostring(humanoid.MaxHealth) .. "]"
+			or "[? / ?]"
 
-	local function characterESP(character, espTag, color)
-		local humanoid = character:FindFirstChildWhichIsA("Humanoid")
-		if not humanoid then
-			return
-		end
-
-		local isAlive = function()
-			return character and character.Parent and humanoid and humanoid.Parent and humanoid.Health > 0
-		end
-
-		for _, partName in ipairs(R6_PARTS) do
-			local part = character:FindFirstChild(partName)
-			if part then
-				ESP.ESPPart(part, {
-					tag = espTag,
-					isAlive = isAlive,
-					getLines = partName == "HumanoidRootPart" and function(distance)
-						local username = character.Name
-						local health = "["
-							.. tostring(math.floor(character.Humanoid.Health))
-							.. "/"
-							.. tostring(character.Humanoid.MaxHealth)
-							.. "]"
-						return {
-							username,
-							health,
-							tostring(distance) .. "m",
-						}
-					end,
-					getColor = function()
-						return color
-					end,
-				})
-			end
-		end
+		return mob.Name .. "\n" .. health
 	end
 
 	local connection
@@ -48,26 +21,75 @@ LPH_NO_VIRTUALIZE(function()
 	function ESPMob.on(color)
 		if connection then
 			connection:Disconnect()
+			connection = nil
+		end
+
+		for _, mob in workspace.Alive:GetChildren() do
+			if not Players:GetPlayerFromCharacter(mob) then
+				local head = mob:FindFirstChild("Head")
+				if head then
+					local esp = ESP:Add({
+						Name = getText(mob),
+
+						Model = mob,
+						TextModel = head,
+
+						Color = color,
+						MaxDistance = 1000,
+
+						TextSize = 18,
+
+						ESPType = "Highlight",
+
+						FillColor = color,
+						OutlineColor = color,
+						FillTransparency = 0.5,
+						OutlineTransparency = 0,
+					})
+					table.insert(mobESPTable, esp)
+				end
+			end
 		end
 
 		connection = workspace.Alive.ChildAdded:Connect(function(mob)
 			if not Players:GetPlayerFromCharacter(mob) then
-				characterESP(mob, "mob", color)
+				repeat
+					task.wait()
+				until mob:FindFirstChild("Head")
+
+				local esp = ESP:Add({
+					Name = getText(mob),
+
+					Model = mob,
+					TextModel = mob.Head,
+
+					Color = color,
+					MaxDistance = 1000,
+
+					TextSize = 18,
+
+					ESPType = "Highlight",
+
+					FillColor = color,
+					OutlineColor = color,
+					FillTransparency = 0.5,
+					OutlineTransparency = 0,
+				})
+				table.insert(mobESPTable, esp)
 			end
 		end)
-
-		for _, mob in workspace.Alive:GetChildren() do
-			if not Players:GetPlayerFromCharacter(mob) then
-				characterESP(mob, "mob", color)
-			end
-		end
 	end
 
 	function ESPMob.off()
+		for _, something in mobESPTable do
+			something:Destroy()
+		end
+		mobESPTable = {}
 		if connection then
 			connection:Disconnect()
+			connection = nil
 		end
-		ESP.Disable("mob")
 	end
 end)()
+
 return ESPMob

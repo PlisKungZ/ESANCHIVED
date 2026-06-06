@@ -89,7 +89,7 @@ local function killMob(offset)
 			for _, animTrack in track do
 				animTrack:AdjustSpeed(1000)
 			end
-			local offset = Vector3.new(0, -offset, 0)
+			local offset = Vector3.new(0, -Options.autoGradeEvaYOffset.Value, 0)
 
 			localPlayer.Character.HumanoidRootPart:PivotTo(
 				targetTable[1].HumanoidRootPart.CFrame * CFrame.Angles(math.rad(90), 0, 0) + offset

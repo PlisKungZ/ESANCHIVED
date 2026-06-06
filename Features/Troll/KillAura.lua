@@ -27,7 +27,20 @@ function KillAura.on()
 		animtrack.Looped = true
 		table.insert(track, animtrack)
 	end
+	local equipDb = false
 	connection = RunService.RenderStepped:Connect(function(deltaTime)
+		if not equipDb then
+			equipDb = true
+			for _, animTrack in track do
+				animTrack:Stop()
+			end
+			for _, animTrack in track do
+				animTrack:Play(0, 0.01, 100000)
+			end
+			task.delay(2, function()
+				equipDb = false
+			end)
+		end
 		localPlayer.Data.Stamina.Value = 100
 	end)
 end

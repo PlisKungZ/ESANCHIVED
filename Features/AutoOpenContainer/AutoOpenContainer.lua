@@ -17,6 +17,19 @@ local itemListsKeyword = {
 
 local ignoreLists = {}
 
+local function isASingu(itemName)
+	local lists = {}
+	for _, singularity in game:GetService("ReplicatedStorage").CraftRecipes.Singularities:GetChildren() do
+		table.insert(lists, singularity.Name)
+	end
+	for _, singuName in lists do
+		if itemName:lower():find(singuName:lower()) then
+			return true
+		end
+	end
+	return false
+end
+
 function AutoOpenContainer.on()
 	AutoOpenContainer.off()
 	connection = RunService.Heartbeat:Connect(function(deltaTime)
@@ -37,7 +50,7 @@ function AutoOpenContainer.on()
 			for _, value in Options.autoOpenContainerSelection.Values do
 				if
 					item.Name:find(itemListsKeyword[value])
-					and not item:FindFirstChild("SingularityStored")
+					and not isASingu(item.Name)
 					and not table.find(ignoreLists, item)
 				then
 					if not connection then

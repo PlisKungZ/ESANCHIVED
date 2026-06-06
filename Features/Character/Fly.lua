@@ -46,7 +46,7 @@ local function getDirection()
 	return direction
 end
 
-local function enableFly(SPEED)
+local function enableFly()
 	local character = localPlayer.Character
 	if not character then
 		return
@@ -77,7 +77,7 @@ local function enableFly(SPEED)
 
 		if direction.Magnitude > 0 then
 			-- Moving: update position and record it as the new hover point
-			rootPart.CFrame = rootPart.CFrame + (direction.Unit * SPEED * delta)
+			rootPart.CFrame = rootPart.CFrame + (direction.Unit * Options.flySpeedSlider.Value * delta)
 			hoverPosition = rootPart.Position -- update hover anchor
 		else
 			-- Idle: lock to last position so gravity can't pull character down

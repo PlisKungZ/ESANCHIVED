@@ -131,19 +131,42 @@ local equipedDb = false
 local currentExitPos
 
 local function killMob(offset)
-	local fuckKingVon
+	local animationIds = {}
+	local m1Count = 0
+	for _, animation in
+		game:GetService("ReplicatedStorage").WeaponINFO[game.Players.LocalPlayer.Data.Weapon.Value]:GetChildren()
+	do
+		if animation.Name:find("AttackAnimation") and animation.Name ~= "ChargedAttackAnimation" then
+			m1Count = m1Count + 1
+		end
+	end
+	m1Count = m1Count - 1
+	for i = 1, m1Count do
+		table.insert(
+			animationIds,
+			game:GetService("ReplicatedStorage").WeaponINFO[game.Players.LocalPlayer.Data.Weapon.Value]["AttackAnimation" .. tostring(
+				i
+			)].AnimationId
+		)
+	end
+
+	for i = 1, m1Count do
+		local animtrack = localPlayer.Character.Humanoid.Animator:LoadAnimation(
+			game:GetService("ReplicatedStorage").WeaponINFO[game.Players.LocalPlayer.Data.Weapon.Value]["AttackAnimation" .. tostring(
+				i
+			)]
+		)
+		animtrack:Play(0, 0.01, 100000)
+		animtrack.Looped = true
+		table.insert(track, animtrack)
+	end
+
+	local isChecking = false
 	connection = RunService.PostSimulation:Connect(LPH_NO_VIRTUALIZE(function(delta)
 		localPlayer.Character.HumanoidRootPart.Anchored = false
 		if localPlayer.Character:FindFirstChild("Grabbed") then
 			return
 		end
-		--[[ 		local checkKingVon = workspace:FindFirstChild("Part")
-		if checkKingVon then
-			local texture = checkKingVon:FindFirstChildWhichIsA("Decal")
-			if texture then
-				return
-			end
-		end ]]
 		localPlayer.Data.Stamina.Value = 100
 		local targetTable = {}
 		for _, human in workspace.Alive:GetChildren() do
@@ -160,47 +183,33 @@ local function killMob(offset)
 			return a.Humanoid.MaxHealth > b.Humanoid.MaxHealth
 		end)
 
-		local offset = Vector3.new(0, -offset, 0)
+		local offset = Vector3.new(0, -Options.autoRailwayYOffset.Value, 0)
 		localPlayer.Character.HumanoidRootPart.Velocity = Vector3.zero
+		if #localPlayer.Character.Humanoid.Animator:GetPlayingAnimationTracks() > 10 then
+			for _, playingTrack in localPlayer.Character.Humanoid.Animator:GetPlayingAnimationTracks() do
+				playingTrack:Destroy()
+			end
+		end
 		if #targetTable ~= 0 then
 			if not equipedDb then
 				equipedDb = true
 				game:GetService("ReplicatedStorage").Events.Equip:FireServer(true)
-				for _, anim in track do
-					anim:Stop()
-					anim:Destroy()
-				end
-				table.clear(track)
-				local m1Count = 0
-				for _, animation in
-					game:GetService("ReplicatedStorage").WeaponINFO[game.Players.LocalPlayer.Data.Weapon.Value]
-						:GetChildren()
-				do
-					if animation:IsA("Animation") then
-						if animation.Name:find("AttackAnimation") and animation.Name ~= "ChargedAttackAnimation" then
-							m1Count = m1Count + 1
-						end
+				for _, id in animationIds do
+					local animtrack = game.Players.LocalPlayer.Character.Humanoid.Animator:GetTrackByAnimationId(id)
+					if animtrack and not animtrack.IsPlaying then
+						animtrack:Play(0, 0.01, 100000)
+					else
+						local animationInstance = Instance.new("Animation")
+						animationInstance.AnimationId = id
+						animtrack =
+							game.Players.LocalPlayer.Character.Humanoid.Animator:LoadAnimation(animationInstance)
+						animtrack:Play(0, 0.01, 100000)
+						animtrack.Looped = true
+						table.insert(track, animtrack)
 					end
 				end
-				for i = 1, m1Count - 1 do
-					local animtrack = localPlayer.Character.Humanoid.Animator:LoadAnimation(
-						game:GetService("ReplicatedStorage").WeaponINFO[game.Players.LocalPlayer.Data.Weapon.Value]["AttackAnimation" .. tostring(
-							i
-						)]
-					)
-					animtrack:Play(0, 0.01, 100000)
-					animtrack.Looped = true
-					table.insert(track, animtrack)
-				end
-				task.delay(5, function()
-					if connection then
-						for _, anim in track do
-							anim:Stop()
-							anim:Destroy()
-						end
-						table.clear(track)
-						game:GetService("ReplicatedStorage").Events.Equip:FireServer(false)
-					end
+				task.delay(2, function()
+					game:GetService("ReplicatedStorage").Events.Equip:FireServer(false)
 					equipedDb = false
 				end)
 			end
@@ -292,8 +301,7 @@ local function killMob(offset)
 			localPlayer.Character.HumanoidRootPart.Anchored = false
 			workspace.CurrentCamera.CameraSubject = game.Players.LocalPlayer.Character.Humanoid
 			for _, animTrack in track do
-				animTrack:Play()
-				animTrack:AdjustSpeed(0)
+				animTrack:Stop()
 			end
 			if equipedDb then
 				game:GetService("ReplicatedStorage").Events.Equip:FireServer(false)
@@ -344,44 +352,14 @@ local function killMob(offset)
 							return
 						end
 					end
-					--[[ 					if checkForStuffandClick("Sing") then
-						return
-					end
-					if checkForStuffandClick("SkipFloors") then
-						return
-					end
-					if checkForStuffandClick("Rare") then
-						return
-					end
-					if checkForStuffandClick("Item") then
-						return
-					end
-					if checkForStuffandClick("HugeAhn") then
-						return
-					end
-					if checkForStuffandClick("Ahn") then
-						return
-					end
-					if checkForStuffandClick("Acc") then
-						return
-					end
-					if checkForStuffandClick("HugeExperience") then
-						return
-					end
-					if checkForStuffandClick("Experience") then
-						return
-					end
-					if checkForStuffandClick("Heal") then
-						return
-					end ]]
 				end
 			elseif workspace.NPCS:FindFirstChild("Railway Merchant") then
-				if Options.autoSellExclude.Value or Options.autoSellInclude.Value then
+				if Toggles.autoSellExclude.Value or Toggles.autoSellInclude.Value then
 					local translatedString = splitString(Options.sellInput.Value)
-					if Options.autoSellExclude.Value then
+					if Toggles.autoSellExclude.Value then
 						getSellLists(translatedString, "Exclude")
 					end
-					if Options.autoSellInclude.Value then
+					if Toggles.autoSellInclude.Value then
 						getSellLists(translatedString, "Include")
 					end
 					if isSellAble then
