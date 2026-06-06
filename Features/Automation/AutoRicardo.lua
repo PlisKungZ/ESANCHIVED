@@ -27,10 +27,10 @@ function AutoRicardo.on(offset, floor, buff)
 	state = true
 	local teleported = false
 	if game.PlaceId ~= 99831550635699 then
-		return false, "Not in the library"
+		return false, "Not in the Ricardo"
 	end
-	if not workspace:GetAttribute("ServerType") == "Ricardo" then
-		return false, "Not in the library"
+	if workspace:GetAttribute("ServerType") ~= "Ricardo" then
+		return false, "Not in the Ricardo"
 	end
 
 	local kb = workspace:FindFirstChild("KillBricks")

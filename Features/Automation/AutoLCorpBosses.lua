@@ -303,64 +303,60 @@ function AutoLCorpBosses.on()
 			return
 		end
 
-		if killBoss and canDoAnythingAfterBoss then
-			db = true
-			if localPlayer.Character then
-				if localPlayer.Character:FindFirstChild("Humanoid") then
-					workspace.CurrentCamera.CameraSubject = localPlayer.Character.Humanoid
-				end
+		if localPlayer.Character then
+			if localPlayer.Character:FindFirstChild("Humanoid") then
+				workspace.CurrentCamera.CameraSubject = localPlayer.Character.Humanoid
 			end
+		end
 
-			local droppedItems = getDroppedItems()
-			if #droppedItems ~= 0 then
-				pickingUpItem = true
-				for _, item in droppedItems do
+		local droppedItems = getDroppedItems()
+		if #droppedItems ~= 0 and killBoss then
+			pickingUpItem = true
+			for _, item in droppedItems do
+				if not connection then
+					pickingUpItem = false
+					return
+				end
+				for _, prompt in item:GetDescendants() do
 					if not connection then
 						pickingUpItem = false
 						return
 					end
-					for _, prompt in item:GetDescendants() do
+					if prompt:IsA("ProximityPrompt") then
+						localPlayer.Character:PivotTo(item:GetPivot())
+						fireproximityprompt(prompt)
 						if not connection then
 							pickingUpItem = false
 							return
 						end
-						if prompt:IsA("ProximityPrompt") then
-							localPlayer.Character:PivotTo(item:GetPivot())
-							fireproximityprompt(prompt)
+						repeat
 							if not connection then
 								pickingUpItem = false
 								return
 							end
-							repeat
-								if not connection then
-									pickingUpItem = false
-									return
-								end
-								localPlayer.Character:PivotTo(item:GetPivot())
-								fireproximityprompt(prompt)
-								task.wait(1)
-							until not item.Parent
-						end
+							localPlayer.Character:PivotTo(item:GetPivot())
+							fireproximityprompt(prompt)
+							task.wait(1)
+						until not item.Parent
 					end
 				end
-				pickingUpItem = false
-			else
-				local clickExtract = false
-				repeat
-					task.wait(1)
-					localPlayer.Character:PivotTo(CFrame.new(103.09710693359375, 981.3513793945312, -84.36695098876953))
-				until workspace.NPCS:FindFirstChild("Elevator Door")
-				repeat
-					task.wait()
-					workspace.NPCS["Elevator Door"].TalkToNPC:FireServer()
-					localPlayer.Character:PivotTo(CFrame.new(103.09710693359375, 981.3513793945312, -84.36695098876953))
-					if clickButton("Extract") then
-						clickExtract = true
-					end
-				until clickExtract
 			end
-			db = false
+			pickingUpItem = false
 			return
+		elseif killBoss and canDoAnythingAfterBoss then
+			local clickExtract = false
+			repeat
+				task.wait(1)
+				localPlayer.Character:PivotTo(CFrame.new(103.09710693359375, 981.3513793945312, -84.36695098876953))
+			until workspace.NPCS:FindFirstChild("Elevator Door")
+			repeat
+				task.wait()
+				workspace.NPCS["Elevator Door"].TalkToNPC:FireServer()
+				localPlayer.Character:PivotTo(CFrame.new(103.09710693359375, 981.3513793945312, -84.36695098876953))
+				if clickButton("Extract") then
+					clickExtract = true
+				end
+			until clickExtract
 		end
 		localPlayer.Data.Stamina.Value = 100
 		local targetTable = {}
@@ -425,6 +421,19 @@ function AutoLCorpBosses.on()
 			end
 			local offset = Vector3.new(0, -Options.AutoLCorpYOffset.Value, 0)
 
+			if targetTable[1]:FindFirstChild("GettingGripped") and not killBoss then
+				if targetTable[1].Name == bossesName[Options.lCorpBossSelection.Value] then
+					killBoss = true
+					localPlayer.Character.HumanoidRootPart:PivotTo(
+						targetTable[1].HumanoidRootPart.CFrame + Vector3.new(0, 10, 0)
+					)
+					task.delay(5, function()
+						canDoAnythingAfterBoss = true
+					end)
+				end
+				return
+			end
+
 			if targetTable[1]:FindFirstChild("Knocked") and not gripDebounce then
 				gripDebounce = true
 				localPlayer.Character.HumanoidRootPart:PivotTo(
@@ -437,19 +446,6 @@ function AutoLCorpBosses.on()
 				task.delay(1, function()
 					gripDebounce = false
 				end)
-			end
-
-			if targetTable[1]:FindFirstChild("GettingGripped") and not killBoss then
-				if targetTable[1].Name == bossesName[Options.lCorpBossSelection.Value] then
-					killBoss = true
-					localPlayer.Character.HumanoidRootPart:PivotTo(
-						targetTable[1].HumanoidRootPart.CFrame + Vector3.new(0, 10, 0)
-					)
-					task.delay(5, function()
-						canDoAnythingAfterBoss = true
-					end)
-				end
-				return
 			end
 			if targetTable[1].Target.Value ~= localPlayer.Character then
 				localPlayer.Character.HumanoidRootPart:PivotTo(

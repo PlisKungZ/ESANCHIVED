@@ -1,91 +1,120 @@
 local noCooldown = {}
 
 function noCooldown.init()
-	if not Options.SkillCooldownSelection then
+	task.spawn(function()
+		if not Options.SkillCooldownSelection then
+			repeat
+				task.wait()
+			until Options.SkillCooldownSelection
+		end
+
+		local oldCd
 		repeat
 			task.wait()
-		until Options.SkillCooldownSelection
-	end
+		until getrenv()._G.HandleCD
 
-	local oldCd
-	repeat
-		task.wait()
-	until getrenv()._G.HandleCD
-
-	oldCd = hookfunction(
-		getrenv()._G.HandleCD,
-		newcclosure(function(...)
-			local condition = {
-				["Normal"] = function(...)
+		oldCd = hookfunction(
+			getrenv()._G.HandleCD,
+			newcclosure(function(...)
+				local condition = {
+					["Normal"] = function(...)
+						return oldCd(...)
+					end,
+					["Half"] = function(...)
+						local args = { ... }
+						print(args[1], args[2], args[3])
+						args[2] = args[2] / 2
+						return oldCd(table.unpack(args))
+					end,
+					["None"] = function(...)
+						local args = { ... }
+						args[2] = 0
+						return oldCd(table.unpack(args))
+					end,
+				}
+				if Options.SkillCooldownSelection.Value then
+					condition[Options.SkillCooldownSelection.Value](...)
+					return
+				else
 					return oldCd(...)
-				end,
-				["Half"] = function(...)
-					local args = { ... }
-					args[2] = args[2] / 2
-					return oldCd(table.unpack(args))
-				end,
-				["None"] = function(...)
-					local args = { ... }
-					args[2] = 0
-					return oldCd(table.unpack(args))
-				end,
-			}
-			if Options.SkillCooldownSelection.Value then
-				condition[Options.SkillCooldownSelection.Value](...)
-				return
-			else
-				return oldCd(...)
-			end
-		end)
-	)
+				end
+			end)
+		)
 
-	for _, script in getloadedmodules() do
-		if script.Name == "CoolDownModule" then
-			local oldSkillCD
-			oldSkillCD = hookfunction(
-				require(script)["CD"],
-				newcclosure(function(character, tool, cooldown)
-					local condition = {
-						["Normal"] = function()
+		local fondCooldownModule = false
+		repeat
+			task.wait()
+			for _, script in getloadedmodules() do
+				if script.Name == "CoolDownModule" then
+					fondCooldownModule = true
+				end
+			end
+		until fondCooldownModule
+
+		for _, script in getloadedmodules() do
+			if script.Name == "CoolDownModule" then
+				local oldSkillCD
+				oldSkillCD = hookfunction(
+					require(script)["CD"],
+					newcclosure(function(character, tool, cooldown)
+						local condition = {
+							["Normal"] = function()
+								return oldSkillCD(character, tool, cooldown)
+							end,
+							["Half"] = function(...)
+								return oldSkillCD(character, tool, cooldown / 2)
+							end,
+							["None"] = function(...)
+								return oldSkillCD(character, tool, 0)
+							end,
+						}
+						if Options.SkillCooldownSelection.Value then
+							print(character:GetFullName(), tool.Name, cooldown)
+							return condition[Options.SkillCooldownSelection.Value](character, tool, cooldown)
+						else
 							return oldSkillCD(character, tool, cooldown)
-						end,
-						["Half"] = function(...)
-							return oldSkillCD(character, tool, cooldown / 2)
-						end,
-						["None"] = function(...)
-							return oldSkillCD(character, tool, 0)
-						end,
-					}
-					if Options.SkillCooldownSelection.Value then
-						return condition[Options.SkillCooldownSelection.Value](character, tool, cooldown)
-					else
-						return oldSkillCD(character, tool, cooldown)
-					end
-				end)
-			)
+						end
+					end)
+				)
+			end
 		end
-	end
-	for _, v in getconnections(game:GetService("CollectionService"):GetInstanceAddedSignal("OnCD")) do
+		--[[ 	for _, v in getconnections(game:GetService("CollectionService"):GetInstanceAddedSignal("OnCD")) do
 		local handler
 		handler = hookfunction(
 			v.Function,
 			newcclosure(function(...)
 				local condition = {
 					["Normal"] = function(...)
+						local args = { ... }
 						return handler(...)
 					end,
 					["Half"] = function(...)
 						local args = { ... }
-						args[2] = args[2] / 2
+						if args[1]:IsA("Tool") then
+							args[1] = args[1].Name
+							args[2] = args[1]:GetAttribute("CD") / 2
+							return handler(table.unpack(args))
+						else
+							args[2] = args[2] / 2
+							return handler(table.unpack(args))
+						end
 						return handler(table.unpack(args))
 					end,
 					["None"] = function(...)
 						local args = { ... }
-						args[2] = 0
+						if args[1]:IsA("Tool") then
+							args[1] = args[1].Name
+							args[2] = 0
+						else
+							args[2] = 0
+							handler(table.unpack(args))
+						end
 						return handler(table.unpack(args))
 					end,
 				}
 				if Options.SkillCooldownSelection.Value then
+					local args = { ... }
+					print(args[1], args[2], args[3])
 					return condition[Options.SkillCooldownSelection.Value](...)
 				else
 					return handler(...)
@@ -93,88 +122,90 @@ function noCooldown.init()
 			end)
 		)
 	end
+ ]]
+		local hookedLists = {}
 
-	local hookedLists = {}
+		local function hookCD(tool)
+			if table.find(hookedLists, tool) then
+				return
+			end
+			local targetRemote = tool:FindFirstChild("RemoteEvent")
+			if not targetRemote or not tool:GetAttribute("CD") then
+				return
+			end
+			table.insert(hookedLists, tool)
 
-	local function hookCD(tool)
-		if table.find(hookedLists, tool) then
-			return
-		end
-		local targetRemote = tool:FindFirstChild("RemoteEvent")
-		if not targetRemote or not tool:GetAttribute("CD") then
-			return
-		end
-		table.insert(hookedLists, tool)
-
-		local oldFireServer
-		oldFireServer = hookfunction(
-			targetRemote.FireServer,
-			newcclosure(function(self, ...)
-				if self == targetRemote then
-					local condition = {
-						["Normal"] = function(self, ...)
+			local oldFireServer
+			oldFireServer = hookfunction(
+				targetRemote.FireServer,
+				newcclosure(function(self, ...)
+					if self == targetRemote then
+						local condition = {
+							["Normal"] = function(self, ...)
+								return oldFireServer(self, ...)
+							end,
+							["Half"] = function(self, ...)
+								local args = { ... }
+								args[1] = args[1] / 2
+								return oldFireServer(self, table.unpack(args))
+							end,
+							["None"] = function(self, ...)
+								local args = { ... }
+								args[1] = 0
+								return oldFireServer(self, table.unpack(args))
+							end,
+						}
+						if Options.SkillCooldownSelection.Value then
+							local args = { ... }
+							print(args[1], args[2], args[3], args[4])
+							return condition[Options.SkillCooldownSelection.Value](self, ...)
+						else
 							return oldFireServer(self, ...)
-						end,
-						["Half"] = function(self, ...)
-							local args = { ... }
-							args[2] = args[2] / 2
-							return oldFireServer(self, table.unpack(args))
-						end,
-						["None"] = function(self, ...)
-							local args = { ... }
-							args[2] = 0
-							return oldFireServer(self, table.unpack(args))
-						end,
-					}
-					if Options.SkillCooldownSelection.Value then
-						return condition[Options.SkillCooldownSelection.Value](self, ...)
+						end
 					else
 						return oldFireServer(self, ...)
 					end
-				else
-					return oldFireServer(self, ...)
+				end)
+			)
+		end
+
+		for _, tool in game.Players.LocalPlayer.Backpack:GetChildren() do
+			hookCD(tool)
+		end
+
+		game.Players.LocalPlayer.Backpack.ChildAdded:Connect(function(tool)
+			hookCD(tool)
+		end)
+
+		makewritable(task)
+
+		local oldTaskDelay
+
+		oldTaskDelay = hookfunction(
+			task.delay,
+			newcclosure(function(t, f)
+				local caller = getcallingscript()
+				if caller and caller.Parent and caller.Parent:IsA("Tool") and caller.Parent:GetAttribute("CD") then
+					local condition = {
+						["Normal"] = function(t, f)
+							return oldTaskDelay(t, f)
+						end,
+						["Half"] = function(t, f)
+							return oldTaskDelay(t / 2, f)
+						end,
+						["None"] = function(t, f)
+							return oldTaskDelay(0, f)
+						end,
+					}
+					if Options.SkillCooldownSelection.Value then
+						return condition[Options.SkillCooldownSelection.Value](t, f)
+					else
+						return oldTaskDelay(t, f)
+					end
 				end
+				return oldTaskDelay(t, f)
 			end)
 		)
-	end
-
-	for _, tool in game.Players.LocalPlayer.Backpack:GetChildren() do
-		hookCD(tool)
-	end
-
-	game.Players.LocalPlayer.Backpack.ChildAdded:Connect(function(tool)
-		hookCD(tool)
 	end)
-
-	local oldTaskDelay = task.delay
-
-	makewritable(task)
-
-	oldTaskDelay = hookfunction(
-		task.delay,
-		newcclosure(function(t, f, ...)
-			local caller = getcallingscript()
-			if caller and caller.Parent and caller.Parent:IsA("Tool") and caller.Parent:GetAttribute("CD") then
-				local condition = {
-					["Normal"] = function(...)
-						return oldTaskDelay(t, f, ...)
-					end,
-					["Half"] = function(...)
-						return oldTaskDelay(t / 2, f, ...)
-					end,
-					["None"] = function(...)
-						return oldTaskDelay(0, f, ...)
-					end,
-				}
-				if Options.SkillCooldownSelection.Value then
-					return condition[Options.SkillCooldownSelection.Value](...)
-				else
-					return oldTaskDelay(t, f, ...)
-				end
-			else
-				return oldTaskDelay(t, f, ...)
-			end
-		end)
-	)
 end
 return noCooldown

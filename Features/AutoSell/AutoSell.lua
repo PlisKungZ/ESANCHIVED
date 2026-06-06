@@ -42,6 +42,19 @@ local function fetchAutoSellCategory()
 	return tabled
 end
 
+local function isASingu(itemName)
+	local lists = {}
+	for _, singularity in game:GetService("ReplicatedStorage").CraftRecipes.Singularities:GetChildren() do
+		table.insert(lists, singularity.Name)
+	end
+	for _, singuName in lists do
+		if itemName:lower():find(singuName:lower()) then
+			return true
+		end
+	end
+	return false
+end
+
 local notSellAbleLists = {}
 
 getgenv().getSellLists = function(translatedItems, mode)
@@ -53,7 +66,7 @@ getgenv().getSellLists = function(translatedItems, mode)
 					not table.find(translatedItems, item.Name:lower())
 					and item:FindFirstChild("SellPrice")
 					and not table.find(fetchAutoSellCategory(), item:GetAttribute("ItemCategory"))
-					and not item:FindFirstChild("SingularityStored")
+					and not isASingu(item.Name)
 					and item.Name ~= "Singularity"
 					and not table.find(notSellAbleLists, item.Name)
 				then
@@ -71,7 +84,7 @@ getgenv().getSellLists = function(translatedItems, mode)
 					table.find(translatedItems, item.Name:lower())
 					and item:FindFirstChild("SellPrice")
 					and table.find(fetchAutoSellCategory(), item:GetAttribute("ItemCategory"))
-					and not item:FindFirstChild("SingularityStored")
+					and not isASingu(item.Name)
 					and item.Name ~= "Singularity"
 					and not table.find(notSellAbleLists, item)
 				then

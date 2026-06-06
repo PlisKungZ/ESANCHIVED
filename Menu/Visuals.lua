@@ -6,167 +6,203 @@ local streamer = require("Features/Visuals/StreamerMode")
 local gradePoint = require("Features/Visuals/GradePoint")
 
 local Visuals = {}
+Visuals.init = LPH_NO_VIRTUALIZE(function()
+	local Tab = Window:AddTab("Visuals", "eye")
+	local leftSide = Tab:AddLeftGroupbox("Player")
+	local rightSide = Tab:AddRightGroupbox("Mobs & NPC")
 
-function Visuals.init()
-	LPH_NO_VIRTUALIZE(function()
-		local Tab = window:AddTab({ Title = "Visuals", Icon = "" })
-		Tab:AddButton({
-			Title = "Streamer Mode",
-			Description = "Hide your info when screensharing",
-			Callback = function()
-				streamer.on()
-			end,
-		})
+	-- Streamer Mode
+	leftSide:AddButton({
+		Text = "Streamer Mode",
+		Func = function()
+			streamer.on()
+		end,
+		Tooltip = "Hide your info when screensharing",
+		DoubleClick = false,
+	})
 
-		local spectatePlayerToggle =
-			Tab:AddToggle("spectatePlayerToggle", { Title = "Click Leaderboard to Spectate", Default = false })
+	-- Spectate
+	leftSide:AddToggle("spectatePlayerToggle", {
+		Text = "Click Leaderboard to View",
+		Default = false,
+	})
+	Toggles.spectatePlayerToggle:OnChanged(function()
+		if Toggles.spectatePlayerToggle.Value then
+			spectate.on()
+		else
+			spectate.off()
+		end
+	end)
 
-		spectatePlayerToggle:OnChanged(function()
-			if Options.spectatePlayerToggle.Value then
-				spectate.on()
-			else
-				spectate.off()
-			end
-		end)
+	leftSide:AddDivider()
 
-		local espPlayerToggle = Tab:AddToggle("espPlayerToggle", { Title = "ESP Player", Default = false })
-
-		espPlayerToggle:OnChanged(function()
-			if Options.espPlayerToggle.Value then
-				local Values = {}
-				for value, State in next, Options.espPlayerSelection.Value do
-					table.insert(Values, value)
-				end
-				ESPPlayer.on(Options.espPlayerColor.Value, Values)
-			else
-				ESPPlayer.off()
-			end
-		end)
-
-		local espPlayerColor = Tab:AddColorpicker("espPlayerColor", {
-			Title = "Player Color",
-			Default = Color3.fromRGB(96, 205, 255),
-		})
-
-		local espPlayerSelection = Tab:AddDropdown("espPlayerSelection", {
-			Title = "ESP Types",
-			Values = {
-				"Username",
-				"Character Name",
-				"Ping",
-				"Health",
-				"Grade",
-				"Singularity",
-				"Distance",
-			},
-			Multi = true,
-			Default = { "Username", "Character Name", "Health" },
-		})
-
-		espPlayerSelection:OnChanged(function(Value)
-			ESPPlayer.off()
-
+	-- ESP Player
+	leftSide:AddToggle("espPlayerToggle", {
+		Text = "ESP Player",
+		Default = false,
+		Tooltip = "Show ESP for players",
+	})
+	Toggles.espPlayerToggle:OnChanged(function()
+		if Toggles.espPlayerToggle.Value then
 			local Values = {}
-			for value, State in next, Value do
+			for value, State in next, Options.espPlayerSelection.Value do
 				table.insert(Values, value)
 			end
-			if Options.espPlayerToggle.Value then
-				ESPPlayer.on(Options.espPlayerColor.Value, Values)
-			end
-		end)
-
-		espPlayerColor:OnChanged(function()
+			ESPPlayer.on(Options.espPlayerColor.Value, Values)
+		else
 			ESPPlayer.off()
-			if Options.espPlayerToggle.Value then
-				local Values = {}
-				for value, State in next, Options.espPlayerSelection.Value do
-					table.insert(Values, value)
-				end
-				ESPPlayer.on(Options.espPlayerColor.Value, Values) -- pass Values not raw .Value
+		end
+	end)
+
+	leftSide:AddLabel("Player ESP Color"):AddColorPicker("espPlayerColor", {
+		Default = Color3.fromRGB(96, 205, 255),
+		Title = "Player Color",
+	})
+	Options.espPlayerColor:OnChanged(function()
+		ESPPlayer.off()
+		if Toggles.espPlayerToggle.Value then
+			local Values = {}
+			for value, State in next, Options.espPlayerSelection.Value do
+				table.insert(Values, value)
 			end
-		end)
+			ESPPlayer.on(Options.espPlayerColor.Value, Values)
+		end
+	end)
 
-		local espPlayerKeybind = Tab:AddKeybind("espPlayerKeybind", {
-			Title = "ESP Player Keybind",
-			Mode = "Toggle",
-			Default = "",
-			Callback = function(Value)
-				Options.espPlayerToggle:SetValue(Value)
-			end,
-		})
+	leftSide:AddDropdown("espPlayerSelection", {
+		Text = "ESP Types",
+		Values = {
+			"Username",
+			"Character Name",
+			"Ping",
+			"Health",
+			"Grade",
+			"Singularity",
+		},
+		Multi = true,
+		Default = 1,
+		Tooltip = "Select which ESP info to display",
+	})
+	Options.espPlayerSelection:OnChanged(function()
+		ESPPlayer.off()
+		local Values = {}
+		for value, State in next, Options.espPlayerSelection.Value do
+			table.insert(Values, value)
+		end
+		if Toggles.espPlayerToggle.Value then
+			ESPPlayer.on(Options.espPlayerColor.Value, Values)
+		end
+	end)
 
-		local espMobToggle = Tab:AddToggle("espMobToggle", { Title = "ESP Mob", Default = false })
-
-		espMobToggle:OnChanged(function()
-			if Options.espMobToggle.Value then
-				ESPMob.on(Options.espMobColor.Value)
+	leftSide:AddLabel("ESP Player Keybind"):AddKeyPicker("espPlayerKeybind", {
+		Default = "",
+		Mode = "Toggle",
+		Text = "ESP Player Keybind",
+		NoUI = false,
+		Callback = function(Value)
+			if Toggles.espPlayerToggle.Value then
+				Toggles.espPlayerToggle:SetValue(false)
 			else
-				ESPMob.off()
+				Toggles.espPlayerToggle:SetValue(true)
 			end
-		end)
+		end,
+	})
 
-		local espMobColor = Tab:AddColorpicker("espMobColor", {
-			Title = "Mob Color",
-			Default = Color3.fromRGB(211, 49, 8),
-		})
+	leftSide:AddDivider()
 
-		espMobColor:OnChanged(function()
+	-- Grade Point UI
+	leftSide:AddToggle("gradePointToggle", {
+		Text = "Grade Point UI",
+		Default = false,
+		Tooltip = "Toggle the grade point UI",
+	})
+	Toggles.gradePointToggle:OnChanged(function()
+		if Toggles.gradePointToggle.Value then
+			gradePoint.on()
+		else
+			gradePoint.off()
+		end
+	end)
+
+	-- ESP Mob
+	rightSide:AddToggle("espMobToggle", {
+		Text = "ESP Mob",
+		Default = false,
+		Tooltip = "Show ESP for mobs",
+	})
+	Toggles.espMobToggle:OnChanged(function()
+		if Toggles.espMobToggle.Value then
+			ESPMob.on(Options.espMobColor.Value)
+		else
 			ESPMob.off()
-			if Options.espMobToggle.Value then
-				ESPMob.on(Options.espMobColor.Value)
-			end
-		end)
+		end
+	end)
 
-		local espMobKeybind = Tab:AddKeybind("espMobKeybind", {
-			Title = "ESP Mob Keybind",
-			Mode = "Toggle",
-			Default = "",
-			Callback = function(Value)
-				Options.espMobToggle:SetValue(Value)
-			end,
-		})
+	rightSide:AddLabel("Mob ESP Color"):AddColorPicker("espMobColor", {
+		Default = Color3.fromRGB(211, 49, 8),
+		Title = "Mob Color",
+	})
+	Options.espMobColor:OnChanged(function()
+		ESPMob.off()
+		if Toggles.espMobToggle.Value then
+			ESPMob.on(Options.espMobColor.Value)
+		end
+	end)
 
-		local espNpcToggle = Tab:AddToggle("espNpcToggle", { Title = "ESP Npc", Default = false })
-
-		espNpcToggle:OnChanged(function()
-			if Options.espNpcToggle.Value then
-				ESPNpc.on(Options.espNpcColor.Value)
+	rightSide:AddLabel("ESP Mob Keybind"):AddKeyPicker("espMobKeybind", {
+		Default = "",
+		Mode = "Toggle",
+		Text = "ESP Mob Keybind",
+		NoUI = false,
+		Callback = function(Value)
+			if Toggles.espMobToggle.Value then
+				Toggles.espMobToggle:SetValue(false)
 			else
-				ESPNpc.off()
+				Toggles.espMobToggle:SetValue(true)
 			end
-		end)
+		end,
+	})
 
-		local espNpcColor = Tab:AddColorpicker("espNpcColor", {
-			Title = "Npc Color",
-			Default = Color3.fromRGB(155, 6, 255),
-		})
+	rightSide:AddDivider()
 
-		espNpcColor:OnChanged(function()
-			ESPMob.off()
-			if Options.espNpcToggle.Value then
-				ESPNpc.on(Options.espNpcColor.Value)
-			end
-		end)
+	-- ESP NPC
+	rightSide:AddToggle("espNpcToggle", {
+		Text = "ESP NPC",
+		Default = false,
+		Tooltip = "Show ESP for NPCs",
+	})
+	Toggles.espNpcToggle:OnChanged(function()
+		if Toggles.espNpcToggle.Value then
+			ESPNpc.on(Options.espNpcColor.Value)
+		else
+			ESPNpc.off()
+		end
+	end)
 
-		local espNpcKeybind = Tab:AddKeybind("espNpcKeybind", {
-			Title = "ESP Npc Keybind",
-			Mode = "Toggle",
-			Default = "",
-			Callback = function(Value)
-				Options.espNpcToggle:SetValue(Value)
-			end,
-		})
+	rightSide:AddLabel("NPC ESP Color"):AddColorPicker("espNpcColor", {
+		Default = Color3.fromRGB(155, 6, 255),
+		Title = "NPC Color",
+	})
+	Options.espNpcColor:OnChanged(function()
+		ESPNpc.off()
+		if Toggles.espNpcToggle.Value then
+			ESPNpc.on(Options.espNpcColor.Value)
+		end
+	end)
 
-		local gradePointToggle = Tab:AddToggle("gradePointToggle", { Title = "Grade Point UI", Default = false })
-
-		gradePointToggle:OnChanged(function()
-			if Options.gradePointToggle.Value then
-				gradePoint.on()
+	rightSide:AddLabel("ESP NPC Keybind"):AddKeyPicker("espNpcKeybind", {
+		Default = "",
+		Mode = "Toggle",
+		Text = "ESP NPC Keybind",
+		NoUI = false,
+		Callback = function(Value)
+			if Toggles.espNpcToggle.Value then
+				Toggles.espNpcToggle:SetValue(false)
 			else
-				gradePoint.off()
+				Toggles.espNpcToggle:SetValue(true)
 			end
-		end)
-	end)()
-end
+		end,
+	})
+end)
 
 return Visuals

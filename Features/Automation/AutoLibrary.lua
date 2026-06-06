@@ -92,12 +92,18 @@ function AutoLibrary.on(offset, floor, buff)
 	if not workspace.NPCS:FindFirstChild("Library Director") then
 		return false, "Not in the library"
 	end
-	task.wait(1)
+	task.wait(2)
 	if not state then
 		return
 	end
 	local bookOfTheLib = localPlayer.Backpack:FindFirstChild("Book Of The Library")
-	if buff and bookOfTheLib and not workspace.Map:FindFirstChild(floorIdentifier[floor]) and not pressedOrdeal then
+	if
+		Toggles.buffLibrary
+		and Toggles.buffLibrary.Value
+		and bookOfTheLib
+		and not workspace.Map:FindFirstChild(floorIdentifier[Options.libraryFloorSelection.Value])
+		and not pressedOrdeal
+	then
 		if not state then
 			return
 		end
@@ -112,6 +118,9 @@ function AutoLibrary.on(offset, floor, buff)
 		end
 		workspace.NPCS["Library Director"].TalkToNPC:FireServer()
 		if not localPlayer.Data.IsTalking.Value then
+			if not state then
+				return
+			end
 			repeat
 				localPlayer.Character:PivotTo(workspace.NPCS["Library Director"]:GetPivot())
 				workspace.NPCS["Library Director"].TalkToNPC:FireServer()
@@ -145,7 +154,7 @@ function AutoLibrary.on(offset, floor, buff)
 	if not state then
 		return
 	end
-	if not workspace.Map:FindFirstChild(floorIdentifier[floor]) and not pressedOrdeal then
+	if not workspace.Map:FindFirstChild(floorIdentifier[Options.libraryFloorSelection.Value]) and not pressedOrdeal then
 		localPlayer.Character:PivotTo(CFrame.new(731.274353, 525.687317, 1016.26477))
 		task.wait(1)
 		workspace.NPCS["Ordeal Entrance"].TalkToNPC:FireServer()
@@ -176,7 +185,7 @@ function AutoLibrary.on(offset, floor, buff)
 			local floorSelect = false
 			repeat
 				task.wait()
-				if clickButton(floor) then
+				if clickButton(Options.libraryFloorSelection.Value) then
 					floorSelect = true
 				end
 				if not state then
@@ -230,8 +239,8 @@ function AutoLibrary.on(offset, floor, buff)
 		if not state then
 			return
 		end
-	until workspace.Map:FindFirstChild(floorIdentifier[floor])
-	localPlayer.Character.HumanoidRootPart:PivotTo(safeZone[floor])
+	until workspace.Map:FindFirstChild(floorIdentifier[Options.libraryFloorSelection.Value])
+	localPlayer.Character.HumanoidRootPart:PivotTo(safeZone[Options.libraryFloorSelection.Value])
 	local equipDebounce = false
 	connection = RunService.PostSimulation:Connect(LPH_NO_VIRTUALIZE(function(delta)
 		if not state then
@@ -398,13 +407,13 @@ function AutoLibrary.on(offset, floor, buff)
 			if not teleported then
 				teleported = true
 				equipDebounce = false
-				localPlayer.Character.HumanoidRootPart:PivotTo(safeZone[floor])
+				localPlayer.Character.HumanoidRootPart:PivotTo(safeZone[Options.libraryFloorSelection.Value])
 				game:GetService("ReplicatedStorage").Events.Equip:FireServer(false)
 				for _, animTrack in track do
 					animTrack:Stop()
 				end
 				workspace.CurrentCamera.CameraSubject = localPlayer.Character.Humanoid
-				localPlayer.Character:PivotTo(safeZone[floor])
+				localPlayer.Character:PivotTo(safeZone[Options.libraryFloorSelection.Value])
 			end
 		end
 	end))
@@ -417,7 +426,7 @@ function AutoLibrary.off(floor)
 		connection:Disconnect()
 		connection = nil
 		if safeZone[floor] then
-			localPlayer.Character:PivotTo(safeZone[floor])
+			localPlayer.Character:PivotTo(safeZone[Options.libraryFloorSelection.Value])
 		end
 	end
 	for _, anim in track do

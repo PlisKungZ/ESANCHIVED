@@ -1,113 +1,42 @@
-getgenv().hooked = true
-print("runned")
-local oldCd
-repeat
-	task.wait()
-until getrenv()._G.HandleCD
-oldCd = hookfunction(
-	getrenv()._G.HandleCD,
-	newcclosure(function(...)
-		if getgenv().hooked then
-			return
-		end
-		return oldCd(...)
-	end)
-)
-repeat
-	task.wait()
-until getrenv()._G.PriorityCD
-local oldProrityCD
-oldProrityCD = hookfunction(
-	getrenv()._G.PriorityCD,
-	newcclosure(function(...)
-		if getgenv().hooked then
-			return
-		end
-		return oldProrityCD(...)
-	end)
-)
-
-for _, script in getloadedmodules() do
-	if script.Name == "CoolDownModule" then
-		local oldSkillCD
-		oldSkillCD = hookfunction(
-			require(script)["CD"],
-			newcclosure(function(character, tool, cooldown)
-				if getgenv().hooked then
-					return oldSkillCD(character, tool, 0)
-				end
-				return oldSkillCD(character, tool, cooldown)
-			end)
-		)
+local animationIds = {}
+local m1Count = 0
+for _, animation in
+	game:GetService("ReplicatedStorage").WeaponINFO[game.Players.LocalPlayer.Data.Weapon.Value]:GetChildren()
+do
+	if animation.Name:find("AttackAnimation") and animation.Name ~= "ChargedAttackAnimation" then
+		m1Count = m1Count + 1
 	end
 end
-for _, v in getconnections(game:GetService("CollectionService"):GetInstanceAddedSignal("OnCD")) do
-	local handler
-	handler = hookfunction(
-		v.Function,
-		newcclosure(function(...)
-			if getgenv().hooked then
-				return
-			end
-			return handler(...)
-		end)
+m1Count = m1Count - 1
+for i = 1, m1Count do
+	table.insert(
+		animationIds,
+		game:GetService("ReplicatedStorage").WeaponINFO[game.Players.LocalPlayer.Data.Weapon.Value]["AttackAnimation" .. tostring(
+			i
+		)]
 	)
 end
 
-local hookedLists = {}
-
-local function hookCD(tool)
-	if table.find(hookedLists, tool) then
-		return
-	end
-	local targetRemote = tool:FindFirstChild("RemoteEvent")
-	if not targetRemote or not tool:GetAttribute("CD") then
-		return
-	end
-	table.insert(hookedLists, tool)
-
-	local oldFireServer
-	oldFireServer = hookfunction(
-		targetRemote.FireServer,
-		newcclosure(function(self, ...)
-			if self == targetRemote and getgenv().hooked then
-				print("CD FIRE MODIFIED", ...)
-				local args = { ... }
-				args[1] = 0
-				return oldFireServer(self, table.unpack(args)) -- ✅ sends 0 to server instead
-			else
-				return oldFireServer(self, ...)
-			end
-		end)
+--[[ for i = 1, m1Count do
+	local animtrack = game.Players.LocalPlayer.Character.Humanoid.Animator:LoadAnimation(
+		game:GetService("ReplicatedStorage").WeaponINFO[game.Players.LocalPlayer.Data.Weapon.Value]["AttackAnimation" .. tostring(
+			i
+		)]
 	)
+	animtrack:Play(0, 0.01, 100000)
+	animtrack.Looped = true
+end ]]
+
+for _, id in animationIds do
+	local track = game.Players.LocalPlayer.Character.Humanoid.Animator:GetTrackByAnimationId(id.AnimationId)
+	if track then
+		track:Play(0, 0.01, 100000)
+		track.Looped = true
+	else
+		local animationInstance = Instance.new("Animation")
+		animationInstance.AnimationId = id
+		local animtrack = game.Players.LocalPlayer.Character.Humanoid.Animator:LoadAnimation(animationInstance)
+		animtrack:Play(0, 0.01, 100000)
+		animtrack.Looped = true
+	end
 end
-
-for _, tool in game.Players.LocalPlayer.Backpack:GetChildren() do
-	hookCD(tool)
-end
-
-game.Players.LocalPlayer.Backpack.ChildAdded:Connect(function(tool)
-	hookCD(tool)
-end)
-
-local oldTaskDelay = task.delay
-
-makewritable(task)
-
-oldTaskDelay = hookfunction(
-	task.delay,
-	newcclosure(function(t, f, ...)
-		local caller = getcallingscript()
-		if
-			caller
-			and caller.Parent
-			and caller.Parent:IsA("Tool")
-			and caller.Parent:GetAttribute("CD")
-			and getgenv().hooked
-		then
-			print("halved", caller:GetFullName())
-			return oldTaskDelay(0, f, ...)
-		end
-		return oldTaskDelay(t, f, ...)
-	end)
-)

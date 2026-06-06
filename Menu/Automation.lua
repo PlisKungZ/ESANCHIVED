@@ -4,8 +4,11 @@ local autoRailway = require("Features/Automation/AutoRailway")
 local autoGrade = require("Features/Automation/AutoGradeEvaluation")
 local autoLCorp = require("Features/Automation/AutoLCorpBosses")
 local autoRicardo = require("Features/Automation/AutoRicardo")
+local AutoOpenContainerReq = require("Features/AutoOpenContainer/AutoOpenContainer")
+local autoSellReq = require("Features/AutoSell/AutoSell")
 
 local Automation = {}
+
 getgenv().autoRailwayLootPriority = {}
 
 if isfile("TelepathyOverload/Archived/loot_priority.txt") then
@@ -14,338 +17,378 @@ if isfile("TelepathyOverload/Archived/loot_priority.txt") then
 	end
 end
 
-function Automation.init()
-	LPH_NO_VIRTUALIZE(function()
-		local Tab = window:AddTab({ Title = "Automation", Icon = "" })
-		Tab:AddParagraph({
-			Title = "Auto Library Usage",
-			Content = "This is only usable when in the ordeal itself.",
-		})
+Automation.init = LPH_NO_VIRTUALIZE(function()
+	local Tab = Window:AddTab("Automation", "zap")
 
-		local autoLibraryToggle = Tab:AddToggle("AutoLibrary", { Title = "Auto Library", Default = false })
+	-- ── LEFT SIDE ──────────────────────────────────────────────
+	local leftSide = Tab:AddLeftGroupbox("Automation")
 
-		autoLibraryToggle:OnChanged(function()
-			if Options.AutoLibrary.Value then
-				local state, err = autoLib.on(
-					Options.autoLibYOffset.Value,
-					Options.libraryFloorSelection.Value,
-					Options.buffLibrary.Value
-				)
+	-- Auto Library
+	leftSide:AddToggle("AutoLibrary", {
+		Text = "Auto Library",
+		Default = false,
+		Tooltip = "Only usable when inside the ordeal itself",
+	})
+	Toggles.AutoLibrary:OnChanged(function()
+		if Toggles.AutoLibrary and Options.libraryFloorSelection and Toggles.buffLibrary then
+			if Toggles.AutoLibrary.Value then
+				local state, err = autoLib.on()
 				if not state then
-					GUI:Notify({
+					Library:Notify({
 						Title = "Error Occurred.",
-						Content = err,
-						Duration = 8,
-					})
-				end
-			else
-				if Options.libraryFloorSelection then
-					autoLib.off(Options.libraryFloorSelection.Value)
-				end
-			end
-		end)
-
-		local libraryFloorSelectionDropDown = Tab:AddDropdown("libraryFloorSelection", {
-			Title = "Library Floor Selection",
-			Values = {
-				"Kether",
-				"Language",
-				"Philosophy",
-			},
-			Multi = false,
-			Default = 1,
-		})
-
-		local buffLibraryToggle = Tab:AddToggle("buffLibrary", { Title = "Buff Library", Default = false })
-
-		buffLibraryToggle:OnChanged(function()
-			if Options.AutoLibrary.Value then
-				local state, err = autoLib.on(
-					Options.autoLibYOffset.Value,
-					Options.libraryFloorSelection.Value,
-					Options.buffLibrary.Value
-				)
-				if not state then
-					GUI:Notify({
-						Title = "Error Occurred.",
-						Content = err,
-						Duration = 8,
+						Description = err,
+						Time = 8,
 					})
 				end
 			end
-		end)
-		local autoLibraryYOffset = Tab:AddSlider("autoLibYOffset", {
-			Title = "Y Offset",
-			Description = "Depends on your weapons",
-			Default = 5,
-			Min = 0,
-			Max = 30,
-			Rounding = 0,
-			Callback = function(Value)
-				if Options.AutoLibrary.Value then
-					local state, err = autoLib.on(Value, Options.libraryFloorSelection.Value, Options.buffLibrary.Value)
-					if not state then
-						Options.AutoLibrary:SetValue(false)
-						GUI:Notify({
-							Title = "Error Occurred.",
-							Content = err,
-							Duration = 8,
-						})
-					end
-				end
-			end,
-		})
+		else
+			if Options.libraryFloorSelection then
+				autoLib.off(Options.libraryFloorSelection.Value)
+			end
+		end
+	end)
 
-		Tab:AddParagraph({
-			Title = "Auto Warp Train Usage",
-			Content = "This is only usable when in the Warp Train itself.",
-		})
+	leftSide:AddDropdown("libraryFloorSelection", {
+		Text = "Library Floor",
+		Values = { "Kether", "Language", "Philosophy" },
+		Multi = false,
+		Default = 1,
+	})
 
-		local AutoWarpToggle = Tab:AddToggle("AutoWarp", { Title = "Auto Warp Train", Default = false })
-		Options.AutoWarp:SetValue(false)
+	leftSide:AddToggle("buffLibrary", {
+		Text = "Buff Library",
+		Default = false,
+	})
 
-		AutoWarpToggle:OnChanged(function()
-			if Options.AutoWarp.Value then
-				local state, err = autoWarp.on(Options.autoWarpYOffset.Value)
+	leftSide:AddSlider("autoLibYOffset", {
+		Text = "Library Y Offset",
+		Default = 5,
+		Min = 0,
+		Max = 30,
+		Rounding = 0,
+		Tooltip = "Depends on your weapons",
+	})
+
+	leftSide:AddDivider()
+
+	-- Auto Warp Train
+	leftSide:AddToggle("AutoWarp", {
+		Text = "Auto Warp Train",
+		Default = false,
+		Tooltip = "Only usable when inside the Warp Train itself",
+	})
+	Toggles.AutoWarp:SetValue(false)
+	Toggles.AutoWarp:OnChanged(function()
+		if Toggles.AutoWarp.Value then
+			local state, err = autoWarp.on(Options.autoWarpYOffset.Value)
+			if not state then
+				Library:Notify({ Title = "Error Occurred.", Description = err, Time = 8 })
+			end
+		else
+			autoWarp.off()
+		end
+	end)
+
+	leftSide:AddSlider("autoWarpYOffset", {
+		Text = "Warp Y Offset",
+		Default = 10,
+		Min = 0,
+		Max = 30,
+		Rounding = 0,
+		Tooltip = "Depends on your weapons",
+	})
+
+	leftSide:AddDivider()
+
+	-- Auto Grade Evaluation
+	leftSide:AddToggle("autoGradeEva", {
+		Text = "Auto Grade Evaluation",
+		Default = false,
+	})
+	Toggles.autoGradeEva:SetValue(false)
+	Toggles.autoGradeEva:OnChanged(function()
+		if Toggles.autoGradeEva.Value then
+			local state, err = autoGrade.on(Options.autoGradeEvaYOffset.Value)
+			if not state then
+				Library:Notify({ Title = "Error Occurred.", Description = err, Time = 8 })
+			end
+		else
+			autoGrade.off()
+		end
+	end)
+
+	leftSide:AddSlider("autoGradeEvaYOffset", {
+		Text = "Grade Eval Y Offset",
+		Default = 30,
+		Min = 0,
+		Max = 30,
+		Rounding = 0,
+		Tooltip = "Depends on your weapons",
+		Callback = function(Value) end,
+	})
+
+	leftSide:AddDivider()
+
+	-- Auto Railway
+	leftSide:AddToggle("AutoRailway", {
+		Text = "Auto Railway",
+		Default = false,
+		Tooltip = "Only usable when inside the Railway itself",
+	})
+	Toggles.AutoRailway:OnChanged(function()
+		if Toggles.AutoRailway.Value then
+			local state, err = autoRailway.on(Options.autoRailwayYOffset.Value)
+			if not state then
+				Library:Notify({ Title = "Error Occurred.", Description = err, Time = 8 })
+			end
+		else
+			autoRailway.off()
+		end
+	end)
+
+	leftSide:AddSlider("autoRailwayYOffset", {
+		Text = "Railway Y Offset",
+		Default = 5,
+		Min = 0,
+		Max = 30,
+		Rounding = 0,
+		Tooltip = "Depends on your weapons",
+		Callback = function(Value)
+			--[[ 			if Toggles.AutoRailway.Value then
+				local state, err = autoRailway.on(Value)
 				if not state then
-					GUI:Notify({
-						Title = "Error Occurred.",
-						Content = err,
-						Duration = 8,
-					})
+					Toggles.AutoRailway:SetValue(false)
+					Library:Notify({ Title = "Error Occurred.", Description = err, Time = 8 })
 				end
-			else
-				autoWarp.off()
+			end ]]
+		end,
+	})
+
+	leftSide:AddDropdown("autoRailwayLootSelection", {
+		Text = "Item Priority",
+		Values = {
+			"Singularity",
+			"SkipFloors",
+			"RareItems",
+			"Item",
+			"HugeAhn",
+			"Ahn",
+			"RareAccessories",
+			"Accessories",
+			"HugeExperience",
+			"Experience",
+			"Heal",
+		},
+		Multi = true,
+		Default = 1,
+		Tooltip = "Select loot priority order",
+		Callback = function(Value) end,
+	})
+
+	Options.autoRailwayLootSelection:OnChanged(function()
+		autoRailwayLootPriority = {}
+		local savedPriority = {}
+
+		if isfile("TelepathyArchived/loot_priority.txt") then
+			for item in readfile("TelepathyArchived/loot_priority.txt"):gmatch("[^,]+") do
+				table.insert(savedPriority, item)
 			end
-		end)
+		end
 
-		local autoWarpYOffset = Tab:AddSlider("autoWarpYOffset", {
-			Title = "Y Offset",
-			Description = "Depends on your weapons",
-			Default = 10,
-			Min = 0,
-			Max = 30,
-			Rounding = 0,
-			Callback = function(Value)
-				if Options.AutoWarp.Value then
-					local state, err = autoWarp.on(Value)
-					if not state then
-						Options.AutoWarp:SetValue(false)
-						GUI:Notify({
-							Title = "Error Occurred.",
-							Content = err,
-							Duration = 8,
-						})
-					end
-				end
-			end,
-		})
-		local autoGradeEva = Tab:AddToggle("autoGradeEva", { Title = "Auto Grade Evaluation", Default = false })
-		Options.autoGradeEva:SetValue(false)
-
-		autoGradeEva:OnChanged(function()
-			if Options.autoGradeEva.Value then
-				local state, err = autoGrade.on(Options.autoGradeEvaYOffset.Value)
-				if not state then
-					GUI:Notify({
-						Title = "Error Occurred.",
-						Content = err,
-						Duration = 8,
-					})
-				end
-			else
-				autoGrade.off()
+		for i = #savedPriority, 1, -1 do
+			if not Options.autoRailwayLootSelection.Value[savedPriority[i]] then
+				table.remove(savedPriority, i)
 			end
-		end)
+		end
 
-		local autoGradeEvaYOffset = Tab:AddSlider("autoGradeEvaYOffset", {
-			Title = "Y Offset",
-			Description = "Depends on your weapons",
-			Default = 30,
-			Min = 0,
-			Max = 30,
-			Rounding = 0,
-			Callback = function(Value)
-				if Options.autoGradeEva.Value then
-					local state, err = autoGrade.on(Value)
-					if not state then
-						Options.autoGradeEva:SetValue(false)
-						GUI:Notify({
-							Title = "Error Occurred.",
-							Content = err,
-							Duration = 8,
-						})
+		for item, selected in pairs(Options.autoRailwayLootSelection.Value) do
+			if selected then
+				local found = false
+				for _, v in ipairs(savedPriority) do
+					if v == item then
+						found = true
+						break
 					end
 				end
-			end,
-		})
-		Tab:AddParagraph({
-			Title = "Auto Railway Usage",
-			Content = "This is only usable when in the Railway itself.",
-		})
-
-		local AutoRailwayToggle = Tab:AddToggle("AutoRailway", { Title = "Auto Railway", Default = false })
-
-		AutoRailwayToggle:OnChanged(function()
-			if Options.AutoRailway.Value then
-				local state, err = autoRailway.on(Options.autoRailwayYOffset.Value)
-				if not state then
-					Options.AutoRailway:SetValue(false)
-					GUI:Notify({
-						Title = "Error Occurred.",
-						Content = err,
-						Duration = 8,
-					})
+				if not found then
+					table.insert(savedPriority, item)
 				end
-			else
-				autoRailway.off()
 			end
-		end)
+		end
 
-		local autoRailwayYOffset = Tab:AddSlider("autoRailwayYOffset", {
-			Title = "Y Offset",
-			Description = "Depends on your weapons",
-			Default = 5,
-			Min = 0,
-			Max = 30,
-			Rounding = 0,
-			Callback = function(Value)
-				if Options.AutoRailway.Value then
-					local state, err = autoRailway.on(Value)
-					if not state then
-						Options.AutoRailway:SetValue(false)
-						GUI:Notify({
-							Title = "Error Occurred.",
-							Content = err,
-							Duration = 8,
-						})
-					end
-				end
-			end,
+		autoRailwayLootPriority = savedPriority
+		writefile("TelepathyArchived/loot_priority.txt", table.concat(autoRailwayLootPriority, ","))
+
+		local display = table.concat(autoRailwayLootPriority, ", ")
+		Library:Notify({
+			Title = "Current Item Priority",
+			Description = display ~= "" and display or "None selected",
+			Time = 8,
 		})
+	end)
 
-		local autoRailwayLootSelection = Tab:AddDropdown("autoRailwayLootSelection", {
-			Title = "Item Priority Selection",
-			Values = {
-				"Singularity",
-				"SkipFloors",
-				"RareItems",
-				"Item",
-				"HugeAhn",
-				"Ahn",
-				"RareAccessories",
-				"Accessories",
-				"HugeExperience",
-				"Experience",
-				"Heal",
-			},
-			Multi = true,
-			Default = {},
-			Callback = function(Value)
-				autoRailwayLootPriority = {}
-				if isfile("TelepathyOverload/Archived/loot_priority.txt") then
-					for item in readfile("TelepathyOverload/Archived/loot_priority.txt"):gmatch("[^,]+") do
-						if Value[item] == true then -- only keep if fluent also has it checked
-							table.insert(autoRailwayLootPriority, item)
-						end
-					end
-				end
+	-- ── RIGHT SIDE ─────────────────────────────────────────────
+	local rightSide = Tab:AddRightGroupbox("More Automation")
 
-				-- real user click
-				local savedPriority = {}
-				if isfile("TelepathyOverload/Archived/loot_priority.txt") then
-					for item in readfile("TelepathyOverload/Archived/loot_priority.txt"):gmatch("[^,]+") do
-						table.insert(savedPriority, item)
-					end
-				end
+	-- Auto L Corp Bosses
+	rightSide:AddToggle("AutoLCorp", {
+		Text = "Auto L Corp Bosses",
+		Default = false,
+	})
+	Toggles.AutoLCorp:OnChanged(function()
+		if Toggles.AutoLCorp.Value then
+			autoLCorp.on()
+		else
+			autoLCorp.off()
+		end
+	end)
 
-				for i = #savedPriority, 1, -1 do
-					if not Value[savedPriority[i]] then
-						table.remove(savedPriority, i)
-					end
-				end
+	rightSide:AddSlider("AutoLCorpYOffset", {
+		Text = "L Corp Y Offset",
+		Default = 5,
+		Min = 0,
+		Max = 30,
+		Rounding = 0,
+		Tooltip = "Depends on your weapons",
+	})
 
-				for item, selected in pairs(Value) do
-					if selected then
-						local found = false
-						for _, v in ipairs(savedPriority) do
-							if v == item then
-								found = true
-								break
-							end
-						end
-						if not found then
-							table.insert(savedPriority, item)
-						end
-					end
-				end
+	rightSide:AddDropdown("lCorpBossSelection", {
+		Text = "Boss Selection",
+		Values = {
+			"Lei Heng",
+			"Gloom",
+			"Pride",
+			"Wrath",
+			"Desire",
+			"Sloth",
+			"Envy",
+			"Gluttony",
+		},
+		Multi = false,
+		Default = 1,
+	})
 
-				autoRailwayLootPriority = savedPriority
-				writefile("TelepathyOverload/Archived/loot_priority.txt", table.concat(autoRailwayLootPriority, ","))
+	rightSide:AddDivider()
 
-				local display = table.concat(autoRailwayLootPriority, ", ")
-				GUI:Notify({
-					Title = "Current Item Priority",
-					Content = display ~= "" and display or "None selected",
-					Duration = 8,
-				})
-			end,
-		})
+	-- Auto Ricardo
+	rightSide:AddToggle("AutoRicardo", {
+		Text = "Auto Ricardo",
+		Default = false,
+	})
+	Toggles.AutoRicardo:OnChanged(function()
+		if Toggles.AutoRicardo.Value then
+			autoRicardo.on()
+		else
+			autoRicardo.off()
+		end
+	end)
 
-		local AutoLCorpToggle = Tab:AddToggle("AutoLCorp", { Title = "Auto L Corp Bosses", Default = false })
+	rightSide:AddSlider("AutoRicardoYOffset", {
+		Text = "Ricardo Y Offset",
+		Default = 5,
+		Min = 0,
+		Max = 30,
+		Rounding = 0,
+		Tooltip = "Depends on your weapons",
+	})
 
-		AutoLCorpToggle:OnChanged(function()
-			if Options.AutoLCorp.Value then
-				autoLCorp.on()
-			else
-				autoLCorp.off()
+	rightSide:AddDivider()
+
+	-- Auto Open Container
+	rightSide:AddToggle("autoOpenContainer", {
+		Text = "Auto Open Container",
+		Default = false,
+		Tooltip = "Automatically opens selected container types",
+	})
+	Toggles.autoOpenContainer:OnChanged(function()
+		if Toggles.autoOpenContainer.Value then
+			AutoOpenContainerReq.on()
+		else
+			AutoOpenContainerReq.off()
+		end
+	end)
+
+	rightSide:AddDropdown("autoOpenContainerSelection", {
+		Text = "Container Types",
+		Values = { "Caches", "Seed Of Light", "Fixer's Note", "Exp Ticket" },
+		Multi = true,
+		Default = {},
+	})
+
+	rightSide:AddDivider()
+
+	-- Auto Sell
+	rightSide:AddToggle("autoSellExclude", {
+		Text = "Auto Sell (Exclude Mode)",
+		Default = false,
+		Tooltip = "Sell everything except listed items",
+	})
+	Toggles.autoSellExclude:OnChanged(function()
+		if Toggles.autoSellExclude.Value and Options.sellInput then
+			Toggles.autoSellInclude:SetValue(false)
+			autoSellReq.on("Exclude", Options.sellInput.Value)
+		else
+			autoSellReq.off()
+		end
+	end)
+
+	rightSide:AddToggle("autoSellInclude", {
+		Text = "Auto Sell (Include Mode)",
+		Default = false,
+		Tooltip = "Only sell listed items",
+	})
+	Toggles.autoSellInclude:OnChanged(function()
+		if Toggles.autoSellInclude.Value and Options.sellInput then
+			Toggles.autoSellExclude:SetValue(false)
+			autoSellReq.on("Include", Options.sellInput.Value)
+		else
+			autoSellReq.off()
+		end
+	end)
+
+	rightSide:AddDropdown("autoSellCategorySelection", {
+		Text = "Sell Categories",
+		Values = {
+			"Augments",
+			"Books",
+			"Consumable",
+			"General",
+			"Gifts",
+			"Materials",
+			"Rare Materials",
+			"Tickets",
+			"Unique",
+		},
+		Multi = true,
+		Default = 1,
+	})
+	Options.autoSellCategorySelection:OnChanged(function()
+		if Toggles.autoSellExclude.Value then
+			autoSellReq.on("Exclude", Options.sellInput.Value)
+		end
+		if Toggles.autoSellInclude.Value then
+			autoSellReq.on("Include", Options.sellInput.Value)
+		end
+	end)
+
+	rightSide:AddInput("sellInput", {
+		Text = "Sell List",
+		Default = "",
+		Placeholder = "Book,Gear,...",
+		Numeric = false,
+		Finished = true,
+		Tooltip = "Comma-separated item names",
+		Callback = function(Value)
+			if Toggles.autoSellExclude.Value then
+				Toggles.autoSellInclude:SetValue(false)
+				autoSellReq.on("Exclude", Value)
 			end
-		end)
-
-		local AutoLCorpYOffset = Tab:AddSlider("AutoLCorpYOffset", {
-			Title = "Y Offset",
-			Description = "Depends on your weapons",
-			Default = 5,
-			Min = 0,
-			Max = 30,
-			Rounding = 0,
-		})
-
-		local LCorpBossSelection = Tab:AddDropdown("lCorpBossSelection", {
-			Title = "Boss Selection",
-			Values = {
-				"Lei Heng",
-				"Gloom",
-				"Pride",
-				"Wrath",
-				"Desire",
-				"Sloth",
-				"Envy",
-				"Gluttony",
-			},
-			Multi = false,
-			Default = "Lei Heng",
-		})
-
-		local AutoRicardoToggle = Tab:AddToggle("AutoRicardo", { Title = "Auto Ricardo", Default = false })
-
-		AutoRicardoToggle:OnChanged(function()
-			if Options.AutoRicardo.Value then
-				autoRicardo.on()
-			else
-				autoRicardo.off()
+			if Toggles.autoSellInclude.Value then
+				Toggles.autoSellExclude:SetValue(false)
+				autoSellReq.on("Include", Value)
 			end
-		end)
-
-		local AutoRicardoYOffset = Tab:AddSlider("AutoRicardoYOffset", {
-			Title = "Y Offset",
-			Description = "Depends on your weapons",
-			Default = 5,
-			Min = 0,
-			Max = 30,
-			Rounding = 0,
-		})
-	end)()
-end
+		end,
+	})
+end)
 
 return Automation

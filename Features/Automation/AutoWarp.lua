@@ -115,7 +115,7 @@ local function killMob(offset)
 				animTrack:Play()
 				animTrack:AdjustSpeed(1000)
 			end
-			local offset = Vector3.new(0, -offset, 0)
+			local offset = Vector3.new(0, -Options.autoWarpYOffset.Value, 0)
 			if not m1Debounce then
 				m1Debounce = true
 				task.delay(1.5, function()

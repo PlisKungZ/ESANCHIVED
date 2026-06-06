@@ -21,7 +21,7 @@ function walkSpeed.on(speed)
 		end
 
 		if humanoid.MoveDirection.Magnitude > 0 then
-			character:TranslateBy(humanoid.MoveDirection * speed * delta * 10)
+			character:TranslateBy(humanoid.MoveDirection * Options.walkSpeedSlider.Value * delta * 10)
 		end
 	end))
 end

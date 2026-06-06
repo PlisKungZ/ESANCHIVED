@@ -47,7 +47,6 @@ task.spawn(LPH_NO_VIRTUALIZE(function()
 
 		return AdonisDetected
 	end
-
 	function Adonis.Bypass()
 		for _, thread in AdonisAnticheatThreads do
 			pcall(coroutine.close, thread)
@@ -87,12 +86,12 @@ task.spawn(LPH_NO_VIRTUALIZE(function()
 					continue
 				end
 
-				wax.shared.Hooks[DetectionFunc] = wax.shared.Hooking.HookFunction(
+				hooks[DetectionFunc] = hookfunction(
 					DetectionFunc,
-					function(action, info, nocrash)
+					newcclosure(function(action, info, nocrash)
 						coroutine.yield()
 						return task.wait(9e9)
-					end
+					end)
 				)
 			end
 		end
@@ -105,32 +104,13 @@ task.spawn(LPH_NO_VIRTUALIZE(function()
 	until Adonis.Bypass()
 end))
 
-local GUI
+local Library
 local SaveManager
-local InterfaceManager
-
-LPH_NO_VIRTUALIZE(function()
-	GUI = require("GUI/main")
-	SaveManager = require("GUI/SaveManager")
-	InterfaceManager = require("GUI/InterfaceManager")
-end)()
-
-local CharacterTab = require("Menu/Character")
-local VisualTab = require("Menu/Visuals")
-local AutomationTab = require("Menu/Automation")
-local RemovalTab = require("Menu/Removal")
-local TrollTab = require("Menu/Troll")
-local TeleportationTab = require("Menu/Teleportation")
-local AutoOpenCacheTab = require("Menu/AutoOpenCache")
-local AutoSellTab = require("Menu/AutoSell")
-local webhookTab = require("Menu/Webhook")
+local ThemeManager
 
 local api = loadstring(game:HttpGet("https://sdkapi-public.luarmor.net/library.lua"))()
-
 api.script_id = "567b6e2c33ab5dd588a8a6b7016eec74"
-
 local status = api.check_key(script_key)
-
 if status.code == "KEY_VALID" then
 elseif status.code == "KEY_HWID_LOCKED" then
 	game.Players.LocalPlayer:Kick("HWID LOCKED PLEASE RESET YOUR HWID")
@@ -143,88 +123,85 @@ else
 	return
 end
 
-LPH_NO_VIRTUALIZE(function()
-	local Window = GUI:CreateWindow({
-		Title = "Telepathy Overload - Paid Edition",
-		SubTitle = "by Telepathy",
-		TabWidth = 160,
-		Size = UDim2.fromOffset(580, 460),
-		Acrylic = false,
-		Theme = "Rose",
-		MinimizeKey = Enum.KeyCode.F8,
-	})
+Library = require("GUI/Library")
+SaveManager = require("GUI/SaveManager")
+ThemeManager = require("GUI/ThemeManager")
 
-	local Options = GUI.Options
+local CharacterTab = require("Menu/Character")
+local VisualTab = require("Menu/Visuals")
+local AutomationTab = require("Menu/Automation")
+--[[ local RemovalTab = require("Menu/Removal")
+local TrollTab = require("Menu/Troll")
+local TeleportationTab = require("Menu/Teleportation")
+local AutoOpenCacheTab = require("Menu/AutoOpenCache")
+local AutoSellTab = require("Menu/AutoSell") ]]
+local webhookTab = require("Menu/Webhook")
+local Window = Library:CreateWindow({
+	-- Set Center to true if you want the menu to appear in the center
+	-- Set AutoShow to true if you want the menu to appear when it is created
+	-- Set Resizable to true if you want to have in-game resizable Window
+	-- Set MobileButtonsSide to "Left" or "Right" if you want the ui toggle & lock buttons to be on the left or right side of the window
+	-- Set ShowCustomCursor to false if you don't want to use the Linoria cursor
+	-- NotifySide = Changes the side of the notifications (Left, Right) (Default value = Left)
+	-- Position and Size are also valid options here
+	-- but you do not need to define them unless you are changing them :)
 
-	getgenv().Options = Options
-	getgenv().GUI = GUI
-	getgenv().window = Window
+	Title = "Telepathy",
+	Footer = "version: 6.7",
+	Icon = 93231363609661,
+	NotifySide = "Right",
+	ShowCustomCursor = true,
+})
+getgenv().GUI = Library
+getgenv().Options = Library.Options
+getgenv().Window = Window
+getgenv().Toggles = Library.Toggles
+CharacterTab.init(GUI, Window)
+VisualTab.init(GUI, Window)
+AutomationTab.init(GUI, Window)
+webhookTab.init()
+--[[ 	TeleportationTab.init(GUI, Window) ]]
+--[[ 	RemovalTab.init(GUI, Window) ]]
+--TrollTab.init(GUI, Window)
+--[[ 	AutoSellTab.init(GUI, Window)
+	AutoOpenCacheTab.init() ]]
+local Tabs = {
+	["UI Settings"] = Window:AddTab("UI Settings", "settings"),
+}
 
-	CharacterTab.init(GUI, Window)
-	TeleportationTab.init(GUI, Window)
-	VisualTab.init(GUI, Window)
-	RemovalTab.init(GUI, Window)
-	TrollTab.init(GUI, Window)
-	AutoSellTab.init(GUI, Window)
-	AutoOpenCacheTab.init()
-	AutomationTab.init(GUI, Window)
-	webhookTab.init()
-	local Tabs = {
-		Settings = Window:AddTab({ Title = "Settings", Icon = "settings" }),
-	}
-	-- Addons:
-	-- SaveManager (Allows you to have a configuration system)
-	-- InterfaceManager (Allows you to have a interface managment system)
+-- Addons:
+-- SaveManager (Allows you to have a configuration system)
+-- InterfaceManager (Allows you to have a interface managment system)
 
-	-- Hand the library over to our managers
-	SaveManager:SetLibrary(GUI)
-	InterfaceManager:SetLibrary(GUI)
+-- Hand the library over to our managers
+ThemeManager:SetLibrary(GUI)
+SaveManager:SetLibrary(GUI)
 
-	-- Ignore keys that are used by ThemeManager.
-	-- (we dont want configs to save themes, do we?)
-	SaveManager:IgnoreThemeSettings()
+-- Ignore keys that are used by ThemeManager.
+-- (we dont want configs to save themes, do we?)
+SaveManager:IgnoreThemeSettings()
 
-	-- You can add indexes of elements the save manager should ignore
-	SaveManager:SetIgnoreIndexes({})
+-- Adds our MenuKeybind to the ignore list
+-- (do you want each config to have a different menu key? probably not.)
+SaveManager:SetIgnoreIndexes({ "MenuKeybind" })
 
-	-- use case for doing it this way:
-	-- a script hub could have themes in a global folder
-	-- and game configs in a separate folder per game
-	InterfaceManager:SetFolder("TelepathyOverload")
-	SaveManager:SetFolder("TelepathyOverload/Archived")
+-- use case for doing it this way:
+-- a script hub could have themes in a global folder
+-- and game configs in a separate folder per game
+ThemeManager:SetFolder("TelepathyArchived")
+SaveManager:SetFolder("TelepathyArchived")
 
-	InterfaceManager:BuildInterfaceSection(Tabs.Settings)
-	SaveManager:BuildConfigSection(Tabs.Settings)
+-- Builds our config menu on the right side of our tab
+SaveManager:BuildConfigSection(Tabs["UI Settings"])
 
-	Window:SelectTab(1)
+-- Builds our theme menu (with plenty of built in themes) on the left side
+-- NOTE: you can also call ThemeManager:ApplyToGroupbox to add it to a specific groupbox
+ThemeManager:ApplyToTab(Tabs["UI Settings"])
 
-	GUI:Notify({
-		Title = "Join Our Discord for more stuff!",
-		Content = "Invite is set to your clipboard join in.",
-		Duration = 8,
-	})
-	task.spawn(function()
-		while true do
-			task.wait(1)
-
-			if GUI.Unloaded then
-				for name, option in GUI.Options do
-					if typeof(option.Value) == "boolean" then
-						option.Value = false
-						GUI.Options[name]:SetValue(false)
-					end
-				end
-				break
-			end
-		end
-	end)
-
-	-- You can use the SaveManager:LoadAutoloadConfig() to load a config
-	-- which has been marked to be one that auto loads!
-	SaveManager:LoadAutoloadConfig()
-	getgenv().loaded = true
-	game.Players.LocalPlayer.Idled:Connect(function()
-		game:GetService("VirtualUser"):CaptureController()
-		game:GetService("VirtualUser"):ClickButton2(Vector2.new())
-	end)
-end)()
+-- You can use the SaveManager:LoadAutoloadConfig() to load a config
+-- which has been marked to be one that auto loads!
+SaveManager:LoadAutoloadConfig()
+game.Players.LocalPlayer.Idled:Connect(function()
+	game:GetService("VirtualUser"):CaptureController()
+	game:GetService("VirtualUser"):ClickButton2(Vector2.new())
+end)
