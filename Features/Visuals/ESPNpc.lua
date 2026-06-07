@@ -28,7 +28,7 @@ LPH_NO_VIRTUALIZE(function()
 					TextModel = npc.PrimaryPart or npc,
 
 					Color = color,
-					MaxDistance = 1000,
+					MaxDistance = math.huge,
 
 					TextSize = 18,
 
@@ -38,6 +38,11 @@ LPH_NO_VIRTUALIZE(function()
 					OutlineColor = color,
 					FillTransparency = 0.5,
 					OutlineTransparency = 0,
+					AfterUpdate = function(self)
+						if self.CurrentSettings then
+							self.CurrentSettings.Name = getText(npc)
+						end
+					end,
 				})
 				table.insert(npcESPTable, esp)
 			end
@@ -62,6 +67,11 @@ LPH_NO_VIRTUALIZE(function()
 					OutlineColor = color,
 					FillTransparency = 0.5,
 					OutlineTransparency = 0,
+					AfterUpdate = function(self)
+						if self.CurrentSettings then
+							self.CurrentSettings.Name = getText(npc)
+						end
+					end,
 				})
 				table.insert(npcESPTable, esp)
 			end

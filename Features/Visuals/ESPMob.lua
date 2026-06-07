@@ -45,6 +45,11 @@ LPH_NO_VIRTUALIZE(function()
 						OutlineColor = color,
 						FillTransparency = 0.5,
 						OutlineTransparency = 0,
+						AfterUpdate = function(self)
+							if self.CurrentSettings then
+								self.CurrentSettings.Name = getText(mob)
+							end
+						end,
 					})
 					table.insert(mobESPTable, esp)
 				end
@@ -74,6 +79,11 @@ LPH_NO_VIRTUALIZE(function()
 					OutlineColor = color,
 					FillTransparency = 0.5,
 					OutlineTransparency = 0,
+					AfterUpdate = function(self)
+						if self.CurrentSettings then
+							self.CurrentSettings.Name = getText(mob)
+						end
+					end,
 				})
 				table.insert(mobESPTable, esp)
 			end

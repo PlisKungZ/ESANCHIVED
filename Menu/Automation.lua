@@ -40,9 +40,7 @@ Automation.init = LPH_NO_VIRTUALIZE(function()
 						Time = 8,
 					})
 				end
-			end
-		else
-			if Options.libraryFloorSelection then
+			else
 				autoLib.off(Options.libraryFloorSelection.Value)
 			end
 		end
@@ -349,6 +347,7 @@ Automation.init = LPH_NO_VIRTUALIZE(function()
 	rightSide:AddDropdown("autoSellCategorySelection", {
 		Text = "Sell Categories",
 		Values = {
+			"Container",
 			"Augments",
 			"Books",
 			"Consumable",
@@ -358,6 +357,7 @@ Automation.init = LPH_NO_VIRTUALIZE(function()
 			"Rare Materials",
 			"Tickets",
 			"Unique",
+			"Vestige",
 		},
 		Multi = true,
 		Default = 1,

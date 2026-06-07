@@ -291,6 +291,42 @@ function AutoLCorpBosses.on()
 		airTime.Name = "AirTime"
 		airTime.Parent = localPlayer.Character
 	end
+	local function clickButton(text)
+		for _, frame in game:GetService("Players").LocalPlayer.PlayerGui.Dialogue.MainFrame.Options.Scroll:GetChildren() do
+			if frame:IsA("Frame") then
+				if frame.OptionText.Text == text or frame.OptionText.Text:find(text) then
+					replicatesignal(frame.OptionButton.MouseButton1Click)
+					return true
+				end
+			end
+		end
+		return false
+	end
+
+	local whiteLists =
+		{ "EnkephalinBarrels", "Extracted Weapon Crate", "Locker", "Military Crate", "Supply Depot", "Rack" }
+
+	for _, v in workspace.NPCS:GetChildren() do
+		if table.find(whiteLists, v.Name) then
+			localPlayer.Character:PivotTo(v:GetPivot())
+			repeat
+				task.wait()
+				v.TalkToNPC:FireServer()
+				localPlayer.Character:PivotTo(v:GetPivot())
+			until game:GetService("Players").LocalPlayer.Data.IsTalking.Value
+			repeat
+				task.wait()
+				clickButton("Search")
+				v.TalkToNPC:FireServer()
+				localPlayer.Character:PivotTo(v:GetPivot())
+			until localPlayer.PlayerGui.Dialogue.MainFrame.DialogueHolder.DialogueText.Text:find("nothing")
+				or localPlayer.PlayerGui.Dialogue.MainFrame.DialogueHolder.DialogueText.Text:find("empty")
+			repeat
+				task.wait()
+				clickButton("Leave")
+			until not localPlayer.Data.IsTalking.Value
+		end
+	end
 
 	game:GetService("ReplicatedStorage").Events.Equip:FireServer(true)
 	local equipDebounce = false
@@ -353,6 +389,7 @@ function AutoLCorpBosses.on()
 				task.wait()
 				workspace.NPCS["Elevator Door"].TalkToNPC:FireServer()
 				localPlayer.Character:PivotTo(CFrame.new(103.09710693359375, 981.3513793945312, -84.36695098876953))
+				--clickButton("Extract")
 				if clickButton("Extract") then
 					clickExtract = true
 				end

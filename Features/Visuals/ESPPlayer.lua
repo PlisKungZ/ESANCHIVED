@@ -5,10 +5,20 @@ local localPlayer = Players.LocalPlayer
 local ESPPlayer = {}
 
 local playerESPTable = {}
+local connections = {}
 
 LPH_NO_VIRTUALIZE(function()
 	local R6_PARTS = { "HumanoidRootPart" }
-
+	local function getSelections()
+		if not Options.espPlayerSelection.Value then
+			return {}
+		end
+		local Values = {}
+		for value, State in next, Options.espPlayerSelection.Value do
+			table.insert(Values, value)
+		end
+		return Values
+	end
 	local function getText(player, espSelection)
 		local playerUsername = player.Name
 		local displayName = "[" .. tostring(player.Data.DisplayName.Value) .. "]"
@@ -56,10 +66,7 @@ LPH_NO_VIRTUALIZE(function()
 	local connection
 
 	function ESPPlayer.on(color, espSelection)
-		if connection then
-			connection:Disconnect()
-			connection = nil
-		end
+		ESPPlayer.off()
 
 		for _, player in Players:GetPlayers() do
 			if player ~= localPlayer and player.Character then
@@ -67,20 +74,25 @@ LPH_NO_VIRTUALIZE(function()
 					task.wait()
 				until player.Character:FindFirstChild("Head")
 				local esp = ESP:Add({
-					Name = getText(player, espSelection),
+					AfterUpdate = function(self)
+						if self.CurrentSettings then
+							self.CurrentSettings.Name = getText(player, getSelections())
+						end
+					end,
+					Name = getText(player, getSelections()),
 
 					Model = player.Character,
 					TextModel = player.Character.Head,
 
-					Color = color,
-					MaxDistance = 1000,
+					Color = Options.espPlayerColor.Value,
+					MaxDistance = math.huge,
 
 					TextSize = 18,
 
 					ESPType = "Highlight",
 
-					FillColor = color,
-					OutlineColor = color,
+					FillColor = Options.espPlayerColor.Value,
+					OutlineColor = Options.espPlayerColor.Value,
 					FillTransparency = 0.5,
 					OutlineTransparency = 0,
 				})
@@ -97,23 +109,28 @@ LPH_NO_VIRTUALIZE(function()
 				until player.Character:FindFirstChild("Head")
 
 				local esp = ESP:Add({
-					Name = getText(player, espSelection),
+					Name = getText(player, getSelections()),
 					Model = player.Character,
 					TextModel = player.Character.Head,
 					-- TextModel = character.Head,
 					-- ↑ This would change the Billboard's Adornee to the Player's Head
 
-					Color = color,
-					MaxDistance = 1000,
+					Color = Options.espPlayerColor.Value,
+					MaxDistance = math.huge,
 
 					TextSize = 18,
 
 					ESPType = "Highlight",
 
-					FillColor = color,
-					OutlineColor = color,
+					FillColor = Options.espPlayerColor.Value,
+					OutlineColor = Options.espPlayerColor.Value,
 					FillTransparency = 0.5,
 					OutlineTransparency = 0,
+					AfterUpdate = function(self)
+						if self.CurrentSettings then
+							self.CurrentSettings.Name = getText(player, getSelections())
+						end
+					end,
 				})
 				table.insert(playerESPTable, esp)
 			end
@@ -129,7 +146,6 @@ LPH_NO_VIRTUALIZE(function()
 			connection = nil
 		end
 	end
-	print("ewad")
 end)()
 
 return ESPPlayer

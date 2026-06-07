@@ -84,14 +84,14 @@ Visuals.init = LPH_NO_VIRTUALIZE(function()
 		Tooltip = "Select which ESP info to display",
 	})
 	Options.espPlayerSelection:OnChanged(function()
-		ESPPlayer.off()
+		--[[ 		ESPPlayer.off()
 		local Values = {}
 		for value, State in next, Options.espPlayerSelection.Value do
 			table.insert(Values, value)
 		end
 		if Toggles.espPlayerToggle.Value then
 			ESPPlayer.on(Options.espPlayerColor.Value, Values)
-		end
+		end ]]
 	end)
 
 	leftSide:AddLabel("ESP Player Keybind"):AddKeyPicker("espPlayerKeybind", {

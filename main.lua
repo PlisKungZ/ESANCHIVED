@@ -17,6 +17,16 @@ LPH_NO_VIRTUALIZE(function()
 	if not table.find(whiteListedPlaceId, game.PlaceId) then
 		return
 	end
+
+	repeat
+		task.wait()
+	until game.Players.LocalPlayer:FindFirstChild("Data")
+	repeat
+		task.wait()
+	until game.Players.LocalPlayer:FindFirstChild("Data"):FindFirstChild("DataImported")
+	repeat
+		task.wait()
+	until game.Players.LocalPlayer:FindFirstChild("Data"):FindFirstChild("DataImported").Value
 end)()
 
 task.spawn(LPH_NO_VIRTUALIZE(function()
@@ -24,6 +34,7 @@ task.spawn(LPH_NO_VIRTUALIZE(function()
 		Name = "Adonis",
 		Game = "*",
 	}
+	local hooks = {}
 
 	local AdonisAnticheatThreads = {}
 	function Adonis.Detect()
@@ -168,7 +179,18 @@ webhookTab.init()
 local Tabs = {
 	["UI Settings"] = Window:AddTab("UI Settings", "settings"),
 }
+local MenuGroup = Tabs["UI Settings"]:AddLeftGroupbox("Menu", "wrench")
 
+MenuGroup:AddLabel("Menu bind"):AddKeyPicker("MenuKeybind", {
+	Default = "RightShift",
+	NoUI = true,
+	Text = "Menu keybind",
+	Callback = function(Value)
+		Library.ToggleKeybind = Options.MenuKeybind
+	end,
+})
+
+Library.ToggleKeybind = Options.MenuKeybind
 -- Addons:
 -- SaveManager (Allows you to have a configuration system)
 -- InterfaceManager (Allows you to have a interface managment system)

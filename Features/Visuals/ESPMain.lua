@@ -162,12 +162,14 @@ local function RandomString(name)
 	return table.concat(array)
 end
 
-local function SafeCallback(Func)
+local function SafeCallback(Func, ...)
 	if not (Func and typeof(Func) == "function") then
 		return
 	end
-
-	local Result = table.pack(xpcall(Func, function(Error)
+	local args = { ... }
+	local Result = table.pack(xpcall(function()
+		return Func(table.unpack(args))
+	end, function(Error)
 		task.defer(error, debug.traceback(Error, 2))
 		return Error
 	end))
