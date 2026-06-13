@@ -66,6 +66,7 @@ local pressedOrdeal = false
 local teleported = false
 local gripDebounce = false
 local pickingUpItem = false
+local isBuffed = false
 local currentCoroutine
 local function getDroppedItems()
 	local tabled = {}
@@ -82,6 +83,7 @@ end
 function AutoLibrary.on(offset, floor, buff)
 	AutoLibrary.off()
 	state = true
+	local priorityNames = { "Angelica" }
 	currentCoroutine = task.spawn(function()
 		local teleported = false
 		if game.PlaceId ~= 99831550635699 then
@@ -96,11 +98,12 @@ function AutoLibrary.on(offset, floor, buff)
 		if not state then
 			return
 		end
+		if not workspace.Map:FindFirstChild(floorIdentifier[Options.libraryFloorSelection.Value]) then
+			task.wait(5)
+		end
 		local bookOfTheLib = localPlayer.Backpack:FindFirstChild("Book Of The Library")
-		task.wait(2)
 		if
-			Toggles.buffLibrary
-			and Toggles.buffLibrary.Value
+			Toggles.buffLibrary.Value
 			and bookOfTheLib
 			and not workspace.Map:FindFirstChild(floorIdentifier[Options.libraryFloorSelection.Value])
 			and not pressedOrdeal
@@ -292,6 +295,12 @@ function AutoLibrary.on(offset, floor, buff)
 			end
 
 			table.sort(targetTable, function(a, b)
+				local aInList = table.find(priorityNames, a.Name) ~= nil
+				local bInList = table.find(priorityNames, b.Name) ~= nil
+
+				if aInList ~= bInList then
+					return aInList
+				end
 				return a.Humanoid.MaxHealth > b.Humanoid.MaxHealth
 			end)
 
@@ -299,7 +308,7 @@ function AutoLibrary.on(offset, floor, buff)
 				localPlayer.Character.HumanoidRootPart.Anchored = false
 				local isAllAlerted = true
 				for _, target in targetTable do
-					if target.Target.Value ~= localPlayer.Character then
+					if not target:FindFirstChild("Aggrod") then
 						localPlayer.Character.HumanoidRootPart:PivotTo(
 							targetTable[1].HumanoidRootPart.CFrame * CFrame.Angles(math.rad(90), 0, 0)
 								+ Vector3.new(0, 10, 0)
@@ -356,6 +365,10 @@ function AutoLibrary.on(offset, floor, buff)
 				end
 				local offset = Vector3.new(0, -Options.autoLibYOffset.Value, 0)
 
+				if targetTable[1]:FindFirstChild("GettingGripped") then
+					localPlayer.Character.HumanoidRootPart.Anchored = true
+					return
+				end
 				if targetTable[1]:FindFirstChild("Knocked") then
 					if not gripDebounce then
 						gripDebounce = true
@@ -370,11 +383,6 @@ function AutoLibrary.on(offset, floor, buff)
 					localPlayer.Character.HumanoidRootPart:PivotTo(
 						targetTable[1].HumanoidRootPart.CFrame + Vector3.new(0, 1, 0)
 					)
-					return
-				end
-
-				if targetTable[1]:FindFirstChild("GettingGripped") then
-					localPlayer.Character.HumanoidRootPart.Anchored = true
 					return
 				end
 				if targetTable[1].Target.Value ~= localPlayer.Character then
@@ -471,6 +479,47 @@ function AutoLibrary.off(floor)
 	table.clear(track)
 	workspace.CurrentCamera.CameraSubject = localPlayer.Character.Humanoid
 	localPlayer.Character.HumanoidRootPart.Anchored = false
+end
+
+local buffLibraryConnection
+
+function AutoLibrary.buffLibrary()
+	if game.PlaceId ~= 99831550635699 then
+		return false, "Not in the library"
+	end
+	if workspace:GetAttribute("ServerType") ~= "Library" then
+		return false, "Not in the library"
+	end
+	if not workspace.NPCS:FindFirstChild("Library Director") then
+		return false, "Not in the library"
+	end
+	if buffLibraryConnection then
+		buffLibraryConnection:Disconnect()
+		buffLibraryConnection = nil
+	end
+	if connection then
+		return false, ""
+	end
+	if currentCoroutine then
+		task.cancel(currentCoroutine)
+		currentCoroutine = nil
+	end
+	if not isBuffed and localPlayer.Backpack:FindFirstChild("Book Of The Library") then
+		localPlayer.Backpack:FindFirstChild("Book Of The Library").Parent = localPlayer.Character
+		buffLibraryConnection = RunService.RenderStepped:Connect(function(deltaTime)
+			localPlayer.Character:PivotTo(workspace.NPCS["Library Director"]:GetPivot())
+			if not localPlayer.Data.IsTalking.Value then
+				workspace.NPCS["Library Director"].TalkToNPC:FireServer()
+			else
+				buffLibraryConnection:Disconnect()
+				buffLibraryConnection = nil
+			end
+			if connection then
+				buffLibraryConnection:Disconnect()
+				buffLibraryConnection = nil
+			end
+		end)
+	end
 end
 
 return AutoLibrary

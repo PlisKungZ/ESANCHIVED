@@ -54,6 +54,10 @@ local bossesName = {
 	["Envy"] = "Absolute Envy",
 	["Gluttony"] = "Absolute Gluttony",
 }
+
+local isKilling = false
+local killedABoss = false
+
 local bossesFunctions = {
 	["Lei Heng"] = function()
 		local fragmentSelf = workspace.NPCS:FindFirstChild("Fragmented Self")
@@ -67,6 +71,9 @@ local bossesFunctions = {
 				local clickFace = false
 				repeat
 					task.wait(0.5)
+					if not state then
+						break
+					end
 					workspace.NPCS["Ordeal Entrance"].TalkToNPC:FireServer()
 					localPlayer.Character:PivotTo(workspace.NPCS["Ordeal Entrance"]:GetPivot())
 					if clickButton("Face") then
@@ -78,17 +85,26 @@ local bossesFunctions = {
 		if fragmentSelf and not ordealEntrance then
 			local clickedWorld = false
 			repeat
-				task.wait(0.5)
-				fragmentSelf.TalkToNPC:FireServer()
+				task.wait()
+				if not state then
+					break
+				end
+				fireproximityprompt(fragmentSelf.InteractPrompt)
 				localPlayer.Character:PivotTo(fragmentSelf:GetPivot())
+				localPlayer.Character.HumanoidRootPart.AssemblyLinearVelocity = Vector3.zero
+				localPlayer.Character.HumanoidRootPart.AssemblyAngularVelocity = Vector3.zero
+				localPlayer.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Ragdoll, false)
 				if clickButton("Worlds") then
 					clickedWorld = true
 				end
 			until clickedWorld
 			local clickThumb = false
 			repeat
-				task.wait(0.5)
-				fragmentSelf.TalkToNPC:FireServer()
+				task.wait()
+				if not state then
+					break
+				end
+				fireproximityprompt(fragmentSelf.InteractPrompt)
 				localPlayer.Character:PivotTo(fragmentSelf:GetPivot())
 				if clickButton("Thumb") then
 					clickThumb = true
@@ -100,6 +116,9 @@ local bossesFunctions = {
 			local clickFace = false
 			repeat
 				task.wait(0.5)
+				if not state then
+					break
+				end
 				workspace.NPCS["Ordeal Entrance"].TalkToNPC:FireServer()
 				localPlayer.Character:PivotTo(workspace.NPCS["Ordeal Entrance"]:GetPivot())
 				if clickButton("Face") then
@@ -110,21 +129,38 @@ local bossesFunctions = {
 	end,
 	["Gloom"] = function()
 		local fragmentSelf = workspace.NPCS:FindFirstChild("Fragmented Self")
-		if not workspace.Alive:FindFirstChild("Absolute Gloom") then
+		if not workspace.Alive:FindFirstChild("Absolute Gloom") and fragmentSelf then
 			local clickedSin = false
 			repeat
-				task.wait(0.5)
-				fragmentSelf.TalkToNPC:FireServer()
+				if isKilling then
+					break
+				end
 				localPlayer.Character:PivotTo(fragmentSelf:GetPivot())
+				localPlayer.Character.HumanoidRootPart.AssemblyLinearVelocity = Vector3.zero
+				localPlayer.Character.HumanoidRootPart.AssemblyAngularVelocity = Vector3.zero
+				localPlayer.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Ragdoll, false)
+				task.wait()
+				if not state then
+					break
+				end
+				localPlayer.Character:PivotTo(fragmentSelf:GetPivot())
+				fireproximityprompt(fragmentSelf.InteractPrompt)
 				if clickButton("Sin") then
 					clickedSin = true
 				end
 			until clickedSin
 			local clickGloom = false
 			repeat
-				task.wait(0.5)
-				fragmentSelf.TalkToNPC:FireServer()
+				if isKilling then
+					break
+				end
 				localPlayer.Character:PivotTo(fragmentSelf:GetPivot())
+				task.wait()
+				if not state then
+					break
+				end
+				localPlayer.Character:PivotTo(fragmentSelf:GetPivot())
+				fireproximityprompt(fragmentSelf.InteractPrompt)
 				if clickButton("Gloom") then
 					clickGloom = true
 				end
@@ -133,21 +169,38 @@ local bossesFunctions = {
 	end,
 	["Pride"] = function()
 		local fragmentSelf = workspace.NPCS:FindFirstChild("Fragmented Self")
-		if not workspace.Alive:FindFirstChild("Absolute Pride") then
+		if not workspace.Alive:FindFirstChild("Absolute Pride") and fragmentSelf then
 			local clickedSin = false
 			repeat
-				task.wait(0.5)
-				fragmentSelf.TalkToNPC:FireServer()
+				if isKilling then
+					break
+				end
 				localPlayer.Character:PivotTo(fragmentSelf:GetPivot())
+				localPlayer.Character.HumanoidRootPart.AssemblyLinearVelocity = Vector3.zero
+				localPlayer.Character.HumanoidRootPart.AssemblyAngularVelocity = Vector3.zero
+				localPlayer.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Ragdoll, false)
+				task.wait()
+				if not state then
+					break
+				end
+				localPlayer.Character:PivotTo(fragmentSelf:GetPivot())
+				fireproximityprompt(fragmentSelf.InteractPrompt)
 				if clickButton("Sin") then
 					clickedSin = true
 				end
 			until clickedSin
 			local click = false
 			repeat
-				task.wait(0.5)
-				fragmentSelf.TalkToNPC:FireServer()
+				if isKilling then
+					break
+				end
 				localPlayer.Character:PivotTo(fragmentSelf:GetPivot())
+				task.wait()
+				if not state then
+					break
+				end
+				localPlayer.Character:PivotTo(fragmentSelf:GetPivot())
+				fireproximityprompt(fragmentSelf.InteractPrompt)
 				if clickButton("Pride") then
 					click = true
 				end
@@ -156,21 +209,38 @@ local bossesFunctions = {
 	end,
 	["Wrath"] = function()
 		local fragmentSelf = workspace.NPCS:FindFirstChild("Fragmented Self")
-		if not workspace.Alive:FindFirstChild("Absolute Wrath") then
+		if not workspace.Alive:FindFirstChild("Absolute Wrath") and fragmentSelf then
 			local clickedSin = false
 			repeat
-				task.wait(0.5)
-				fragmentSelf.TalkToNPC:FireServer()
+				if isKilling then
+					break
+				end
 				localPlayer.Character:PivotTo(fragmentSelf:GetPivot())
+				localPlayer.Character.HumanoidRootPart.AssemblyLinearVelocity = Vector3.zero
+				localPlayer.Character.HumanoidRootPart.AssemblyAngularVelocity = Vector3.zero
+				localPlayer.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Ragdoll, false)
+				task.wait()
+				if not state then
+					break
+				end
+				localPlayer.Character:PivotTo(fragmentSelf:GetPivot())
+				fireproximityprompt(fragmentSelf.InteractPrompt)
 				if clickButton("Sin") then
 					clickedSin = true
 				end
 			until clickedSin
 			local click = false
 			repeat
-				task.wait(0.5)
-				fragmentSelf.TalkToNPC:FireServer()
+				if isKilling then
+					break
+				end
 				localPlayer.Character:PivotTo(fragmentSelf:GetPivot())
+				task.wait()
+				if not state then
+					break
+				end
+				localPlayer.Character:PivotTo(fragmentSelf:GetPivot())
+				fireproximityprompt(fragmentSelf.InteractPrompt)
 				if clickButton("Wrath") then
 					click = true
 				end
@@ -179,21 +249,38 @@ local bossesFunctions = {
 	end,
 	["Desire"] = function()
 		local fragmentSelf = workspace.NPCS:FindFirstChild("Fragmented Self")
-		if not workspace.Alive:FindFirstChild("Absolute Desire") then
+		if not workspace.Alive:FindFirstChild("Absolute Desire") and fragmentSelf then
 			local clickedSin = false
 			repeat
-				task.wait(0.5)
-				fragmentSelf.TalkToNPC:FireServer()
+				if isKilling then
+					break
+				end
 				localPlayer.Character:PivotTo(fragmentSelf:GetPivot())
+				localPlayer.Character.HumanoidRootPart.AssemblyLinearVelocity = Vector3.zero
+				localPlayer.Character.HumanoidRootPart.AssemblyAngularVelocity = Vector3.zero
+				localPlayer.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Ragdoll, false)
+				task.wait()
+				if not state then
+					break
+				end
+				localPlayer.Character:PivotTo(fragmentSelf:GetPivot())
+				fireproximityprompt(fragmentSelf.InteractPrompt)
 				if clickButton("Sin") then
 					clickedSin = true
 				end
 			until clickedSin
 			local click = false
 			repeat
-				task.wait(0.5)
-				fragmentSelf.TalkToNPC:FireServer()
+				if isKilling then
+					break
+				end
 				localPlayer.Character:PivotTo(fragmentSelf:GetPivot())
+				task.wait()
+				if not state then
+					break
+				end
+				localPlayer.Character:PivotTo(fragmentSelf:GetPivot())
+				fireproximityprompt(fragmentSelf.InteractPrompt)
 				if clickButton("Desire") then
 					click = true
 				end
@@ -202,21 +289,41 @@ local bossesFunctions = {
 	end,
 	["Sloth"] = function()
 		local fragmentSelf = workspace.NPCS:FindFirstChild("Fragmented Self")
-		if not workspace.Alive:FindFirstChild("Absolute Sloth") then
+		if not workspace.Alive:FindFirstChild("Absolute Sloth") and fragmentSelf then
 			local clickedSin = false
 			repeat
-				task.wait(0.5)
-				fragmentSelf.TalkToNPC:FireServer()
+				if isKilling then
+					break
+				end
 				localPlayer.Character:PivotTo(fragmentSelf:GetPivot())
+				localPlayer.Character.HumanoidRootPart.AssemblyLinearVelocity = Vector3.zero
+				localPlayer.Character.HumanoidRootPart.AssemblyAngularVelocity = Vector3.zero
+				localPlayer.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Ragdoll, false)
+				task.wait()
+				if not state then
+					break
+				end
+				localPlayer.Character:PivotTo(fragmentSelf:GetPivot())
+				fireproximityprompt(fragmentSelf.InteractPrompt)
 				if clickButton("Sin") then
 					clickedSin = true
 				end
 			until clickedSin
 			local click = false
 			repeat
-				task.wait(0.5)
-				fragmentSelf.TalkToNPC:FireServer()
+				if isKilling then
+					break
+				end
 				localPlayer.Character:PivotTo(fragmentSelf:GetPivot())
+				localPlayer.Character.HumanoidRootPart.AssemblyLinearVelocity = Vector3.zero
+				localPlayer.Character.HumanoidRootPart.AssemblyAngularVelocity = Vector3.zero
+				localPlayer.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Ragdoll, false)
+				task.wait()
+				if not state then
+					break
+				end
+				localPlayer.Character:PivotTo(fragmentSelf:GetPivot())
+				fireproximityprompt(fragmentSelf.InteractPrompt)
 				if clickButton("Sloth") then
 					click = true
 				end
@@ -225,21 +332,41 @@ local bossesFunctions = {
 	end,
 	["Envy"] = function()
 		local fragmentSelf = workspace.NPCS:FindFirstChild("Fragmented Self")
-		if not workspace.Alive:FindFirstChild("Absolute Envy") then
+		if not workspace.Alive:FindFirstChild("Absolute Envy") and fragmentSelf then
 			local clickedSin = false
 			repeat
-				task.wait(0.5)
-				fragmentSelf.TalkToNPC:FireServer()
+				if isKilling then
+					break
+				end
 				localPlayer.Character:PivotTo(fragmentSelf:GetPivot())
+				localPlayer.Character.HumanoidRootPart.AssemblyLinearVelocity = Vector3.zero
+				localPlayer.Character.HumanoidRootPart.AssemblyAngularVelocity = Vector3.zero
+				localPlayer.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Ragdoll, false)
+				task.wait()
+				if not state then
+					break
+				end
+				localPlayer.Character:PivotTo(fragmentSelf:GetPivot())
+				fireproximityprompt(fragmentSelf.InteractPrompt)
 				if clickButton("Sin") then
 					clickedSin = true
 				end
 			until clickedSin
 			local click = false
 			repeat
-				task.wait(0.5)
-				fragmentSelf.TalkToNPC:FireServer()
+				if isKilling then
+					break
+				end
 				localPlayer.Character:PivotTo(fragmentSelf:GetPivot())
+				localPlayer.Character.HumanoidRootPart.AssemblyLinearVelocity = Vector3.zero
+				localPlayer.Character.HumanoidRootPart.AssemblyAngularVelocity = Vector3.zero
+				localPlayer.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Ragdoll, false)
+				task.wait()
+				if not state then
+					break
+				end
+				localPlayer.Character:PivotTo(fragmentSelf:GetPivot())
+				fireproximityprompt(fragmentSelf.InteractPrompt)
 				if clickButton("Envy") then
 					click = true
 				end
@@ -248,20 +375,36 @@ local bossesFunctions = {
 	end,
 	["Gluttony"] = function()
 		local fragmentSelf = workspace.NPCS:FindFirstChild("Fragmented Self")
-		if not workspace.Alive:FindFirstChild("Absolute Gluttony") then
+		if not workspace.Alive:FindFirstChild("Absolute Gluttony") and fragmentSelf then
 			local clickedSin = false
 			repeat
-				task.wait(0.5)
-				fragmentSelf.TalkToNPC:FireServer()
+				if isKilling then
+					break
+				end
 				localPlayer.Character:PivotTo(fragmentSelf:GetPivot())
+				localPlayer.Character.HumanoidRootPart.AssemblyLinearVelocity = Vector3.zero
+				localPlayer.Character.HumanoidRootPart.AssemblyAngularVelocity = Vector3.zero
+				localPlayer.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Ragdoll, false)
+				task.wait()
+				if not state then
+					break
+				end
+				localPlayer.Character:PivotTo(fragmentSelf:GetPivot())
+				fireproximityprompt(fragmentSelf.InteractPrompt)
 				if clickButton("Sin") then
 					clickedSin = true
 				end
 			until clickedSin
 			local click = false
 			repeat
-				task.wait(0.5)
-				fragmentSelf.TalkToNPC:FireServer()
+				if isKilling then
+					break
+				end
+				task.wait()
+				if not state then
+					break
+				end
+				fireproximityprompt(fragmentSelf.InteractPrompt)
 				localPlayer.Character:PivotTo(fragmentSelf:GetPivot())
 				if clickButton("Gluttony") then
 					click = true
@@ -270,6 +413,8 @@ local bossesFunctions = {
 		end
 	end,
 }
+
+local isLeiHengYet = false
 
 function AutoLCorpBosses.on()
 	AutoLCorpBosses.off()
@@ -291,50 +436,19 @@ function AutoLCorpBosses.on()
 		airTime.Name = "AirTime"
 		airTime.Parent = localPlayer.Character
 	end
-	local function clickButton(text)
-		for _, frame in game:GetService("Players").LocalPlayer.PlayerGui.Dialogue.MainFrame.Options.Scroll:GetChildren() do
-			if frame:IsA("Frame") then
-				if frame.OptionText.Text == text or frame.OptionText.Text:find(text) then
-					replicatesignal(frame.OptionButton.MouseButton1Click)
-					return true
-				end
-			end
-		end
-		return false
-	end
-
-	local whiteLists =
-		{ "EnkephalinBarrels", "Extracted Weapon Crate", "Locker", "Military Crate", "Supply Depot", "Rack" }
-
-	for _, v in workspace.NPCS:GetChildren() do
-		if table.find(whiteLists, v.Name) then
-			localPlayer.Character:PivotTo(v:GetPivot())
-			repeat
-				task.wait()
-				v.TalkToNPC:FireServer()
-				localPlayer.Character:PivotTo(v:GetPivot())
-			until game:GetService("Players").LocalPlayer.Data.IsTalking.Value
-			repeat
-				task.wait()
-				clickButton("Search")
-				v.TalkToNPC:FireServer()
-				localPlayer.Character:PivotTo(v:GetPivot())
-			until localPlayer.PlayerGui.Dialogue.MainFrame.DialogueHolder.DialogueText.Text:find("nothing")
-				or localPlayer.PlayerGui.Dialogue.MainFrame.DialogueHolder.DialogueText.Text:find("empty")
-			repeat
-				task.wait()
-				clickButton("Leave")
-			until not localPlayer.Data.IsTalking.Value
-		end
-	end
 
 	game:GetService("ReplicatedStorage").Events.Equip:FireServer(true)
 	local equipDebounce = false
 	local killBoss = false
 	local canDoAnythingAfterBoss = false
-	bossesFunctions[Options.lCorpBossSelection.Value]()
 	local db = false
+	local isBossSpawned = false
+	local isTalkingToSpawn = false
+
 	connection = RunService.PostSimulation:Connect(LPH_NO_VIRTUALIZE(function(delta)
+		if isLeiHengYet then
+			AutoLCorpBosses.off()
+		end
 		if not state then
 			return
 		end
@@ -346,7 +460,7 @@ function AutoLCorpBosses.on()
 		end
 
 		local droppedItems = getDroppedItems()
-		if #droppedItems ~= 0 and killBoss then
+		if #droppedItems ~= 0 then
 			pickingUpItem = true
 			for _, item in droppedItems do
 				if not connection then
@@ -378,22 +492,8 @@ function AutoLCorpBosses.on()
 				end
 			end
 			pickingUpItem = false
+			killBoss = false
 			return
-		elseif killBoss and canDoAnythingAfterBoss then
-			local clickExtract = false
-			repeat
-				task.wait(1)
-				localPlayer.Character:PivotTo(CFrame.new(103.09710693359375, 981.3513793945312, -84.36695098876953))
-			until workspace.NPCS:FindFirstChild("Elevator Door")
-			repeat
-				task.wait()
-				workspace.NPCS["Elevator Door"].TalkToNPC:FireServer()
-				localPlayer.Character:PivotTo(CFrame.new(103.09710693359375, 981.3513793945312, -84.36695098876953))
-				--clickButton("Extract")
-				if clickButton("Extract") then
-					clickExtract = true
-				end
-			until clickExtract
 		end
 		localPlayer.Data.Stamina.Value = 100
 		local targetTable = {}
@@ -414,6 +514,7 @@ function AutoLCorpBosses.on()
 		end)
 
 		if #targetTable ~= 0 then
+			isKilling = true
 			localPlayer.Character.HumanoidRootPart.Anchored = false
 			if not equipDebounce then
 				equipDebounce = true
@@ -460,10 +561,15 @@ function AutoLCorpBosses.on()
 
 			if targetTable[1]:FindFirstChild("GettingGripped") and not killBoss then
 				if targetTable[1].Name == bossesName[Options.lCorpBossSelection.Value] then
+					if targetTable[1].Name == bossesName["Lei Heng"] then
+						isLeiHengYet = true
+					end
+					killedABoss = true
 					killBoss = true
-					localPlayer.Character.HumanoidRootPart:PivotTo(
+					isBossSpawned = false
+					--[[ 					localPlayer.Character.HumanoidRootPart:PivotTo(
 						targetTable[1].HumanoidRootPart.CFrame + Vector3.new(0, 10, 0)
-					)
+					) ]]
 					task.delay(5, function()
 						canDoAnythingAfterBoss = true
 					end)
@@ -474,7 +580,7 @@ function AutoLCorpBosses.on()
 			if targetTable[1]:FindFirstChild("Knocked") and not gripDebounce then
 				gripDebounce = true
 				localPlayer.Character.HumanoidRootPart:PivotTo(
-					targetTable[1].HumanoidRootPart.CFrame + Vector3.new(0, 2, 0)
+					targetTable[1].HumanoidRootPart.CFrame + Vector3.new(0, 4, 0)
 				)
 				game:GetService("ReplicatedStorage")
 					:WaitForChild("Events")
@@ -497,12 +603,21 @@ function AutoLCorpBosses.on()
 			localPlayer.Character.HumanoidRootPart.AssemblyLinearVelocity = Vector3.zero
 			localPlayer.Character.HumanoidRootPart.AssemblyAngularVelocity = Vector3.zero
 			localPlayer.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Ragdoll, false)
+		else
+			isKilling = false
+			if not isTalkingToSpawn and not isKilling then
+				isTalkingToSpawn = true
+				bossesFunctions[Options.lCorpBossSelection.Value]()
+				isTalkingToSpawn = false
+				isBossSpawned = true
+			end
 		end
 	end))
 	return true
 end
 
-function AutoLCorpBosses.off(floor)
+function AutoLCorpBosses.off()
+	isKilling = false
 	state = false
 	if connection then
 		connection:Disconnect()
@@ -515,6 +630,99 @@ function AutoLCorpBosses.off(floor)
 	table.clear(track)
 	workspace.CurrentCamera.CameraSubject = localPlayer.Character.Humanoid
 	localPlayer.Character.HumanoidRootPart.Anchored = false
+end
+
+function AutoLCorpBosses.extract()
+	if game.PlaceId ~= 99831550635699 then
+		return false, "Not in the L Corp"
+	end
+	if not workspace:GetAttribute("ServerType") == "LCorpBranch" then
+		return false, "Not in the L Corp"
+	end
+
+	if not killedABoss then
+		Library:Notify({
+			Title = "Error Occurred.",
+			Description = "You have to kill a boss first.",
+			Time = 8,
+		})
+		return
+	end
+	local clickExtract = false
+	repeat
+		Toggles.AutoLCorp:SetValue(false)
+		task.wait(1)
+		localPlayer.Character:PivotTo(CFrame.new(103.09710693359375, 981.3513793945312, -84.36695098876953))
+	until workspace.NPCS:FindFirstChild("Elevator Door")
+	RunService.PreRender:Connect(function()
+		Toggles.AutoLCorp:SetValue(false)
+		workspace.NPCS["Elevator Door"].TalkToNPC:FireServer()
+		localPlayer.Character:PivotTo(CFrame.new(103.09710693359375, 981.3513793945312, -84.36695098876953))
+		clickButton("Extract")
+		--[[ 		if clickButton("Extract") then
+			clickExtract = true
+		end ]]
+	end)
+	--[[ 	repeat
+		task.wait()
+		Toggles.AutoLCorp:SetValue(false)
+		workspace.NPCS["Elevator Door"].TalkToNPC:FireServer()
+		localPlayer.Character:PivotTo(CFrame.new(103.09710693359375, 981.3513793945312, -84.36695098876953))
+		clickButton("Extract")
+			if clickButton("Extract") then
+			clickExtract = true
+		end
+	until clickExtract ]]
+end
+
+function AutoLCorpBosses.lootAll()
+	if game.PlaceId ~= 99831550635699 then
+		return false, "Not in the L Corp"
+	end
+	if not workspace:GetAttribute("ServerType") == "LCorpBranch" then
+		return false, "Not in the L Corp"
+	end
+
+	local function clickButton(text)
+		for _, frame in game:GetService("Players").LocalPlayer.PlayerGui.Dialogue.MainFrame.Options.Scroll:GetChildren() do
+			if frame:IsA("Frame") then
+				if frame.OptionText.Text == text or frame.OptionText.Text:find(text) then
+					replicatesignal(frame.OptionButton.MouseButton1Click)
+					return true
+				end
+			end
+		end
+		return false
+	end
+
+	local whiteLists =
+		{ "EnkephalinBarrels", "Extracted Weapon Crate", "Locker", "Military Crate", "Supply Depot", "Rack" }
+	local isCollected = {}
+	for _, v in workspace.NPCS:GetChildren() do
+		if table.find(whiteLists, v.Name) and not table.find(isCollected, v) then
+			table.insert(isCollected, v)
+			localPlayer.Character:PivotTo(v:GetPivot())
+			repeat
+				Toggles.AutoLCorp:SetValue(false)
+				task.wait()
+				v.TalkToNPC:FireServer()
+				localPlayer.Character:PivotTo(v:GetPivot())
+			until game:GetService("Players").LocalPlayer.Data.IsTalking.Value
+			repeat
+				task.wait()
+				Toggles.AutoLCorp:SetValue(false)
+				clickButton("Search")
+				v.TalkToNPC:FireServer()
+				localPlayer.Character:PivotTo(v:GetPivot())
+			until localPlayer.PlayerGui.Dialogue.MainFrame.DialogueHolder.DialogueText.Text:find("nothing")
+				or localPlayer.PlayerGui.Dialogue.MainFrame.DialogueHolder.DialogueText.Text:find("empty")
+			repeat
+				task.wait()
+				Toggles.AutoLCorp:SetValue(false)
+				clickButton("Leave")
+			until not localPlayer.Data.IsTalking.Value
+		end
+	end
 end
 
 return AutoLCorpBosses

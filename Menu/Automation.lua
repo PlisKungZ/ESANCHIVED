@@ -266,6 +266,24 @@ Automation.init = LPH_NO_VIRTUALIZE(function()
 		Default = 1,
 	})
 
+	rightSide:AddButton({
+		Text = "Extract",
+		Func = function()
+			autoLCorp.extract()
+		end,
+		Tooltip = "This will extract you possible",
+		DoubleClick = false,
+	})
+
+	rightSide:AddButton({
+		Text = "Loot All Items",
+		Func = function()
+			autoLCorp.lootAll()
+		end,
+		Tooltip = "This will loot everything in the l corp",
+		DoubleClick = false,
+	})
+
 	rightSide:AddDivider()
 
 	-- Auto Ricardo

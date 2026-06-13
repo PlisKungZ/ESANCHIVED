@@ -54,6 +54,19 @@ Character.init = LPH_NO_VIRTUALIZE(function()
 		Tooltip = "Increase your fly speed",
 		Callback = function(Value) end,
 	})
+	leftSide:AddLabel("Fly Keybind"):AddKeyPicker("flyKeybind", {
+		Default = "",
+		Mode = "Toggle",
+		Text = "ESP Mob Keybind",
+		NoUI = false,
+		Callback = function(Value)
+			if Toggles.Fly.Value then
+				Toggles.Fly:SetValue(false)
+			else
+				Toggles.Fly:SetValue(true)
+			end
+		end,
+	})
 
 	leftSide:AddDivider()
 
@@ -82,6 +95,20 @@ Character.init = LPH_NO_VIRTUALIZE(function()
 			walkSpeed.off()
 			if Toggles.WalkSpeed.Value then
 				walkSpeed.on(Value)
+			end
+		end,
+	})
+
+	leftSide:AddLabel("WalkSpeed Keybind"):AddKeyPicker("walkSpeedKeybind", {
+		Default = "",
+		Mode = "Toggle",
+		Text = "ESP Mob Keybind",
+		NoUI = false,
+		Callback = function(Value)
+			if Toggles.WalkSpeed.Value then
+				Toggles.WalkSpeed:SetValue(false)
+			else
+				Toggles.WalkSpeed:SetValue(true)
 			end
 		end,
 	})

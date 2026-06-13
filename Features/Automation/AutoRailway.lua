@@ -9,6 +9,7 @@ local AutoRailway = {}
 local connection
 local track = {}
 local isM1oneToThreeYet = false
+local stationLabel
 
 local function clickButton(text)
 	for _, frame in game:GetService("Players").LocalPlayer.PlayerGui.Dialogue.MainFrame.Options.Scroll:GetChildren() do
@@ -55,8 +56,10 @@ local function attachmentCounter()
 		return 0
 	end
 	for _, v in workspace.Map.StationDisplay:GetChildren() do
-		if v:IsA("Attachment") then
-			count = count + 1
+		if v:IsA("Attachment") and v:FindFirstChildWhichIsA("ProximityPrompt") then
+			if v:FindFirstChildWhichIsA("ProximityPrompt").Enabled then
+				count = count + 1
+			end
 		end
 	end
 	return count
@@ -105,7 +108,7 @@ local function splitString(str, sep)
 	return result
 end
 
-local enemyLists = { "Nothing There", "Sweeper Brute" }
+local enemyLists = { "Nothing There", "Sweeper Brute", "Warm-Hearted Woodsman" }
 
 local blackListedAnim = {
 	"rbxassetid://16428863879",
@@ -123,6 +126,7 @@ local blackListedAnim = {
 	"rbxassetid://17452468519",
 	"rbxassetid://17457663944",
 	"rbxassetid://17460411925",
+	"rbxassetid://85510754413939",
 }
 local Teleported = false
 local teleportToMerchantdb = false
@@ -162,7 +166,35 @@ local function killMob(offset)
 	end
 
 	local isChecking = false
+	local isIdlingPhase = false
+	local claimed = false
+	local healed = false
+	local isClicked = false
 	connection = RunService.PostSimulation:Connect(LPH_NO_VIRTUALIZE(function(delta)
+		if not stationLabel and workspace.Map:FindFirstChild("StationDisplay") then
+			if workspace.Map:FindFirstChild("StationDisplay"):FindFirstChild("SurfaceGui") then
+				if
+					workspace.Map
+						:FindFirstChild("StationDisplay")
+						:FindFirstChild("SurfaceGui")
+						:FindFirstChild("TextLabel")
+				then
+					stationLabel = Library:AddDraggableLabel(workspace.Map.StationDisplay.SurfaceGui.TextLabel.Text)
+				end
+			end
+		end
+		if workspace.Map:FindFirstChild("StationDisplay") then
+			if workspace.Map:FindFirstChild("StationDisplay"):FindFirstChild("SurfaceGui") then
+				if
+					workspace.Map
+						:FindFirstChild("StationDisplay")
+						:FindFirstChild("SurfaceGui")
+						:FindFirstChild("TextLabel")
+				then
+					stationLabel:SetText(workspace.Map.StationDisplay.SurfaceGui.TextLabel.Text)
+				end
+			end
+		end
 		localPlayer.Character.HumanoidRootPart.Anchored = false
 		if localPlayer.Character:FindFirstChild("Grabbed") then
 			return
@@ -191,6 +223,10 @@ local function killMob(offset)
 			end
 		end
 		if #targetTable ~= 0 then
+			isClicked = true
+			isIdlingPhase = false
+			claimed = false
+			healed = false
 			if not equipedDb then
 				equipedDb = true
 				game:GetService("ReplicatedStorage").Events.Equip:FireServer(true)
@@ -290,14 +326,36 @@ local function killMob(offset)
 						workspace.CurrentCamera.CameraSubject = targetTable[1].Humanoid
 					end
 				elseif targetTable[1].Name == "Sweeper Brute" then
-					localPlayer.Character.HumanoidRootPart:PivotTo(
-						targetTable[1].HumanoidRootPart.CFrame * CFrame.Angles(math.rad(90), 0, 0)
-							+ Vector3.new(0, -11, 0)
-					)
+					if math.floor(targetTable[1].Humanoid.Health) == 1 then
+						local targetHRP = targetTable[1].HumanoidRootPart
+						local targetPos = targetHRP.Position
+						local behind = targetHRP.CFrame.LookVector * -5
+						local myPos = targetPos + behind
+						localPlayer.Character.HumanoidRootPart:PivotTo(CFrame.lookAt(myPos, targetPos))
+					else
+						localPlayer.Character.HumanoidRootPart:PivotTo(
+							targetTable[1].HumanoidRootPart.CFrame * CFrame.Angles(math.rad(90), 0, 0)
+								+ Vector3.new(0, -11, 0)
+						)
+					end
 					workspace.CurrentCamera.CameraSubject = targetTable[1].Humanoid
+				elseif targetTable[1].Name == "Warm-Hearted Woodsman" then
+					if not checkAnimations(blackListedAnim, targetTable[1].Humanoid.Animator) then
+						localPlayer.Character.HumanoidRootPart:PivotTo(
+							targetTable[1]:GetPivot() + Vector3.new(0, 100, 0)
+						)
+					else
+						localPlayer.Character.HumanoidRootPart:PivotTo(targetTable[1].HumanoidRootPart.CFrame)
+						workspace.CurrentCamera.CameraSubject = targetTable[1].Humanoid
+					end
 				end
 			end
 		else
+			if isIdlingPhase then
+				return
+			end
+			isClicked = true
+			isIdlingPhase = true
 			localPlayer.Character.HumanoidRootPart.Anchored = false
 			workspace.CurrentCamera.CameraSubject = game.Players.LocalPlayer.Character.Humanoid
 			for _, animTrack in track do
@@ -308,6 +366,7 @@ local function killMob(offset)
 				equipedDb = false
 			end
 			if pickingUpItem then
+				isIdlingPhase = false
 				return
 			end
 			local droppedItems = getDroppedItems()
@@ -316,6 +375,7 @@ local function killMob(offset)
 				for _, item in droppedItems do
 					if not connection then
 						pickingUpItem = false
+						isIdlingPhase = false
 						return
 					end
 					for _, prompt in item:GetDescendants() do
@@ -325,7 +385,6 @@ local function killMob(offset)
 						end
 						if prompt:IsA("ProximityPrompt") then
 							localPlayer.Character:PivotTo(item:GetPivot())
-							print(item:GetFullName())
 							fireproximityprompt(prompt)
 							if not connection then
 								pickingUpItem = false
@@ -346,12 +405,15 @@ local function killMob(offset)
 				pickingUpItem = false
 			end
 			if checkIfStationYet() and not workspace.NPCS:FindFirstChild("Railway Merchant") then
-				if attachmentCounter() == 4 then
+				if attachmentCounter() >= 4 then
 					for _, chosen in ipairs(autoRailwayLootPriority) do
 						if checkForStuffandClick(chosen) then
+							isIdlingPhase = false
 							return
 						end
 					end
+					--[[ 			elseif attachmentCounter() > 4 then
+					print("yo nigga wtf is going on") ]]
 				end
 			elseif workspace.NPCS:FindFirstChild("Railway Merchant") then
 				if Toggles.autoSellExclude.Value or Toggles.autoSellInclude.Value then
@@ -363,17 +425,101 @@ local function killMob(offset)
 						getSellLists(translatedString, "Include")
 					end
 					if isSellAble then
+						isIdlingPhase = false
 						localPlayer.Character:PivotTo(
 							workspace.NPCS:FindFirstChild("Railway Merchant"):GetPivot() + Vector3.new(-0.5, 0, 0)
 						)
 						return
 					end
 				end
+				if not healed then
+					healed = true
+					repeat
+						task.wait()
+						clickButton("Never")
+						clickButton("Bye")
+					until not game.Players.LocalPlayer.Data.IsTalking.Value
+					repeat
+						if
+							workspace.NPCS:FindFirstChild("Railway Merchant"):FindFirstChildWhichIsA("ProximityPrompt")
+						then
+							localPlayer.Character:PivotTo(
+								workspace.NPCS:FindFirstChild("Railway Merchant"):GetPivot() + Vector3.new(-0.5, 0, 0)
+							)
+							fireproximityprompt(
+								workspace.NPCS
+									:FindFirstChild("Railway Merchant")
+									:FindFirstChildWhichIsA("ProximityPrompt")
+							)
+						end
+						task.wait()
+					until game.Players.LocalPlayer.Data.IsTalking.Value
+					repeat
+						localPlayer.Character:PivotTo(
+							workspace.NPCS:FindFirstChild("Railway Merchant"):GetPivot() + Vector3.new(-0.5, 0, 0)
+						)
+						fireproximityprompt(
+							workspace.NPCS:FindFirstChild("Railway Merchant"):FindFirstChildWhichIsA("ProximityPrompt")
+						)
+						if clickButton("Heal me") then
+							isIdlingPhase = false
+							return
+						end
+						task.wait()
+					until healed
+				end
+				if not claimed and healed then
+					isClicked = false
+					claimed = true
+					repeat
+						task.wait()
+						clickButton("Never")
+						clickButton("Bye")
+					until not game.Players.LocalPlayer.Data.IsTalking.Value
+					repeat
+						localPlayer.Character:PivotTo(
+							workspace.NPCS:FindFirstChild("Railway Merchant"):GetPivot() + Vector3.new(-0.5, 0, 0)
+						)
+						if
+							workspace.NPCS:FindFirstChild("Railway Merchant"):FindFirstChildWhichIsA("ProximityPrompt")
+						then
+							fireproximityprompt(
+								workspace.NPCS
+									:FindFirstChild("Railway Merchant")
+									:FindFirstChildWhichIsA("ProximityPrompt")
+							)
+						end
+						task.wait()
+					until game.Players.LocalPlayer.Data.IsTalking.Value
+					task.delay(3, function()
+						isClicked = true
+						isIdlingPhase = false
+					end)
+					repeat
+						task.wait()
+						fireproximityprompt(
+							workspace.NPCS:FindFirstChild("Railway Merchant"):FindFirstChildWhichIsA("ProximityPrompt")
+						)
+						if clickButton("Claim") then
+							isIdlingPhase = false
+							isClicked = true
+							break
+						end
+						break
+					until isClicked
+					return
+				end
 			end
-			if workspace.Map:FindFirstChild("Exit") then
+			for _, anim in track do
+				anim:Stop()
+				anim:Destroy()
+			end
+			table.clear(track)
+			if workspace.Map:FindFirstChild("Exit") and isClicked then
 				currentExitPos = workspace.Map:FindFirstChild("Exit"):GetPivot()
 				localPlayer.Character:PivotTo(workspace.Map:FindFirstChild("Exit"):GetPivot())
 			end
+			isIdlingPhase = false
 		end
 	end))
 end
@@ -396,6 +542,9 @@ function AutoRailway.on(offset, floor)
 	if kb then
 		kb:Destroy()
 	end
+	if stationLabel then
+		stationLabel:SetVisible(true)
+	end
 
 	if not localPlayer.Character:FindFirstChild("AirTime") then
 		local airTime = Instance.new("Folder")
@@ -404,13 +553,15 @@ function AutoRailway.on(offset, floor)
 	end
 
 	game:GetService("ReplicatedStorage").Events.Equip:FireServer(true)
-
 	killMob(offset)
 
 	return true
 end
 
 function AutoRailway.off()
+	if stationLabel then
+		stationLabel:SetVisible(false)
+	end
 	if connection then
 		connection:Disconnect()
 		connection = nil
