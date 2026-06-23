@@ -8,10 +8,12 @@ local bringBackHitRotate = require("Features/Character/BringBackHitRotate")
 local noCooldown = require("Features/Character/noCooldown")
 local noEndlag = require("Features/Removal/noEndlag")
 local dashNoCD = require("Features/Removal/DashNoCD")
-local noFall = require("Features/Removal/NoFall")
+local noFall = require("Features/Removal/NoFallAndStaminaDrain")
 local noKillBrick = require("Features/Removal/noKillBrick")
 local noWeather = require("Features/Removal/noWeather")
 local killAura = require("Features/Troll/KillAura")
+local NoCamShake = require("Features/Removal/NoCamShake")
+local autoShinMang = require("Features/Character/autoShinMang")
 
 local Character = {}
 local Players = game:GetService("Players")
@@ -214,6 +216,22 @@ Character.init = LPH_NO_VIRTUALIZE(function()
 
 	rightSide:AddDivider()
 
+	-- Skill Cooldown
+	rightSide:AddToggle("AutoShinMang", {
+		Text = "Auto Shin Mang",
+		Default = false,
+		Tooltip = "Activate on configured Sp Point threshold",
+	})
+
+	rightSide:AddSlider("autoShinMangSanity", {
+		Text = "Activation SP Point",
+		Default = 0,
+		Min = -45,
+		Max = 45,
+		Rounding = 0,
+		Tooltip = "Depends on your liking.",
+	})
+
 	-- Instant Log
 	rightSide:AddButton({
 		Text = "Instant Log",
@@ -251,6 +269,12 @@ Character.init = LPH_NO_VIRTUALIZE(function()
 			dashNoCD.off()
 		end
 	end)
+
+	leftSideDown:AddToggle("noStaminaDrain", {
+		Text = "No Stamina Drain",
+		Default = false,
+		Tooltip = "Same as above",
+	})
 
 	leftSideDown:AddToggle("noStun", {
 		Text = "No Slow",
@@ -293,6 +317,12 @@ Character.init = LPH_NO_VIRTUALIZE(function()
 			noWeather.off()
 		end
 	end)
+
+	leftSideDown:AddToggle("noRecoil", {
+		Text = "No Recoil or Camera Shake",
+		Default = false,
+		Tooltip = "Same as above",
+	})
 
 	rightSideDown:AddDropdown("playerSelection", {
 		Values = getPlayerNames(),

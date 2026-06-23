@@ -1,4 +1,4 @@
-local ESP = require("Features/Visuals/ESPMain")
+local ESP = loadstring(game:HttpGet("https://raw.githubusercontent.com/PlisKungZ/MSESP/refs/heads/main/source.luau"))()
 local Players = game:GetService("Players")
 local localPlayer = Players.LocalPlayer
 

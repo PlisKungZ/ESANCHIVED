@@ -659,20 +659,7 @@ function AutoLCorpBosses.extract()
 		workspace.NPCS["Elevator Door"].TalkToNPC:FireServer()
 		localPlayer.Character:PivotTo(CFrame.new(103.09710693359375, 981.3513793945312, -84.36695098876953))
 		clickButton("Extract")
-		--[[ 		if clickButton("Extract") then
-			clickExtract = true
-		end ]]
 	end)
-	--[[ 	repeat
-		task.wait()
-		Toggles.AutoLCorp:SetValue(false)
-		workspace.NPCS["Elevator Door"].TalkToNPC:FireServer()
-		localPlayer.Character:PivotTo(CFrame.new(103.09710693359375, 981.3513793945312, -84.36695098876953))
-		clickButton("Extract")
-			if clickButton("Extract") then
-			clickExtract = true
-		end
-	until clickExtract ]]
 end
 
 function AutoLCorpBosses.lootAll()

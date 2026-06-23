@@ -1,6 +1,6 @@
 local noEndlag = require("Features/Removal/noEndlag")
 local dashNoCD = require("Features/Removal/DashNoCD")
-local noFall = require("Features/Removal/NoFall")
+local noFall = require("Features/Removal/NoFallAndStaminaDrain")
 local noKillBrick = require("Features/Removal/noKillBrick")
 local noWeather = require("Features/Removal/noWeather")
 
@@ -10,15 +10,6 @@ function Removal.init()
 	LPH_NO_VIRTUALIZE(function()
 		local Tab = window:AddTab({ Title = "Removal", Icon = "" })
 		local fallDamageToggle = Tab:AddToggle("fallDamage", { Title = "No Fall Damage", Default = false })
-
-		fallDamageToggle:OnChanged(function()
-			if Options.fallDamage.Value then
-				noFall.on()
-			else
-				noFall.off()
-			end
-		end)
-
 		local noDashCDToggle = Tab:AddToggle("noDashCD", { Title = "No Dash Cooldown", Default = false })
 
 		noDashCDToggle:OnChanged(function()

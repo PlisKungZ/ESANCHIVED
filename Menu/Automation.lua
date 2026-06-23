@@ -6,6 +6,7 @@ local autoLCorp = require("Features/Automation/AutoLCorpBosses")
 local autoRicardo = require("Features/Automation/AutoRicardo")
 local AutoOpenContainerReq = require("Features/AutoOpenContainer/AutoOpenContainer")
 local autoSellReq = require("Features/AutoSell/AutoSell")
+local AutoTradeBooks = require("Features/AutoTradeBooks/AutoTradeBooks")
 
 local Automation = {}
 
@@ -225,14 +226,14 @@ Automation.init = LPH_NO_VIRTUALIZE(function()
 		})
 	end)
 
-	-- ── RIGHT SIDE ─────────────────────────────────────────────
-	local rightSide = Tab:AddRightGroupbox("More Automation")
+	leftSide:AddDivider()
 
 	-- Auto L Corp Bosses
-	rightSide:AddToggle("AutoLCorp", {
+	leftSide:AddToggle("AutoLCorp", {
 		Text = "Auto L Corp Bosses",
 		Default = false,
 	})
+
 	Toggles.AutoLCorp:OnChanged(function()
 		if Toggles.AutoLCorp.Value then
 			autoLCorp.on()
@@ -241,7 +242,7 @@ Automation.init = LPH_NO_VIRTUALIZE(function()
 		end
 	end)
 
-	rightSide:AddSlider("AutoLCorpYOffset", {
+	leftSide:AddSlider("AutoLCorpYOffset", {
 		Text = "L Corp Y Offset",
 		Default = 5,
 		Min = 0,
@@ -250,7 +251,7 @@ Automation.init = LPH_NO_VIRTUALIZE(function()
 		Tooltip = "Depends on your weapons",
 	})
 
-	rightSide:AddDropdown("lCorpBossSelection", {
+	leftSide:AddDropdown("lCorpBossSelection", {
 		Text = "Boss Selection",
 		Values = {
 			"Lei Heng",
@@ -266,7 +267,7 @@ Automation.init = LPH_NO_VIRTUALIZE(function()
 		Default = 1,
 	})
 
-	rightSide:AddButton({
+	leftSide:AddButton({
 		Text = "Extract",
 		Func = function()
 			autoLCorp.extract()
@@ -275,7 +276,7 @@ Automation.init = LPH_NO_VIRTUALIZE(function()
 		DoubleClick = false,
 	})
 
-	rightSide:AddButton({
+	leftSide:AddButton({
 		Text = "Loot All Items",
 		Func = function()
 			autoLCorp.lootAll()
@@ -284,10 +285,9 @@ Automation.init = LPH_NO_VIRTUALIZE(function()
 		DoubleClick = false,
 	})
 
-	rightSide:AddDivider()
+	leftSide:AddDivider()
 
-	-- Auto Ricardo
-	rightSide:AddToggle("AutoRicardo", {
+	leftSide:AddToggle("AutoRicardo", {
 		Text = "Auto Ricardo",
 		Default = false,
 	})
@@ -299,7 +299,7 @@ Automation.init = LPH_NO_VIRTUALIZE(function()
 		end
 	end)
 
-	rightSide:AddSlider("AutoRicardoYOffset", {
+	leftSide:AddSlider("AutoRicardoYOffset", {
 		Text = "Ricardo Y Offset",
 		Default = 5,
 		Min = 0,
@@ -308,7 +308,8 @@ Automation.init = LPH_NO_VIRTUALIZE(function()
 		Tooltip = "Depends on your weapons",
 	})
 
-	rightSide:AddDivider()
+	-- ── RIGHT SIDE ─────────────────────────────────────────────
+	local rightSide = Tab:AddRightGroupbox("More Automation")
 
 	-- Auto Open Container
 	rightSide:AddToggle("autoOpenContainer", {
@@ -406,6 +407,32 @@ Automation.init = LPH_NO_VIRTUALIZE(function()
 				autoSellReq.on("Include", Value)
 			end
 		end,
+	})
+
+	rightSide:AddDivider()
+
+	rightSide:AddToggle("autoTradeBooks", {
+		Text = "Auto Trade Books",
+		Default = false,
+		Tooltip = "Trade Books",
+	})
+
+	Toggles.autoTradeBooks:OnChanged(function()
+		if Toggles.autoTradeBooks.Value then
+			AutoTradeBooks.on()
+		else
+			AutoTradeBooks.off()
+		end
+	end)
+
+	rightSide:AddInput("autoTradeBooksExcludeLists", {
+		Text = "Exclude List",
+		Default = "",
+		Placeholder = "Book Of Capo,...",
+		Numeric = false,
+		Finished = true,
+		Tooltip = "Comma-separated item names",
+		Callback = function(Value) end,
 	})
 end)
 

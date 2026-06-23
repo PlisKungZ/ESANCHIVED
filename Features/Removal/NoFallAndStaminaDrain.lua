@@ -2,6 +2,9 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Events = ReplicatedStorage:WaitForChild("Events")
 local fallDamageEvent = Events:WaitForChild("FallDamage")
+local BegunM1 = Events:WaitForChild("BegunM1")
+local MissParry = Events:WaitForChild("MissParry")
+local LightAttack = Events:WaitForChild("LightAttack")
 
 local localPlayer = Players.LocalPlayer
 
@@ -16,8 +19,14 @@ hookmetamethod(
 	newcclosure(LPH_NO_VIRTUALIZE(function(self, ...)
 		local method = getnamecallmethod()
 
-		if method == "FireServer" and self == fallDamageEvent and state then
+		if method == "FireServer" and self == fallDamageEvent and Toggles.fallDamage.Value then
 			return
+		end
+
+		if method == "FireServer" and Toggles.noStaminaDrain.Value then
+			if self == BegunM1 or self == MissParry or self == LightAttack then
+				return
+			end
 		end
 
 		return self[method](self, ...)

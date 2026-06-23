@@ -157,7 +157,6 @@ function noCooldown.init()
 						}
 						if Options.SkillCooldownSelection.Value then
 							local args = { ... }
-							print(args[1], args[2], args[3], args[4])
 							return condition[Options.SkillCooldownSelection.Value](self, ...)
 						else
 							return oldFireServer(self, ...)

@@ -238,7 +238,7 @@ function autoSell.on(mode, items)
 		end,
 	}
 
-	connection = game.RunService.Stepped:Connect(LPH_NO_VIRTUALIZE(function(deltaTime)
+	connection = game.RunService.Heartbeat:Connect(LPH_NO_VIRTUALIZE(function(deltaTime)
 		if db then
 			return
 		end
