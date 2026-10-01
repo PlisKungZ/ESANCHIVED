@@ -1,3 +1,7 @@
+loadstring([[
+    function LPH_NO_VIRTUALIZE(f) return f end;
+]])()
+
 LPH_NO_VIRTUALIZE(function()
 	local a = game:GetService("RunService")
 	local b = game:GetService("ScriptContext").Error

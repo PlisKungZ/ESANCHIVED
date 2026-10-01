@@ -1,4 +1,6 @@
 /.vscode
 /*.rbxlx
 /*.rbxlx.lock
+/*.rbxl
+/*.rbxl.lock
 /aftman.toml
