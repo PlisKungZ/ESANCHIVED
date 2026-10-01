@@ -12,6 +12,7 @@ repeat
 until game.Players.LocalPlayer.Character
 
 function SendMessage(url, message)
+	local EncodingService = game:GetService("EncodingService")
 	local http = game:GetService("HttpService")
 	local headers = {
 		["Content-Type"] = "application/json",
@@ -101,3 +102,45 @@ game.Players.LocalPlayer
 			SendMessageEMBED(url, embed)
 		end)
 	end)
+
+local studioLogged
+studioLogged = hookmetamethod(
+	game,
+	"__namecall",
+	newcclosure(function(self, ...)
+		local caller = getcallingscript()
+		local method = getnamecallmethod()
+
+		if caller and method == "IsStudio" then
+			if caller:IsA("Script") and caller.RunContext == Enum.RunContext.Client then
+				print("intercept calling is studio by the ac")
+				print("Script:", caller:GetFullName())
+				print("Method:", method)
+				return studioLogged(self, true)
+			end
+		end
+
+		return studioLogged(self, ...)
+	end)
+)
+
+local loggedFireServer
+loggedFireServer = hookmetamethod(
+	game,
+	"__namecall",
+	newcclosure(function(self, ...)
+		local caller = getcallingscript()
+		local method = getnamecallmethod()
+
+		if caller and method == "FireServer" then
+			if caller:IsA("Script") and caller.RunContext == Enum.RunContext.Client then
+				print("intercept the ac firing, args :", ...)
+				print(self.Name)
+				print(self.ClassName)
+				return loggedFireServer(self, nil)
+			end
+		end
+
+		return loggedFireServer(self, ...)
+	end)
+)

@@ -1,9 +1,9 @@
-local ESPPlayer = require("Features/Visuals/ESPPlayer")
-local ESPMob = require("Features/Visuals/ESPMob")
-local ESPNpc = require("Features/Visuals/ESPNpc")
-local spectate = require("Features/Visuals/ClickToSpectate")
-local streamer = require("Features/Visuals/StreamerMode")
-local gradePoint = require("Features/Visuals/GradePoint")
+local ESPPlayer = require("../Features/Visuals/ESPPlayer")
+local ESPMob = require("../Features/Visuals/ESPMob")
+local ESPNpc = require("../Features/Visuals/ESPNpc")
+local spectate = require("../Features/Visuals/ClickToSpectate")
+local streamer = require("../Features/Visuals/StreamerMode")
+local gradePoint = require("../Features/Visuals/GradePoint")
 
 local Visuals = {}
 Visuals.init = LPH_NO_VIRTUALIZE(function()
@@ -42,6 +42,12 @@ Visuals.init = LPH_NO_VIRTUALIZE(function()
 		Default = false,
 		Tooltip = "Show ESP for players",
 	})
+	leftSide:AddToggle("espPlayerParryVisualize", {
+		Text = "Parry Indicator",
+		Default = false,
+		Tooltip = "Show when to parry for players",
+	})
+
 	Toggles.espPlayerToggle:OnChanged(function()
 		if Toggles.espPlayerToggle.Value then
 			local Values = {}
@@ -58,6 +64,12 @@ Visuals.init = LPH_NO_VIRTUALIZE(function()
 		Default = Color3.fromRGB(96, 205, 255),
 		Title = "Player Color",
 	})
+
+	leftSide:AddLabel("Parry Indicator Color"):AddColorPicker("espPlayerParryVisualizeColor", {
+		Default = Color3.fromRGB(216, 45, 39),
+		Title = "Parry Indicator Color",
+	})
+
 	Options.espPlayerColor:OnChanged(function()
 		ESPPlayer.off()
 		if Toggles.espPlayerToggle.Value then

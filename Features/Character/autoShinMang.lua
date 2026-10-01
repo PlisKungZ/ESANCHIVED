@@ -15,6 +15,12 @@ local autoShinMang = {}
 local onGoingRepeat = false
 
 RunService.RenderStepped:Connect(function(deltaTime)
+	if not Toggles then
+		return
+	end
+	if not Toggles.AutoShinMang then
+		return
+	end
 	if not Toggles.AutoShinMang.Value then
 		return
 	end

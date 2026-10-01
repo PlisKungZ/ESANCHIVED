@@ -23,6 +23,12 @@ local oldShakeOnce
 oldShakeOnce = hookfunction(
 	require(foundModules)["ShakeOnce"],
 	newcclosure(function()
+		if not Toggles then
+			return oldShakeOnce
+		end
+		if not Toggles.noRecoil then
+			return oldShakeOnce
+		end
 		if Toggles.noRecoil.Value then
 			return
 		else
@@ -30,16 +36,22 @@ oldShakeOnce = hookfunction(
 		end
 	end)
 )
-local oldShakeScreen
+--[[ local oldShakeScreen
 oldShakeScreen = hookfunction(
 	require(foundModules)["ShakeOnce"],
 	newcclosure(function()
+		if not Toggles then
+			return oldShakeOnce
+		end
+		if not Toggles.noRecoil then
+			return oldShakeOnce
+		end
 		if Toggles.noRecoil.Value then
 			return
 		else
 			return oldShakeOnce
 		end
 	end)
-)
+) ]]
 
 return noCamShake

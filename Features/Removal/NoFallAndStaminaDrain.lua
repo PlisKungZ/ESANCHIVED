@@ -19,10 +19,17 @@ hookmetamethod(
 	newcclosure(LPH_NO_VIRTUALIZE(function(self, ...)
 		local method = getnamecallmethod()
 
+		if not Toggles then
+			return self[method](self, ...)
+		end
+
 		if method == "FireServer" and self == fallDamageEvent and Toggles.fallDamage.Value then
 			return
 		end
 
+		if not Toggles.noStaminaDrain then
+			return self[method](self, ...)
+		end
 		if method == "FireServer" and Toggles.noStaminaDrain.Value then
 			if self == BegunM1 or self == MissParry or self == LightAttack then
 				return

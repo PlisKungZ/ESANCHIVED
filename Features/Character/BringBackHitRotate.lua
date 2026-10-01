@@ -10,7 +10,7 @@ local resetDash
 
 function bringBackHitRotate.on()
 	connection = RunService.RenderStepped:Connect(LPH_NO_VIRTUALIZE(function()
-		local SlowAutoRotate = game.Players.LocalPlayer.Character:FindFirstChild("SlowAutoRotate")
+		local SlowAutoRotate = localPlayer.Character:FindFirstChild("SlowAutoRotate")
 		if SlowAutoRotate then
 			SlowAutoRotate:Destroy()
 		end

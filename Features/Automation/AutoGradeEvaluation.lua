@@ -1,4 +1,5 @@
 local MarketplaceService = game:GetService("MarketplaceService")
+local NonReplicatedCSGDictionaryService = game:GetService("NonReplicatedCSGDictionaryService")
 local VirtualInputManager = game:GetService("VirtualInputManager")
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -26,8 +27,15 @@ end
 local equipedDb = false
 local state = false
 
-local function killMob(offset)
+local function killMob(offsetz, gradeReach)
 	connection = RunService.PostSimulation:Connect(LPH_NO_VIRTUALIZE(function(delta)
+		if gradeReach then
+			if localPlayer.Data.Grade.Value == gradeReach then
+				connection:Disconnect()
+				connection = nil
+			end
+		end
+
 		localPlayer.Data.Stamina.Value = 100
 		local targetTable = {}
 		for _, human in workspace.Alive:GetChildren() do
@@ -89,8 +97,11 @@ local function killMob(offset)
 			for _, animTrack in track do
 				animTrack:AdjustSpeed(1000)
 			end
-			local offset = Vector3.new(0, -Options.autoGradeEvaYOffset.Value, 0)
 
+			local offset = Vector3.new(0, -Options.autoGradeEvaYOffset.Value, 0)
+			if offsetz then
+				offset = Vector3.new(0, -offsetz, 0)
+			end
 			localPlayer.Character.HumanoidRootPart:PivotTo(
 				targetTable[1].HumanoidRootPart.CFrame * CFrame.Angles(math.rad(90), 0, 0) + offset
 			)
@@ -125,6 +136,14 @@ local nothingThereHitAnim = {
 	"rbxassetid://16390226552",
 	"rbxassetid://15151732756",
 	"rbxassetid://94944102411307",
+	"rbxassetid://85510754413939",
+	"rbxassetid://15505794653",
+	"rbxassetid://137188116311603",
+	"rbxassetid://118113959846801",
+	"rbxassetid://125475069258276",
+	"rbxassetid://106835137675309",
+	"rbxassetid://79887420839095",
+	"rbxassetid://129289587223029",
 }
 
 local function checkAnimations(tabled, animator)
@@ -138,7 +157,7 @@ local function checkAnimations(tabled, animator)
 	return true
 end
 
-local function killBehind(offset)
+local function killBehind(offset, gradeReach)
 	local player = game.Players.LocalPlayer.Character.Humanoid.Animator
 	local m1Count = 0
 	for _, animation in
@@ -163,6 +182,12 @@ local function killBehind(offset)
 	connection = RunService.PostSimulation:Connect(LPH_NO_VIRTUALIZE(function(delta)
 		localPlayer.Data.Stamina.Value = 100
 		local targetTable = {}
+		if gradeReach then
+			if localPlayer.Data.Grade.Value == gradeReach then
+				connection:Disconnect()
+				connection = nil
+			end
+		end
 		for _, human in workspace.Alive:GetChildren() do
 			if
 				not Players:GetPlayerFromCharacter(human)
@@ -206,7 +231,6 @@ local function killBehind(offset)
 			for _, animTrack in track do
 				animTrack:AdjustSpeed(0)
 			end
-			connection:Disconnect()
 			workspace.CurrentCamera.CameraSubject = localPlayer.Character.Humanoid
 		end
 	end))
@@ -250,81 +274,134 @@ local function clickBegin()
 	end
 end
 
+local function hitBosses(offset, grade)
+	repeat
+		task.wait()
+		if not Toggles.autoGradeEva.Value then
+			break
+		end
+		if not workspace.NPCS:FindFirstChild("Hana Association Examiner") then
+			break
+		end
+		if not localPlayer.Data.IsTalking.Value then
+			localPlayer.Character:PivotTo(CFrame.new(2480.207763671875, 2439.3525390625, 2840.808349609375))
+			workspace.NPCS["Hana Association Examiner"].TalkToNPC:FireServer()
+		end
+		clickButton("Begin")
+	until workspace.Alive:FindFirstChild("Dream Devouring Siltcurrent")
+		or workspace.Alive:FindFirstChild("Warm-Hearted Woodsman")
+		or workspace.Alive:FindFirstChild("Nothing There")
+
+	killBehind(offset, grade)
+end
+
+local function hanaHit(grade)
+	repeat
+		task.wait()
+		if not Toggles.autoGradeEva.Value then
+			break
+		end
+		if not workspace.NPCS:FindFirstChild("Hana Association Examiner") then
+			break
+		end
+		if not localPlayer.Data.IsTalking.Value then
+			localPlayer.Character:PivotTo(CFrame.new(2480.207763671875, 2439.3525390625, 2840.808349609375))
+			workspace.NPCS["Hana Association Examiner"].TalkToNPC:FireServer()
+		end
+		clickButton("Begin")
+	until workspace.Alive:FindFirstChild("Hana Association Examiner")
+	killMob(3, grade)
+end
+
+local function leaveElavator(grade)
+	local leaveElevator
+	for _, npc in workspace.NPCS:GetChildren() do
+		if npc.Name == "Elevator" and not npc:FindFirstChild("NormalTP") then
+			leaveElevator = npc
+		end
+	end
+	repeat
+		task.wait()
+	until localPlayer.Data.Grade.Value == grade
+	local leaveClick = false
+	repeat
+		task.wait()
+		localPlayer.Character:PivotTo(leaveElevator:GetPivot())
+		if not localPlayer.Data.IsTalking.Value then
+			workspace.NPCS.Elevator.TalkToNPC:FireServer()
+		end
+		if clickButton("Take") then
+			leaveClick = true
+		end
+	until leaveClick
+end
+
 local gradeFunctions = {
 	[9] = function()
-		local fixerClick = false
-		goUpElavator()
 		repeat
-			if not state then
+			task.wait()
+			if not Toggles.autoGradeEva.Value then
 				break
 			end
-			task.wait(0.5)
-			localPlayer.Character:PivotTo(workspace.NPCS["Hana Association Examiner"]:GetPivot())
-			workspace.NPCS["Hana Association Examiner"].TalkToNPC:FireServer()
+			if not localPlayer.Data.IsTalking.Value then
+				localPlayer.Character:PivotTo(CFrame.new(2480.207763671875, 2439.3525390625, 2840.808349609375))
+				workspace.NPCS["Hana Association Examiner"].TalkToNPC:FireServer()
+			end
 			clickButton("Begin")
 			clickButton("9")
 			clickButton("Every")
 			clickButton("125")
 			clickButton("13.5")
 			clickButton("Tower")
-			if clickButton("Fixer") then
-				fixerClick = true
-			end
-		until fixerClick
+			clickButton("Fixer")
+		until localPlayer.Data.Grade.Value == 8
+		leaveElavator(8)
 	end,
 	[8] = function(offset)
-		local clickBeginYet = false
-		goUpElavator()
-		clickBegin()
-		killMob(offset)
+		hanaHit(7)
+		leaveElavator(7)
 	end,
 	[7] = function(offset)
-		goUpElavator()
-		clickBegin()
-		task.wait(1)
-		killMob(offset)
+		hanaHit(6)
+		leaveElavator(6)
 	end,
 	[6] = function(offset)
-		goUpElavator()
-		clickBegin()
-		task.wait(1)
-		killMob(offset)
+		hanaHit(5)
+		leaveElavator(5)
 	end,
 	[5] = function(offset)
-		goUpElavator()
-		clickBegin()
 		repeat
 			task.wait()
-		until #workspace.Alive:GetChildren() >= 2
+			if not Toggles.autoGradeEva.Value then
+				break
+			end
+			if not workspace.NPCS:FindFirstChild("Hana Association Examiner") then
+				break
+			end
+			if not localPlayer.Data.IsTalking.Value then
+				localPlayer.Character:PivotTo(CFrame.new(2480.207763671875, 2439.3525390625, 2840.808349609375))
+				workspace.NPCS["Hana Association Examiner"].TalkToNPC:FireServer()
+			end
+			clickButton("Begin")
+		until workspace.Alive:FindFirstChild("Hana Association Examiner")
 		for _, npc in workspace.NPCS:GetChildren() do
 			if npc.Name == "Elevator" and npc:FindFirstChild("NormalTP") then
 				localPlayer.Character:PivotTo(npc:GetPivot())
 			end
 		end
+		leaveElavator(4)
 	end,
 	[4] = function(offset)
-		goUpElavator()
-		clickBegin()
-		repeat
-			task.wait()
-		until #workspace.Alive:GetChildren() >= 2
-		killMob(offset)
+		hitBosses(offset, 3)
+		leaveElavator(3)
 	end,
 	[3] = function(offset)
-		goUpElavator()
-		clickBegin()
-		repeat
-			task.wait()
-		until #workspace.Alive:GetChildren() >= 2
-		killMob(offset)
+		hitBosses(offset, 2)
+		leaveElavator(2)
 	end,
 	[2] = function(offset)
-		goUpElavator()
-		clickBegin()
-		repeat
-			task.wait()
-		until #workspace.Alive:GetChildren() >= 2
-		killBehind(offset)
+		hitBosses(offset, 1)
+		leaveElavator(1)
 	end,
 }
 
@@ -338,9 +415,7 @@ function AutoGradeEva.on(offset)
 	end
 	state = true
 	if gradeFunctions[tonumber(game:GetService("Players").LocalPlayer.Data.Grade.Value)] then
-		pcall(function()
-			gradeFunctions[tonumber(game:GetService("Players").LocalPlayer.Data.Grade.Value)](offset)
-		end)
+		gradeFunctions[tonumber(game:GetService("Players").LocalPlayer.Data.Grade.Value)](offset)
 		return true, "success"
 	else
 		return false, "not found"

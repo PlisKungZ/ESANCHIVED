@@ -1,6 +1,8 @@
--- Bundled by luabundle {"version":"1.7.0"}
+loadstring([[
+    function LPH_NO_VIRTUALIZE(f) return f end;
+]])()
 local __bundle_require, __bundle_loaded, __bundle_register, __bundle_modules = (function(superRequire)
-	local loadingPlaceholder = {[{}] = true}
+	local loadingPlaceholder = { [{}] = true }
 
 	local register
 	local modules = {}
@@ -24,8 +26,8 @@ local __bundle_require, __bundle_loaded, __bundle_register, __bundle_modules = (
 		else
 			if not modules[name] then
 				if not superRequire then
-					local identifier = type(name) == 'string' and '\"' .. name .. '\"' or tostring(name)
-					error('Tried to require ' .. identifier .. ', but no such module has been registered')
+					local identifier = type(name) == "string" and '"' .. name .. '"' or tostring(name)
+					error("Tried to require " .. identifier .. ", but no such module has been registered")
 				else
 					return superRequire(name)
 				end
@@ -42,3182 +44,1183 @@ local __bundle_require, __bundle_loaded, __bundle_register, __bundle_modules = (
 	return require, loaded, register, modules
 end)(require)
 __bundle_register("__root", function(require, _LOADED, __bundle_register, __bundle_modules)
-LPH_NO_VIRTUALIZE(function()
-	if not game:IsLoaded() then
+	LPH_NO_VIRTUALIZE(function()
+		if not game:IsLoaded() then
+			repeat
+			until task.wait()
+			game:IsLoaded()
+		end
+
 		repeat
-		until task.wait()
-		game:IsLoaded()
-	end
+			task.wait()
+		until game.Players.LocalPlayer
+		repeat
+			task.wait()
+		until game.Players.LocalPlayer.Character
 
-	repeat
-		task.wait()
-	until game.Players.LocalPlayer
-	repeat
-		task.wait()
-	until game.Players.LocalPlayer.Character
+		local whiteListedPlaceId = { 99831550635699, 14038329225 }
 
-	local whiteListedPlaceId = { 99831550635699, 14038329225 }
-
-	if not table.find(whiteListedPlaceId, game.PlaceId) then
-		return
-	end
-end)()
-
-task.spawn(LPH_NO_VIRTUALIZE(function()
-	local Adonis = {
-		Name = "Adonis",
-		Game = "*",
-	}
-
-	local AdonisAnticheatThreads = {}
-	function Adonis.Detect()
-		if not getreg or not getgc or not isfunctionhooked then
-			return false
+		if not table.find(whiteListedPlaceId, game.PlaceId) then
+			return
 		end
+	end)()
 
-		local AdonisDetected = false
+	task.spawn(LPH_NO_VIRTUALIZE(function()
+		local Adonis = {
+			Name = "Adonis",
+			Game = "*",
+		}
 
-		for _, thread in getreg() do
-			if typeof(thread) ~= "thread" then
-				continue
+		local AdonisAnticheatThreads = {}
+		function Adonis.Detect()
+			if not getreg or not getgc or not isfunctionhooked then
+				return false
 			end
 
-			local Source = debug.info(thread, 1, "s")
-			if Source and (Source:match(".Core.Anti") or Source:match(".Plugins.Anti_Cheat")) then
-				AdonisDetected = true
-				table.insert(AdonisAnticheatThreads, thread)
-			end
-		end
+			local AdonisDetected = false
 
-		return AdonisDetected
-	end
-
-	function Adonis.Bypass()
-		for _, thread in AdonisAnticheatThreads do
-			pcall(coroutine.close, thread)
-		end
-
-		local AdonisTables = {}
-		if filtergc then
-			local ContendorAdonisTables = filtergc("table", {
-				Keys = { "Detected", "RLocked" },
-			}, false)
-
-			for _, AdonisTable in ContendorAdonisTables do
-				if typeof(rawget(AdonisTable, "Detected")) ~= "function" then
-					continue
-				end
-				table.insert(AdonisTables, AdonisTable)
-			end
-		else
-			for _, Table in getgc(true) do
-				if typeof(Table) ~= "table" then
+			for _, thread in getreg() do
+				if typeof(thread) ~= "thread" then
 					continue
 				end
 
-				local IsAdonisOrigin = typeof(rawget(Table, "Detected")) == "function" and rawget(Table, "RLocked")
-				if not IsAdonisOrigin then
-					continue
+				local Source = debug.info(thread, 1, "s")
+				if Source and (Source:match(".Core.Anti") or Source:match(".Plugins.Anti_Cheat")) then
+					AdonisDetected = true
+					table.insert(AdonisAnticheatThreads, thread)
 				end
-
-				table.insert(AdonisTables, Table)
 			end
+
+			return AdonisDetected
 		end
 
-		for _, Adonis in AdonisTables do
-			for _, DetectionFunc in Adonis do
-				-- Just in case they already loaded a custom anticheat bypass for adonis
-				if typeof(DetectionFunc) ~= "function" or isfunctionhooked(DetectionFunc) then
-					continue
-				end
+		function Adonis.Bypass()
+			for _, thread in AdonisAnticheatThreads do
+				pcall(coroutine.close, thread)
+			end
 
-				wax.shared.Hooks[DetectionFunc] = wax.shared.Hooking.HookFunction(
-					DetectionFunc,
-					function(action, info, nocrash)
-						coroutine.yield()
-						return task.wait(9e9)
+			local AdonisTables = {}
+			if filtergc then
+				local ContendorAdonisTables = filtergc("table", {
+					Keys = { "Detected", "RLocked" },
+				}, false)
+
+				for _, AdonisTable in ContendorAdonisTables do
+					if typeof(rawget(AdonisTable, "Detected")) ~= "function" then
+						continue
 					end
-				)
+					table.insert(AdonisTables, AdonisTable)
+				end
+			else
+				for _, Table in getgc(true) do
+					if typeof(Table) ~= "table" then
+						continue
+					end
+
+					local IsAdonisOrigin = typeof(rawget(Table, "Detected")) == "function" and rawget(Table, "RLocked")
+					if not IsAdonisOrigin then
+						continue
+					end
+
+					table.insert(AdonisTables, Table)
+				end
+			end
+
+			for _, Adonis in AdonisTables do
+				for _, DetectionFunc in Adonis do
+					-- Just in case they already loaded a custom anticheat bypass for adonis
+					if typeof(DetectionFunc) ~= "function" or isfunctionhooked(DetectionFunc) then
+						continue
+					end
+
+					wax.shared.Hooks[DetectionFunc] = wax.shared.Hooking.HookFunction(
+						DetectionFunc,
+						function(action, info, nocrash)
+							coroutine.yield()
+							return task.wait(9e9)
+						end
+					)
+				end
+			end
+
+			return true
+		end
+		repeat
+			task.wait()
+			Adonis.Detect()
+		until Adonis.Bypass()
+	end))
+
+	local GUI
+	local SaveManager
+	local InterfaceManager
+
+	LPH_NO_VIRTUALIZE(function()
+		GUI = require("GUI/main")
+		SaveManager = require("GUI/SaveManager")
+		InterfaceManager = require("GUI/InterfaceManager")
+	end)()
+
+	local CharacterTab = require("Menu/Character")
+	local VisualTab = require("Menu/Visuals")
+	local AutomationTab = require("Menu/Automation")
+	local RemovalTab = require("Menu/Removal")
+	local TrollTab = require("Menu/Troll")
+	local TeleportationTab = require("Menu/Teleportation")
+	local AutoOpenCacheTab = require("Menu/AutoOpenCache")
+	local AutoSellTab = require("Menu/AutoSell")
+	local webhookTab = require("Menu/Webhook")
+
+	--[[ 	local api = loadstring(game:HttpGet("https://sdkapi-public.luarmor.net/library.lua"))()
+
+	api.script_id = "567b6e2c33ab5dd588a8a6b7016eec74"
+
+	local status = api.check_key(script_key)
+
+	if status.code == "KEY_VALID" then
+	elseif status.code == "KEY_HWID_LOCKED" then
+		game.Players.LocalPlayer:Kick("HWID LOCKED PLEASE RESET YOUR HWID")
+		return
+	elseif status.code == "KEY_INCORRECT" then
+		game.Players.LocalPlayer:Kick("KEY INCORRECT")
+		return
+	else
+		game.Players.LocalPlayer:Kick("Key check failed:" .. status.message .. " Code: " .. status.code)
+		return
+	end ]]
+
+	LPH_NO_VIRTUALIZE(function()
+		local Window = GUI:CreateWindow({
+			Title = "Telepathy Overload - Paid Edition",
+			SubTitle = "by Telepathy",
+			TabWidth = 160,
+			Size = UDim2.fromOffset(580, 460),
+			Acrylic = false,
+			Theme = "Rose",
+			MinimizeKey = Enum.KeyCode.F8,
+		})
+
+		local Options = GUI.Options
+
+		getgenv().Options = Options
+		getgenv().GUI = GUI
+		getgenv().window = Window
+
+		CharacterTab.init(GUI, Window)
+		TeleportationTab.init(GUI, Window)
+		VisualTab.init(GUI, Window)
+		RemovalTab.init(GUI, Window)
+		TrollTab.init(GUI, Window)
+		AutoSellTab.init(GUI, Window)
+		AutoOpenCacheTab.init()
+		AutomationTab.init(GUI, Window)
+		webhookTab.init()
+		local Tabs = {
+			Settings = Window:AddTab({ Title = "Settings", Icon = "settings" }),
+		}
+		-- Addons:
+		-- SaveManager (Allows you to have a configuration system)
+		-- InterfaceManager (Allows you to have a interface managment system)
+
+		-- Hand the library over to our managers
+		SaveManager:SetLibrary(GUI)
+		InterfaceManager:SetLibrary(GUI)
+
+		-- Ignore keys that are used by ThemeManager.
+		-- (we dont want configs to save themes, do we?)
+		SaveManager:IgnoreThemeSettings()
+
+		-- You can add indexes of elements the save manager should ignore
+		SaveManager:SetIgnoreIndexes({})
+
+		-- use case for doing it this way:
+		-- a script hub could have themes in a global folder
+		-- and game configs in a separate folder per game
+		InterfaceManager:SetFolder("TelepathyOverload")
+		SaveManager:SetFolder("TelepathyOverload/Archived")
+
+		InterfaceManager:BuildInterfaceSection(Tabs.Settings)
+		SaveManager:BuildConfigSection(Tabs.Settings)
+
+		Window:SelectTab(1)
+
+		GUI:Notify({
+			Title = "Join Our Discord for more stuff!",
+			Content = "Invite is set to your clipboard join in.",
+			Duration = 8,
+		})
+		task.spawn(function()
+			while true do
+				task.wait(1)
+
+				if GUI.Unloaded then
+					for name, option in GUI.Options do
+						if typeof(option.Value) == "boolean" then
+							option.Value = false
+							GUI.Options[name]:SetValue(false)
+						end
+					end
+					break
+				end
+			end
+		end)
+
+		-- You can use the SaveManager:LoadAutoloadConfig() to load a config
+		-- which has been marked to be one that auto loads!
+		SaveManager:LoadAutoloadConfig()
+		getgenv().loaded = true
+		game.Players.LocalPlayer.Idled:Connect(function()
+			game:GetService("VirtualUser"):CaptureController()
+			game:GetService("VirtualUser"):ClickButton2(Vector2.new())
+		end)
+	end)()
+end)
+__bundle_register("Menu/Webhook", function(require, _LOADED, __bundle_register, __bundle_modules)
+	local HttpService = game:GetService("HttpService")
+	local Players = game:GetService("Players")
+	local localPlayer = Players.LocalPlayer
+
+	local Webhook = {}
+	local splitString = LPH_NO_VIRTUALIZE(function(str, sep)
+		sep = sep or ","
+		local result = {}
+		for item in str:gmatch("[^" .. sep .. "]+") do
+			table.insert(result, item:lower())
+		end
+		return result
+	end)
+	local function sendWebhook()
+		local inventory = ""
+		local itemNames = {}
+		for _, item in localPlayer.Backpack:GetChildren() do
+			if item:IsA("Tool") then
+				if not itemNames[item.Name] then
+					itemNames[item.Name] = 1
+				else
+					itemNames[item.Name] = itemNames[item.Name] + 1
+				end
 			end
 		end
 
-		return true
+		local categorized = {}
+		for itemName, amount in itemNames do
+			local item = localPlayer.Backpack:FindFirstChild(itemName)
+			if item then
+				if not categorized[item:GetAttribute("ItemCategory")] then
+					categorized[item:GetAttribute("ItemCategory")] = {}
+					table.insert(
+						categorized[item:GetAttribute("ItemCategory")],
+						{ ["Name"] = itemName, ["Amount"] = amount }
+					)
+				else
+					table.insert(
+						categorized[item:GetAttribute("ItemCategory")],
+						{ ["Name"] = itemName, ["Amount"] = amount }
+					)
+				end
+			end
+		end
+
+		local headers = {
+			["Content-Type"] = "application/json",
+		}
+		local embed = {
+			["content"] = Options.mentionText.Value,
+			["title"] = "Telepathy Overload | Archived",
+			["description"] = "",
+			["color"] = 65280,
+			["fields"] = {
+				{
+					["name"] = "Player Info",
+					["value"] = string.format(
+						"**Username** : ||%s||\n**Slot Order** : %s\n**Ahn** : %s\n**Lunacy** : %s",
+						localPlayer.Name,
+						localPlayer:GetAttribute("Slot"),
+						localPlayer.PlayerGui.CurrencyGUI.List.Ahn.Amount.Text,
+						localPlayer.PlayerGui.CurrencyGUI.List.Lunacy.Amount.Text
+					),
+				},
+				{
+					["name"] = "Player Inventory",
+					["value"] = inventory,
+				},
+			},
+			["footer"] = {
+				["text"] = "📦 Archived • " .. os.date("%m/%d/%Y %I:%M %p"),
+			},
+			["timestamp"] = os.date("!%Y-%m-%dT%H:%M:%SZ"),
+		}
+
+		local isInserted = {}
+
+		for categoryName, items in categorized do
+			if not table.find(isInserted, categoryName) then
+				table.insert(isInserted, categoryName)
+				local text = ""
+				for _, item in items do
+					text = text .. string.format(" %s %sx\n", item.Name, item.Amount)
+				end
+				table.insert(embed.fields, { ["name"] = categoryName, ["value"] = text })
+			end
+		end
+
+		local data = {
+			["content"] = Options.mentionText.Value,
+			["embeds"] = {
+				{
+					["title"] = embed.title,
+					["description"] = embed.description,
+					["color"] = embed.color,
+					["fields"] = embed.fields,
+					["footer"] = {
+						["text"] = embed.footer.text,
+					},
+				},
+			},
+		}
+		local body = HttpService:JSONEncode(data)
+		local response = request({
+			Url = Options.webHookUrl.Value,
+			Method = "POST",
+			Headers = headers,
+			Body = body,
+		})
 	end
-	repeat
-		task.wait()
-		Adonis.Detect()
-	until Adonis.Bypass()
-end))
 
-local GUI
-local SaveManager
-local InterfaceManager
+	local fetchedTable = {}
+	local connection
+	connection = localPlayer.Backpack.ChildAdded:Connect(function(child)
+		if game.PlaceId ~= 99831550635699 then
+			return
+		end
+		if Options.webHookState.Value then
+			local translatedItems = splitString(Options.itemNotifyList.Value)
+			if table.find(translatedItems, child.Name:lower()) then
+				sendWebhook()
+			end
+		end
+	end)
 
-LPH_NO_VIRTUALIZE(function()
-	GUI = require("GUI/main")
-	SaveManager = require("GUI/SaveManager")
-	InterfaceManager = require("GUI/InterfaceManager")
-end)()
-
-local CharacterTab = require("Menu/Character")
-local VisualTab = require("Menu/Visuals")
-local AutomationTab = require("Menu/Automation")
-local RemovalTab = require("Menu/Removal")
-local TrollTab = require("Menu/Troll")
-local TeleportationTab = require("Menu/Teleportation")
-local AutoOpenCacheTab = require("Menu/AutoOpenCache")
-local AutoSellTab = require("Menu/AutoSell")
-local webhookTab = require("Menu/Webhook")
-
-local api = loadstring(game:HttpGet("https://sdkapi-public.luarmor.net/library.lua"))()
-
-api.script_id = "567b6e2c33ab5dd588a8a6b7016eec74"
-
-local status = api.check_key(script_key)
-
-if status.code == "KEY_VALID" then
-elseif status.code == "KEY_HWID_LOCKED" then
-	game.Players.LocalPlayer:Kick("HWID LOCKED PLEASE RESET YOUR HWID")
-	return
-elseif status.code == "KEY_INCORRECT" then
-	game.Players.LocalPlayer:Kick("KEY INCORRECT")
-	return
-else
-	game.Players.LocalPlayer:Kick("Key check failed:" .. status.message .. " Code: " .. status.code)
-	return
-end
-
-LPH_NO_VIRTUALIZE(function()
-	local Window = GUI:CreateWindow({
-		Title = "Telepathy Overload - Paid Edition",
-		SubTitle = "by Telepathy",
-		TabWidth = 160,
-		Size = UDim2.fromOffset(580, 460),
-		Acrylic = false,
-		Theme = "Rose",
-		MinimizeKey = Enum.KeyCode.F8,
-	})
-
-	local Options = GUI.Options
-
-	getgenv().Options = Options
-	getgenv().GUI = GUI
-	getgenv().window = Window
-
-	CharacterTab.init(GUI, Window)
-	TeleportationTab.init(GUI, Window)
-	VisualTab.init(GUI, Window)
-	RemovalTab.init(GUI, Window)
-	TrollTab.init(GUI, Window)
-	AutoSellTab.init(GUI, Window)
-	AutoOpenCacheTab.init()
-	AutomationTab.init(GUI, Window)
-	webhookTab.init()
-	local Tabs = {
-		Settings = Window:AddTab({ Title = "Settings", Icon = "settings" }),
-	}
-	-- Addons:
-	-- SaveManager (Allows you to have a configuration system)
-	-- InterfaceManager (Allows you to have a interface managment system)
-
-	-- Hand the library over to our managers
-	SaveManager:SetLibrary(GUI)
-	InterfaceManager:SetLibrary(GUI)
-
-	-- Ignore keys that are used by ThemeManager.
-	-- (we dont want configs to save themes, do we?)
-	SaveManager:IgnoreThemeSettings()
-
-	-- You can add indexes of elements the save manager should ignore
-	SaveManager:SetIgnoreIndexes({})
-
-	-- use case for doing it this way:
-	-- a script hub could have themes in a global folder
-	-- and game configs in a separate folder per game
-	InterfaceManager:SetFolder("TelepathyOverload")
-	SaveManager:SetFolder("TelepathyOverload/Archived")
-
-	InterfaceManager:BuildInterfaceSection(Tabs.Settings)
-	SaveManager:BuildConfigSection(Tabs.Settings)
-
-	Window:SelectTab(1)
-
-	GUI:Notify({
-		Title = "Join Our Discord for more stuff!",
-		Content = "Invite is set to your clipboard join in.",
-		Duration = 8,
-	})
 	task.spawn(function()
 		while true do
 			task.wait(1)
-
 			if GUI.Unloaded then
-				for name, option in GUI.Options do
-					if typeof(option.Value) == "boolean" then
-						option.Value = false
-						GUI.Options[name]:SetValue(false)
-					end
-				end
+				connection:Disconnect()
 				break
 			end
 		end
 	end)
 
-	-- You can use the SaveManager:LoadAutoloadConfig() to load a config
-	-- which has been marked to be one that auto loads!
-	SaveManager:LoadAutoloadConfig()
-	getgenv().loaded = true
-	game.Players.LocalPlayer.Idled:Connect(function()
-		game:GetService("VirtualUser"):CaptureController()
-		game:GetService("VirtualUser"):ClickButton2(Vector2.new())
-	end)
-end)()
+	function Webhook.init()
+		LPH_NO_VIRTUALIZE(function()
+			local Tab = window:AddTab({ Title = "Webhook", Icon = "" })
 
-end)
-__bundle_register("Menu/Webhook", function(require, _LOADED, __bundle_register, __bundle_modules)
-local HttpService = game:GetService("HttpService")
-local Players = game:GetService("Players")
-local localPlayer = Players.LocalPlayer
+			local webHookState = Tab:AddToggle("webHookState", { Title = "Webhook Notify", Default = false })
 
-local Webhook = {}
-local splitString = LPH_NO_VIRTUALIZE(function(str, sep)
-	sep = sep or ","
-	local result = {}
-	for item in str:gmatch("[^" .. sep .. "]+") do
-		table.insert(result, item:lower())
-	end
-	return result
-end)
-local function sendWebhook()
-	local inventory = ""
-	local itemNames = {}
-	for _, item in localPlayer.Backpack:GetChildren() do
-		if item:IsA("Tool") then
-			if not itemNames[item.Name] then
-				itemNames[item.Name] = 1
-			else
-				itemNames[item.Name] = itemNames[item.Name] + 1
-			end
-		end
+			local webHookUrl = Tab:AddInput("webHookUrl", {
+				Title = "Webhook Url",
+				Default = "",
+				Placeholder = "https://discord.com/api/...",
+				Numeric = false,
+				Finished = true,
+				Callback = function(Value) end,
+			})
+			local mentionText = Tab:AddInput("mentionText", {
+				Title = "Text Content When Notify",
+				Default = "",
+				Placeholder = "<@676767676767>",
+				Numeric = false,
+				Finished = true,
+				Callback = function(Value) end,
+			})
+			local itemNotifyList = Tab:AddInput("itemNotifyList", {
+				Title = "Item Notify Lists",
+				Default = "",
+				Placeholder = "Book,Gear,...",
+				Numeric = false,
+				Finished = true,
+				Callback = function(Value) end,
+			})
+		end)()
 	end
 
-	local categorized = {}
-	for itemName, amount in itemNames do
-		local item = localPlayer.Backpack:FindFirstChild(itemName)
-		if item then
-			if not categorized[item:GetAttribute("ItemCategory")] then
-				categorized[item:GetAttribute("ItemCategory")] = {}
-				table.insert(
-					categorized[item:GetAttribute("ItemCategory")],
-					{ ["Name"] = itemName, ["Amount"] = amount }
-				)
-			else
-				table.insert(
-					categorized[item:GetAttribute("ItemCategory")],
-					{ ["Name"] = itemName, ["Amount"] = amount }
-				)
-			end
-		end
-	end
-
-	local headers = {
-		["Content-Type"] = "application/json",
-	}
-	local embed = {
-		["content"] = Options.mentionText.Value,
-		["title"] = "Telepathy Overload | Archived",
-		["description"] = "",
-		["color"] = 65280,
-		["fields"] = {
-			{
-				["name"] = "Player Info",
-				["value"] = string.format(
-					"**Username** : ||%s||\n**Slot Order** : %s\n**Ahn** : %s\n**Lunacy** : %s",
-					localPlayer.Name,
-					localPlayer:GetAttribute("Slot"),
-					localPlayer.PlayerGui.CurrencyGUI.List.Ahn.Amount.Text,
-					localPlayer.PlayerGui.CurrencyGUI.List.Lunacy.Amount.Text
-				),
-			},
-			{
-				["name"] = "Player Inventory",
-				["value"] = inventory,
-			},
-		},
-		["footer"] = {
-			["text"] = "📦 Archived • " .. os.date("%m/%d/%Y %I:%M %p"),
-		},
-		["timestamp"] = os.date("!%Y-%m-%dT%H:%M:%SZ"),
-	}
-
-	local isInserted = {}
-
-	for categoryName, items in categorized do
-		if not table.find(isInserted, categoryName) then
-			table.insert(isInserted, categoryName)
-			local text = ""
-			for _, item in items do
-				text = text .. string.format(" %s %sx\n", item.Name, item.Amount)
-			end
-			table.insert(embed.fields, { ["name"] = categoryName, ["value"] = text })
-		end
-	end
-
-	local data = {
-		["content"] = Options.mentionText.Value,
-		["embeds"] = {
-			{
-				["title"] = embed.title,
-				["description"] = embed.description,
-				["color"] = embed.color,
-				["fields"] = embed.fields,
-				["footer"] = {
-					["text"] = embed.footer.text,
-				},
-			},
-		},
-	}
-	local body = HttpService:JSONEncode(data)
-	local response = request({
-		Url = Options.webHookUrl.Value,
-		Method = "POST",
-		Headers = headers,
-		Body = body,
-	})
-end
-
-local fetchedTable = {}
-local connection
-connection = localPlayer.Backpack.ChildAdded:Connect(function(child)
-	if game.PlaceId ~= 99831550635699 then
-		return
-	end
-	if Options.webHookState.Value then
-		local translatedItems = splitString(Options.itemNotifyList.Value)
-		if table.find(translatedItems, child.Name:lower()) then
-			sendWebhook()
-		end
-	end
-end)
-
-task.spawn(function()
-	while true do
-		task.wait(1)
-		if GUI.Unloaded then
-			connection:Disconnect()
-			break
-		end
-	end
-end)
-
-function Webhook.init()
-	LPH_NO_VIRTUALIZE(function()
-		local Tab = window:AddTab({ Title = "Webhook", Icon = "" })
-
-		local webHookState = Tab:AddToggle("webHookState", { Title = "Webhook Notify", Default = false })
-
-		local webHookUrl = Tab:AddInput("webHookUrl", {
-			Title = "Webhook Url",
-			Default = "",
-			Placeholder = "https://discord.com/api/...",
-			Numeric = false,
-			Finished = true,
-			Callback = function(Value) end,
-		})
-		local mentionText = Tab:AddInput("mentionText", {
-			Title = "Text Content When Notify",
-			Default = "",
-			Placeholder = "<@676767676767>",
-			Numeric = false,
-			Finished = true,
-			Callback = function(Value) end,
-		})
-		local itemNotifyList = Tab:AddInput("itemNotifyList", {
-			Title = "Item Notify Lists",
-			Default = "",
-			Placeholder = "Book,Gear,...",
-			Numeric = false,
-			Finished = true,
-			Callback = function(Value) end,
-		})
-	end)()
-end
-
-return Webhook
-
+	return Webhook
 end)
 __bundle_register("Menu/AutoSell", function(require, _LOADED, __bundle_register, __bundle_modules)
-local autoSellReq = require("Features/AutoSell/AutoSell")
-local AutoSell = {}
+	local autoSellReq = require("Features/AutoSell/AutoSell")
+	local AutoSell = {}
 
-function AutoSell.init()
-	LPH_NO_VIRTUALIZE(function()
-		local Tab = window:AddTab({ Title = "Auto Sell", Icon = "" })
+	function AutoSell.init()
+		LPH_NO_VIRTUALIZE(function()
+			local Tab = window:AddTab({ Title = "Auto Sell", Icon = "" })
 
-		local autoSellExclude = Tab:AddToggle("autoSellExclude", { Title = "Auto Sell Exclude Mode", Default = false })
+			local autoSellExclude =
+				Tab:AddToggle("autoSellExclude", { Title = "Auto Sell Exclude Mode", Default = false })
 
-		autoSellExclude:OnChanged(function()
-			if Options.autoSellExclude.Value and Options.sellInput then
-				Options.autoSellInclude:SetValue(false)
-				autoSellReq.on("Exclude", Options.sellInput.Value)
-			else
-				autoSellReq.off()
-			end
-		end)
-
-		local autoSellInclude = Tab:AddToggle("autoSellInclude", { Title = "Auto Sell Include Mode", Default = false })
-
-		autoSellInclude:OnChanged(function()
-			if Options.autoSellInclude.Value and Options.sellInput then
-				Options.autoSellExclude:SetValue(false)
-				autoSellReq.on("Include", Options.sellInput.Value)
-			else
-				autoSellReq.off()
-			end
-		end)
-
-		local autoSellCategorySelection = Tab:AddDropdown("autoSellCategorySelection", {
-			Title = "Auto Sell Category Selection",
-			Values = {
-				"Augments",
-				"Books",
-				"Consumable",
-				"General",
-				"Gifts",
-				"Materials",
-				"Rare Materials",
-				"Tickets",
-				"Unique",
-			},
-			Multi = true,
-			Default = {},
-		})
-
-		autoSellCategorySelection:OnChanged(function(Value)
-			if Options.autoSellExclude.Value then
-				autoSellReq.on("Exclude", Options.sellInput.Value)
-			end
-			if Options.autoSellInclude.Value then
-				autoSellReq.on("Include", Options.sellInput.Value)
-			end
-		end)
-
-		local Input = Tab:AddInput("sellInput", {
-			Title = "Sell Lists",
-			Default = "",
-			Placeholder = "Book,Gear,...",
-			Numeric = false, -- Only allows numbers
-			Finished = true, -- Only calls callback when you press enter
-			Callback = function(Value)
-				if Options.autoSellExclude.Value then
+			autoSellExclude:OnChanged(function()
+				if Options.autoSellExclude.Value and Options.sellInput then
 					Options.autoSellInclude:SetValue(false)
-					autoSellReq.on("Exclude", Value)
+					autoSellReq.on("Exclude", Options.sellInput.Value)
+				else
+					autoSellReq.off()
+				end
+			end)
+
+			local autoSellInclude =
+				Tab:AddToggle("autoSellInclude", { Title = "Auto Sell Include Mode", Default = false })
+
+			autoSellInclude:OnChanged(function()
+				if Options.autoSellInclude.Value and Options.sellInput then
+					Options.autoSellExclude:SetValue(false)
+					autoSellReq.on("Include", Options.sellInput.Value)
+				else
+					autoSellReq.off()
+				end
+			end)
+
+			local autoSellCategorySelection = Tab:AddDropdown("autoSellCategorySelection", {
+				Title = "Auto Sell Category Selection",
+				Values = {
+					"Augments",
+					"Books",
+					"Consumable",
+					"General",
+					"Gifts",
+					"Materials",
+					"Rare Materials",
+					"Tickets",
+					"Unique",
+				},
+				Multi = true,
+				Default = {},
+			})
+
+			autoSellCategorySelection:OnChanged(function(Value)
+				if Options.autoSellExclude.Value then
+					autoSellReq.on("Exclude", Options.sellInput.Value)
 				end
 				if Options.autoSellInclude.Value then
-					Options.autoSellExclude:SetValue(false)
-					autoSellReq.on("Include", Value)
+					autoSellReq.on("Include", Options.sellInput.Value)
 				end
-			end,
-		})
-	end)()
-end
+			end)
 
-return AutoSell
+			local Input = Tab:AddInput("sellInput", {
+				Title = "Sell Lists",
+				Default = "",
+				Placeholder = "Book,Gear,...",
+				Numeric = false, -- Only allows numbers
+				Finished = true, -- Only calls callback when you press enter
+				Callback = function(Value)
+					if Options.autoSellExclude.Value then
+						Options.autoSellInclude:SetValue(false)
+						autoSellReq.on("Exclude", Value)
+					end
+					if Options.autoSellInclude.Value then
+						Options.autoSellExclude:SetValue(false)
+						autoSellReq.on("Include", Value)
+					end
+				end,
+			})
+		end)()
+	end
 
+	return AutoSell
 end)
 __bundle_register("Features/AutoSell/AutoSell", function(require, _LOADED, __bundle_register, __bundle_modules)
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-local VirtualInputManager = game:GetService("VirtualInputManager")
-local localPlayer = Players.LocalPlayer
+	local Players = game:GetService("Players")
+	local RunService = game:GetService("RunService")
+	local VirtualInputManager = game:GetService("VirtualInputManager")
+	local localPlayer = Players.LocalPlayer
 
-local autoSell = {}
-local splitString = LPH_NO_VIRTUALIZE(function(str, sep)
-	sep = sep or ","
-	local result = {}
-	for item in str:gmatch("[^" .. sep .. "]+") do
-		table.insert(result, item:lower())
-	end
-	return result
-end)
+	local autoSell = {}
+	local splitString = LPH_NO_VIRTUALIZE(function(str, sep)
+		sep = sep or ","
+		local result = {}
+		for item in str:gmatch("[^" .. sep .. "]+") do
+			table.insert(result, item:lower())
+		end
+		return result
+	end)
 
-local function clickButton(text)
-	for _, frame in game:GetService("Players").LocalPlayer.PlayerGui.Dialogue.MainFrame.Options.Scroll:GetChildren() do
-		if frame:IsA("Frame") then
-			if frame.OptionText.Text == text or frame.OptionText.Text:find(text) then
-				replicatesignal(frame.OptionButton.MouseButton1Click)
-				return true
+	local function clickButton(text)
+		for _, frame in game:GetService("Players").LocalPlayer.PlayerGui.Dialogue.MainFrame.Options.Scroll:GetChildren() do
+			if frame:IsA("Frame") then
+				if frame.OptionText.Text == text or frame.OptionText.Text:find(text) then
+					replicatesignal(frame.OptionButton.MouseButton1Click)
+					return true
+				end
 			end
 		end
+		return false
 	end
-	return false
-end
 
-local connection
-local state = false
-getgenv().isSellAble = true
+	local connection
+	local state = false
+	getgenv().isSellAble = true
 
-local merchant = {
-	[99831550635699] = "Railway Merchant",
-	[14038329225] = "Restaurant Owner",
-}
+	local merchant = {
+		[99831550635699] = "Railway Merchant",
+		[14038329225] = "Restaurant Owner",
+	}
 
-local function fetchAutoSellCategory()
-	local tabled = {}
-	for name, _ in Options.autoSellCategorySelection.Value do
-		table.insert(tabled, name)
+	local function fetchAutoSellCategory()
+		local tabled = {}
+		for name, _ in Options.autoSellCategorySelection.Value do
+			table.insert(tabled, name)
+		end
+		return tabled
 	end
-	return tabled
-end
 
-local notSellAbleLists = {}
+	local notSellAbleLists = {}
 
-getgenv().getSellLists = function(translatedItems, mode)
-	local tabled = {}
-	local modesLists = {
-		["Exclude"] = function()
-			for _, item in localPlayer.Backpack:GetChildren() do
-				if
-					not table.find(translatedItems, item.Name:lower())
-					and item:FindFirstChild("SellPrice")
-					and not table.find(fetchAutoSellCategory(), item:GetAttribute("ItemCategory"))
-					and not item:FindFirstChild("SingularityStored")
-					and item.Name ~= "Singularity"
-					and not table.find(notSellAbleLists, item.Name)
-				then
-					if item:FindFirstChild("SellPrice").Value ~= 0 then
-						if not table.find(tabled, item.Name) then
-							table.insert(tabled, item.Name)
+	getgenv().getSellLists = function(translatedItems, mode)
+		local tabled = {}
+		local modesLists = {
+			["Exclude"] = function()
+				for _, item in localPlayer.Backpack:GetChildren() do
+					if
+						not table.find(translatedItems, item.Name:lower())
+						and item:FindFirstChild("SellPrice")
+						and not table.find(fetchAutoSellCategory(), item:GetAttribute("ItemCategory"))
+						and not item:FindFirstChild("SingularityStored")
+						and item.Name ~= "Singularity"
+						and not table.find(notSellAbleLists, item.Name)
+					then
+						if item:FindFirstChild("SellPrice").Value ~= 0 then
+							if not table.find(tabled, item.Name) then
+								table.insert(tabled, item.Name)
+							end
 						end
 					end
 				end
-			end
-		end,
-		["Include"] = function()
-			for _, item in localPlayer.Backpack:GetChildren() do
-				if
-					table.find(translatedItems, item.Name:lower())
-					and item:FindFirstChild("SellPrice")
-					and table.find(fetchAutoSellCategory(), item:GetAttribute("ItemCategory"))
-					and not item:FindFirstChild("SingularityStored")
-					and item.Name ~= "Singularity"
-					and not table.find(notSellAbleLists, item)
-				then
-					if item:FindFirstChild("SellPrice").Value ~= 0 then
-						if not table.find(tabled, item.Name) then
-							table.insert(tabled, item.Name)
+			end,
+			["Include"] = function()
+				for _, item in localPlayer.Backpack:GetChildren() do
+					if
+						table.find(translatedItems, item.Name:lower())
+						and item:FindFirstChild("SellPrice")
+						and table.find(fetchAutoSellCategory(), item:GetAttribute("ItemCategory"))
+						and not item:FindFirstChild("SingularityStored")
+						and item.Name ~= "Singularity"
+						and not table.find(notSellAbleLists, item)
+					then
+						if item:FindFirstChild("SellPrice").Value ~= 0 then
+							if not table.find(tabled, item.Name) then
+								table.insert(tabled, item.Name)
+							end
 						end
 					end
 				end
-			end
-		end,
-	}
-	if localPlayer.Character:FindFirstChildWhichIsA("Tool") then
-		localPlayer.Character:FindFirstChildWhichIsA("Tool").Parent = localPlayer.Character
-	end
-	modesLists[mode]()
-	if #tabled == 0 then
-		getgenv().isSellAble = false
-	else
-		getgenv().isSellAble = true
-	end
-	return tabled
-end
-
-function autoSell.on(mode, items)
-	state = true
-	local translatedItems = splitString(items)
-	local talkToNpcDb = false
-	local promptCooldown = false
-	local db = false
-	local modeFunctions = {
-		["Include"] = function()
-			for _, itemName in getSellLists(translatedItems, mode) do
-				if not workspace.NPCS:FindFirstChild(merchant[game.PlaceId]) then
-					db = false
-					return
-				end
-
-				local dist =
-					localPlayer:DistanceFromCharacter(workspace.NPCS[merchant[game.PlaceId]]:GetPivot().Position)
-
-				if dist > 8 then
-					db = false
-					return
-				end
-				if not localPlayer.PlayerGui.Dialogue.Enabled then
-					db = false
-					return
-				end
-				if not state then
-					db = false
-					return
-				end
-
-				if localPlayer.Character:FindFirstChildWhichIsA("Tool") then
-					localPlayer.Character:FindFirstChildWhichIsA("Tool").Parent = localPlayer.Backpack
-				end
-
-				local item = localPlayer.Backpack:FindFirstChild(itemName)
-				if not item then
-					continue
-				end
-
-				item.Parent = localPlayer.Character
-				countdown = false
-				repeat
-					clickButton("Can")
-					clickButton("All")
-					clickButton("How")
-					if not state then
-						db = false
-						return
-					end
-					if not localPlayer.PlayerGui.Dialogue.Enabled then
-						db = false
-						return
-					end
-					task.wait()
-					if not countdown then
-						countdown = true
-						task.delay(10, function()
-							if item.Parent then
-								db = false
-								table.insert(notSellAbleLists, item)
-							end
-						end)
-					end
-				until not item.Parent
-			end
-			db = false
-		end,
-		["Exclude"] = function()
-			for _, itemName in getSellLists(translatedItems, mode) do
-				if not workspace.NPCS:FindFirstChild(merchant[game.PlaceId]) then
-					db = false
-					return
-				end
-
-				local dist =
-					localPlayer:DistanceFromCharacter(workspace.NPCS[merchant[game.PlaceId]]:GetPivot().Position)
-
-				if dist > 8 then
-					db = false
-					return
-				end
-				if not localPlayer.PlayerGui.Dialogue.Enabled then
-					db = false
-					return
-				end
-				if not state then
-					db = false
-					return
-				end
-
-				if localPlayer.Character:FindFirstChildWhichIsA("Tool") then
-					localPlayer.Character:FindFirstChildWhichIsA("Tool").Parent = localPlayer.Backpack
-				end
-
-				local item = localPlayer.Backpack:FindFirstChild(itemName)
-				if not item then
-					continue
-				end
-
-				item.Parent = localPlayer.Character
-				local countdown = false
-				repeat
-					clickButton("Can")
-					clickButton("All")
-					clickButton("How")
-					if not state then
-						db = false
-						return
-					end
-					if not localPlayer.PlayerGui.Dialogue.Enabled then
-						db = false
-						return
-					end
-					task.wait()
-					if not countdown then
-						countdown = true
-						task.delay(10, function()
-							if item.Parent then
-								db = false
-								table.insert(notSellAbleLists, item)
-							end
-						end)
-					end
-				until not item.Parent
-			end
-			db = false
-		end,
-	}
-
-	connection = game.RunService.Stepped:Connect(LPH_NO_VIRTUALIZE(function(deltaTime)
-		if db then
-			return
+			end,
+		}
+		if localPlayer.Character:FindFirstChildWhichIsA("Tool") then
+			localPlayer.Character:FindFirstChildWhichIsA("Tool").Parent = localPlayer.Character
 		end
-		if not workspace.NPCS:FindFirstChild(merchant[game.PlaceId]) then
-			return
-		end
-
-		local dist = localPlayer:DistanceFromCharacter(workspace.NPCS[merchant[game.PlaceId]]:GetPivot().Position)
-		if dist > 8 then
-			return
-		end
-
-		if not localPlayer.PlayerGui:FindFirstChild("InteractPromptGUI") then
-			return
-		end
-
-		if not localPlayer.Data.IsTalking.Value then
-			if promptCooldown then
-				return
-			end
-			promptCooldown = true
-			fireproximityprompt(
-				workspace.NPCS:FindFirstChild(merchant[game.PlaceId]):FindFirstChildWhichIsA("ProximityPrompt")
-			)
-			task.delay(2, function()
-				promptCooldown = false
-			end)
+		modesLists[mode]()
+		if #tabled == 0 then
+			getgenv().isSellAble = false
 		else
-			if db then
-				return
-			end
-			db = true
-			task.spawn(function() -- spawn so task.wait() inside doesn't block Stepped
-				modeFunctions[mode]()
-				db = false
-			end)
+			getgenv().isSellAble = true
 		end
-	end))
-end
-
-function autoSell.off()
-	state = false
-	if connection then
-		connection:Disconnect()
-		connection = nil
+		return tabled
 	end
-end
 
-return autoSell
-
-end)
-__bundle_register("Menu/AutoOpenCache", function(require, _LOADED, __bundle_register, __bundle_modules)
-local AutoOpenContainerReq = require("Features/AutoOpenContainer/AutoOpenContainer")
-
-local AutoOpenCache = {}
-
-function AutoOpenCache.init()
-	LPH_NO_VIRTUALIZE(function()
-		local Tab = window:AddTab({ Title = "Auto Open Container", Icon = "" })
-
-		local autoOpenContainer = Tab:AddToggle("autoOpenContainer", { Title = "Auto Open Container", Default = false })
-
-		autoOpenContainer:OnChanged(function()
-			if Options.autoOpenContainer.Value and #Options.autoOpenContainerSelection.Values ~= 0 then
-				AutoOpenContainerReq.on()
-			else
-				AutoOpenContainerReq.off()
-			end
-		end)
-
-		local autoOpenContainerSelection = Tab:AddDropdown("autoOpenContainerSelection", {
-			Title = "Auto Open Container Selection",
-			Values = {
-				"Caches",
-				"Seed Of Light",
-				"Fixer's Note",
-				"Exp Ticket",
-			},
-			Multi = true,
-			Default = {},
-		})
-	end)()
-end
-
-return AutoOpenCache
-
-end)
-__bundle_register("Features/AutoOpenContainer/AutoOpenContainer", function(require, _LOADED, __bundle_register, __bundle_modules)
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-
-local localPlayer = Players.LocalPlayer
-
-local AutoOpenContainer = {}
-
-local connection
-local onCd = false
-
-local itemListsKeyword = {
-	["Caches"] = "Cache",
-	["Seed Of Light"] = "Seed Of Light",
-	["Fixer's Note"] = "Fixer's Note",
-	["Exp Ticket"] = "Training",
-}
-
-local ignoreLists = {}
-
-function AutoOpenContainer.on()
-	AutoOpenContainer.off()
-	connection = RunService.Heartbeat:Connect(function(deltaTime)
-		localPlayer.PlayerGui.PageSelection.Enabled = false
-		local usedBook = localPlayer.Character:FindFirstChild("UsedBook")
-		if usedBook then
-			usedBook:Destroy()
-		end
-		if onCd then
-			return
-		end
-		local oldTool = localPlayer.Character:FindFirstAncestorWhichIsA("Tool")
-		if oldTool then
-			oldTool.Parent = localPlayer.Backpack
-		end
-		onCd = true
-		for _, item in localPlayer.Backpack:GetChildren() do
-			for _, value in Options.autoOpenContainerSelection.Values do
-				if
-					item.Name:find(itemListsKeyword[value])
-					and not item:FindFirstChild("SingularityStored")
-					and not table.find(ignoreLists, item)
-				then
-					if not connection then
-						break
+	function autoSell.on(mode, items)
+		state = true
+		local translatedItems = splitString(items)
+		local talkToNpcDb = false
+		local promptCooldown = false
+		local db = false
+		local modeFunctions = {
+			["Include"] = function()
+				for _, itemName in getSellLists(translatedItems, mode) do
+					if not workspace.NPCS:FindFirstChild(merchant[game.PlaceId]) then
+						db = false
+						return
 					end
-					local failSafe = false
-					local breakLoop = false
+
+					local dist =
+						localPlayer:DistanceFromCharacter(workspace.NPCS[merchant[game.PlaceId]]:GetPivot().Position)
+
+					if dist > 8 then
+						db = false
+						return
+					end
+					if not localPlayer.PlayerGui.Dialogue.Enabled then
+						db = false
+						return
+					end
+					if not state then
+						db = false
+						return
+					end
+
+					if localPlayer.Character:FindFirstChildWhichIsA("Tool") then
+						localPlayer.Character:FindFirstChildWhichIsA("Tool").Parent = localPlayer.Backpack
+					end
+
+					local item = localPlayer.Backpack:FindFirstChild(itemName)
+					if not item then
+						continue
+					end
+
+					item.Parent = localPlayer.Character
+					countdown = false
 					repeat
-						if not connection then
-							break
+						clickButton("Can")
+						clickButton("All")
+						clickButton("How")
+						if not state then
+							db = false
+							return
 						end
-						if breakLoop then
-							break
+						if not localPlayer.PlayerGui.Dialogue.Enabled then
+							db = false
+							return
 						end
 						task.wait()
-						firesignal(item.Activated)
-						if not failSafe then
-							failSafe = true
-							task.delay(5, function()
+						if not countdown then
+							countdown = true
+							task.delay(10, function()
 								if item.Parent then
-									breakLoop = true
-									table.insert(ignoreLists, item)
+									db = false
+									table.insert(notSellAbleLists, item)
 								end
 							end)
 						end
 					until not item.Parent
 				end
-			end
-		end
-		onCd = false
-	end)
-end
-
-function AutoOpenContainer.off()
-	if connection then
-		connection:Disconnect()
-	end
-	localPlayer.PlayerGui.PageSelection.Enabled = true
-end
-
-return AutoOpenContainer
-
-end)
-__bundle_register("Menu/Teleportation", function(require, _LOADED, __bundle_register, __bundle_modules)
-local Players = game:GetService("Players")
-
-local Teleportation = {}
-
-local function getPlayerNames()
-	local names = {}
-	for _, player in Players:GetPlayers() do
-		if player ~= Players.LocalPlayer then
-			table.insert(names, player.Name)
-		end
-	end
-	return names
-end
-
-function Teleportation.init()
-	LPH_NO_VIRTUALIZE(function()
-		local Tab = window:AddTab({ Title = "Teleportation", Icon = "" })
-		local playerSelectionDropDown = Tab:AddDropdown("playerSelection", {
-			Title = "Teleport Target",
-			Values = getPlayerNames(),
-			Multi = false,
-			Default = "",
-		})
-
-		for _, player in Players:GetPlayers() do
-			if player ~= Players.LocalPlayer then
-				Options.playerSelection:SetValues(getPlayerNames())
-			end
-		end
-
-		Players.PlayerAdded:Connect(function(player)
-			if player == Players.LocalPlayer then
-				return
-			end
-			Options.playerSelection:SetValues(getPlayerNames())
-		end)
-
-		Players.PlayerRemoving:Connect(function(player)
-			if player == Players.LocalPlayer then
-				return
-			end
-			Options.playerSelection:SetValues(getPlayerNames())
-		end)
-
-		Tab:AddButton({
-			Title = "Refresh Player Lists",
-			Callback = function()
-				for _, player in Players:GetPlayers() do
-					if player ~= Players.LocalPlayer then
-						Options.playerSelection:SetValues(getPlayerNames())
-					end
-				end
+				db = false
 			end,
-		})
-		Tab:AddButton({
-			Title = "Teleport",
-			Description = "Teleport To Chosen Player.",
-			Callback = function()
-				Players.LocalPlayer.Character:PivotTo(Players[Options.playerSelection.Value].Character:GetPivot())
-			end,
-		})
-	end)()
-end
-
-return Teleportation
-
-end)
-__bundle_register("Menu/Troll", function(require, _LOADED, __bundle_register, __bundle_modules)
-local Players = game:GetService("Players")
-local void = require("Features/Troll/Void")
-local killSomeone = require("Features/Troll/KillSomeone")
-local killAura = require("Features/Troll/KillAura")
-local Troll = {}
-
-local function getPlayerNames()
-	local names = {}
-	for _, player in Players:GetPlayers() do
-		task.wait()
-		if player ~= Players.LocalPlayer then
-			table.insert(names, player.Name)
-		end
-	end
-	return names
-end
-
-function Troll.init()
-	LPH_NO_VIRTUALIZE(function()
-		local Tab = window:AddTab({ Title = "Troll", Icon = "" })
-		Tab:AddParagraph({
-			Title = "Void Character Usage",
-			Content = "Probably not working at the moment.\n It's something to do with network ownership.",
-		})
-
-		local voidCharacterToggle = Tab:AddToggle("voidCharacter", { Title = "Void Character", Default = false })
-
-		voidCharacterToggle:OnChanged(function()
-			if Options.voidCharacter.Value then
-				void.on()
-			else
-				void.off()
-			end
-		end)
-
-		Tab:AddParagraph({
-			Title = "Teleport To Sky Usage",
-			Content = "I suggest use Index Cleaver and then press the keybind to take people to the sky.",
-		})
-		local teleportToSkyKeybind = Tab:AddKeybind("teleportToSky", {
-			Title = "Teleport To Sky Kebind",
-			Mode = "Toggle",
-			Default = "",
-			Callback = function(Value)
-				local oldPos = game.Players.LocalPlayer.Character:GetPivot()
-				game.Players.LocalPlayer.Character:PivotTo(oldPos + Vector3.new(0, 2000, 0))
-				task.delay(3, function()
-					game.TextChatService.TextChannels.RBXGeneral:SendAsync("mb all")
-				end)
-				task.delay(5, function()
-					game.Players.LocalPlayer.Character:PivotTo(oldPos)
-				end)
-			end,
-		})
-
-		local killAuraPlayer = Tab:AddToggle("KillAura", { Title = "Kill Selected Target", Default = false })
-		Options.KillAura:SetValue(false)
-
-		killAuraPlayer:OnChanged(function()
-			if Options.KillAura.Value then
-				killSomeone.on(-7, Players[Options.playerKillAuraSelection.Value].Character)
-			else
-				killSomeone.off()
-			end
-		end)
-
-		local playerKillAuraSelection = Tab:AddDropdown("playerKillAuraSelection", {
-			Title = "Kill Target",
-			Values = getPlayerNames(),
-			Multi = false,
-			Default = "",
-		})
-
-		for _, player in Players:GetPlayers() do
-			if player ~= Players.LocalPlayer then
-				Options.playerSelection:SetValues(getPlayerNames())
-			end
-		end
-
-		Players.PlayerAdded:Connect(function(player)
-			Options.playerSelection:SetValues(getPlayerNames())
-		end)
-
-		Players.PlayerRemoving:Connect(function(player)
-			Options.playerSelection:SetValues(getPlayerNames())
-		end)
-
-		Tab:AddButton({
-			Title = "Refresh Player Lists",
-			Callback = function()
-				for _, player in Players:GetPlayers() do
-					if player ~= Players.LocalPlayer then
-						Options.playerSelection:SetValues(getPlayerNames())
-					end
-				end
-			end,
-		})
-		local hitAuraPlayer = Tab:AddToggle("hitAura", { Title = "Hit Aura", Default = false })
-		Options.hitAura:SetValue(false)
-
-		hitAuraPlayer:OnChanged(function()
-			if Options.hitAura.Value then
-				killAura.on()
-			else
-				killAura.off()
-			end
-		end)
-	end)()
-end
-
-return Troll
-
-end)
-__bundle_register("Features/Troll/KillAura", function(require, _LOADED, __bundle_register, __bundle_modules)
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-
-local localPlayer = Players.LocalPlayer
-local KillAura = {}
-local track = {}
-local connection
-function KillAura.on()
-	KillAura.off()
-	local player = game.Players.LocalPlayer.Character.Humanoid.Animator
-	game:GetService("ReplicatedStorage").Events.Equip:FireServer(true)
-	local m1Count = 0
-	for _, animation in
-		game:GetService("ReplicatedStorage").WeaponINFO[game.Players.LocalPlayer.Data.Weapon.Value]:GetChildren()
-	do
-		if animation.Name:find("AttackAnimation") and animation.Name ~= "ChargedAttackAnimation" then
-			m1Count = m1Count + 1
-		end
-	end
-	for i = 1, m1Count - 1 do
-		local animtrack = player:LoadAnimation(
-			game:GetService("ReplicatedStorage").WeaponINFO[game.Players.LocalPlayer.Data.Weapon.Value]["AttackAnimation" .. tostring(
-				i
-			)]
-		)
-		animtrack:Play(0, 0.01, 100000)
-		animtrack.Looped = true
-		table.insert(track, animtrack)
-	end
-	connection = RunService.RenderStepped:Connect(function(deltaTime)
-		localPlayer.Data.Stamina.Value = 100
-	end)
-end
-
-function KillAura.off()
-	if connection then
-		connection:Disconnect()
-	end
-	game:GetService("ReplicatedStorage").Events.Equip:FireServer(false)
-	for _, anim in track do
-		anim:Stop()
-		anim:Destroy()
-	end
-	workspace.CurrentCamera.CameraSubject = localPlayer.Character.Humanoid
-end
-
-return KillAura
-
-end)
-__bundle_register("Features/Troll/KillSomeone", function(require, _LOADED, __bundle_register, __bundle_modules)
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-
-local localPlayer = Players.LocalPlayer
-local KillSomeone = {}
-local track = {}
-local connection
-local m1Debounce = false
-local equippedDebounce = false
-local gripDebounce = false
-local oldPos
-
-function KillSomeone.on(offset, target)
-	KillSomeone.off()
-	oldPos = localPlayer.Character:GetPivot()
-	local player = game.Players.LocalPlayer.Character.Humanoid.Animator
-	for i = 1, 3 do
-		local animtrack = player:LoadAnimation(
-			game:GetService("ReplicatedStorage").WeaponINFO[game.Players.LocalPlayer.Data.Weapon.Value]["AttackAnimation" .. tostring(
-				i
-			)]
-		)
-
-		game:GetService("ReplicatedStorage").Events.BegunM1:FireServer(game.Players.LocalPlayer.Data.Weapon.Value)
-
-		animtrack:Play(0, 0.01, 1000)
-		animtrack.Looped = true
-		table.insert(track, animtrack)
-	end
-
-	connection = RunService.PostSimulation:Connect(LPH_NO_VIRTUALIZE(function(delta)
-		if target:FindFirstChild("GotGripped") then
-			localPlayer.Character.HumanoidRootPart.Anchored = false
-			game:GetService("ReplicatedStorage").Events.Equip:FireServer(false)
-			workspace.CurrentCamera.CameraSubject = localPlayer.Character.Humanoid
-			for _, anim in track do
-				anim:Stop()
-				anim:Destroy()
-				anim = nil
-			end
-			if oldPos then
-				localPlayer.Character:PivotTo(oldPos)
-				oldPos = nil
-			end
-			connection:Disconnect()
-		end
-		if not equippedDebounce then
-			equippedDebounce = true
-			game:GetService("ReplicatedStorage").Events.Equip:FireServer(true)
-		end
-		localPlayer.Character.HumanoidRootPart.Anchored = false
-		for _, animTrack in track do
-			animTrack:AdjustSpeed(1000)
-		end
-		if not m1Debounce then
-			m1Debounce = true
-			game:GetService("ReplicatedStorage").Events.BegunM1:FireServer(game.Players.LocalPlayer.Data.Weapon.Value)
-			task.delay(0.75, function()
-				m1Debounce = false
-			end)
-		end
-		if target:FindFirstChild("Knocked") and not gripDebounce then
-			gripDebounce = true
-			game:GetService("ReplicatedStorage")
-				:WaitForChild("Events")
-				:WaitForChild("Grip")
-				:FireServer(localPlayer.Character)
-			task.delay(1, function()
-				gripDebounce = false
-			end)
-		end
-		if localPlayer.Character:FindFirstChild("GripNotInterrupted") then
-			localPlayer.Character.HumanoidRootPart.Anchored = true
-			return
-		end
-		localPlayer.Data.Stamina.Value = 100
-		for _, animTrack in track do
-			animTrack:AdjustSpeed(1000)
-		end
-		local offset =
-			Vector3.new(math.random(0, 1), math.random(offset, offset + math.random(1, 2)), math.random(0, 1))
-
-		localPlayer.Character.HumanoidRootPart:PivotTo(
-			target.HumanoidRootPart.CFrame * CFrame.Angles(math.rad(90), 0, 0) + offset
-		)
-		workspace.CurrentCamera.CameraSubject = target.Humanoid
-		localPlayer.Character.HumanoidRootPart.AssemblyLinearVelocity = Vector3.zero
-		localPlayer.Character.HumanoidRootPart.AssemblyAngularVelocity = Vector3.zero
-		localPlayer.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Ragdoll, false)
-	end))
-end
-
-function KillSomeone.off()
-	game:GetService("ReplicatedStorage").Events.Equip:FireServer(false)
-	if connection then
-		connection:Disconnect()
-		connection = nil
-	end
-	for _, anim in track do
-		anim:Stop()
-		anim:Destroy()
-		anim = nil
-	end
-	if oldPos then
-		localPlayer.Character:PivotTo(oldPos)
-		oldPos = nil
-	end
-	workspace.CurrentCamera.CameraSubject = localPlayer.Character.Humanoid
-	localPlayer.Character.HumanoidRootPart.Anchored = false
-end
-
-return KillSomeone
-
-end)
-__bundle_register("Features/Troll/Void", function(require, _LOADED, __bundle_register, __bundle_modules)
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-
-local localPlayer = Players.LocalPlayer
-
-local Void = {}
-local voidVelocity = {}
-local connection
-
-function Void.on()
-	Void.off()
-	if setsimulationradius then
-		setsimulationradius(math.huge, math.huge)
-	else
-		sethiddenproperty(localPlayer, "MaxSimulationRadius", 9e9)
-		sethiddenproperty(localPlayer, "SimulationRadius", 9e9)
-	end
-	connection = RunService.Heartbeat:Connect(LPH_NO_VIRTUALIZE(function()
-		for _, character in workspace.Alive:GetChildren() do
-			if character:FindFirstChild("HumanoidRootPart") and character.Name ~= localPlayer.Name then
-				if isnetworkowner(character.HumanoidRootPart) then
-					if localPlayer.Character.HumanoidRootPart:FindFirstChild("GrabWeld") then
-						localPlayer.Character.HumanoidRootPart:FindFirstChild("GrabWeld"):Destroy()
-					end
-					if not character.HumanoidRootPart:FindFirstChild("BodyVelocity") then
-						local partConstantVelocity = Instance.new("BodyVelocity")
-						partConstantVelocity.MaxForce = Vector3.new(1 / 0, 1 / 0, 1 / 0)
-						partConstantVelocity.Velocity = Vector3.new(100, -100000, 0)
-						partConstantVelocity.P = 1 / 0
-						table.insert(voidVelocity, partConstantVelocity)
-					end
-
-					-- Set part properties.
-					character.HumanoidRootPart.AssemblyLinearVelocity = Vector3.new(1000, -10000, 0)
-					character.HumanoidRootPart.Position =
-						Vector3.new(character.HumanoidRootPart.Position.X, -4000, character.HumanoidRootPart.Position.Z)
-					character.HumanoidRootPart.CanCollide = false
-
-					-- Stop part from sleeping.
-					sethiddenproperty(character.HumanoidRootPart, "NetworkIsSleeping", false)
-				end
-			end
-		end
-	end))
-	for _, velocity in voidVelocity do
-		velocity:Destroy()
-		velocity = nil
-	end
-end
-
-function Void.off()
-	if connection then
-		connection:Disconnect()
-		connection = nil
-	end
-end
-
-return Void
-
-end)
-__bundle_register("Menu/Removal", function(require, _LOADED, __bundle_register, __bundle_modules)
-local noEndlag = require("Features/Removal/noEndlag")
-local dashNoCD = require("Features/Removal/DashNoCD")
-local noFall = require("Features/Removal/NoFall")
-local noKillBrick = require("Features/Removal/noKillBrick")
-local noWeather = require("Features/Removal/noWeather")
-
-local Removal = {}
-
-function Removal.init()
-	LPH_NO_VIRTUALIZE(function()
-		local Tab = window:AddTab({ Title = "Removal", Icon = "" })
-		local fallDamageToggle = Tab:AddToggle("fallDamage", { Title = "No Fall Damage", Default = false })
-
-		fallDamageToggle:OnChanged(function()
-			if Options.fallDamage.Value then
-				noFall.on()
-			else
-				noFall.off()
-			end
-		end)
-
-		local noDashCDToggle = Tab:AddToggle("noDashCD", { Title = "No Dash Cooldown", Default = false })
-
-		noDashCDToggle:OnChanged(function()
-			if Options.noDashCD.Value then
-				dashNoCD.on()
-			else
-				dashNoCD.off()
-			end
-		end)
-
-		local noStunToggle = Tab:AddToggle("noStun", { Title = "No Slow", Default = false })
-
-		noStunToggle:OnChanged(function()
-			if Options.noStun.Value then
-				noEndlag.on()
-			else
-				noEndlag.off()
-			end
-		end)
-
-		local noKillBrickToggle = Tab:AddToggle("noKillBrick", { Title = "No Kill Bricks", Default = false })
-
-		noKillBrickToggle:OnChanged(function()
-			if Options.noKillBrick.Value then
-				noKillBrick.on()
-			else
-				noKillBrick.off()
-			end
-		end)
-
-		local noWeatherToggle = Tab:AddToggle("noWeather", { Title = "No Weather", Default = false })
-
-		noWeatherToggle:OnChanged(function()
-			if Options.noWeather.Value then
-				noWeather.on()
-			else
-				noWeather.off()
-			end
-		end)
-	end)()
-end
-
-return Removal
-
-end)
-__bundle_register("Features/Removal/noWeather", function(require, _LOADED, __bundle_register, __bundle_modules)
-local Players = game:GetService("Players")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local Events = ReplicatedStorage:WaitForChild("Events")
-local fallDamageEvent = Events:WaitForChild("FallDamage")
-
-local localPlayer = Players.LocalPlayer
-
-local connection
-
-local noWeather = {}
-local WeatherAttach
-
-function noWeather.on()
-	WeatherAttach = workspace.Camera:FindFirstChild("WeatherAttach")
-	if WeatherAttach then
-		WeatherAttach.Parent = nil
-	end
-end
-
-function noWeather.off()
-	if WeatherAttach then
-		WeatherAttach.Parent = workspace.Camera
-	end
-end
-
-return noWeather
-
-end)
-__bundle_register("Features/Removal/noKillBrick", function(require, _LOADED, __bundle_register, __bundle_modules)
-local Players = game:GetService("Players")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local Events = ReplicatedStorage:WaitForChild("Events")
-local fallDamageEvent = Events:WaitForChild("FallDamage")
-
-local localPlayer = Players.LocalPlayer
-
-local connection
-
-local noKillBrick = {}
-
-function noKillBrick.on()
-	local kb = workspace:FindFirstChild("KillBricks")
-	if kb then
-		kb:Destroy()
-	end
-end
-
-function noKillBrick.off() end
-
-return noKillBrick
-
-end)
-__bundle_register("Features/Removal/NoFall", function(require, _LOADED, __bundle_register, __bundle_modules)
-local Players = game:GetService("Players")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local Events = ReplicatedStorage:WaitForChild("Events")
-local fallDamageEvent = Events:WaitForChild("FallDamage")
-
-local localPlayer = Players.LocalPlayer
-
-local connection
-
-local noFall = {}
-local state = false
-
-hookmetamethod(
-	game,
-	"__namecall",
-	newcclosure(LPH_NO_VIRTUALIZE(function(self, ...)
-		local method = getnamecallmethod()
-
-		if method == "FireServer" and self == fallDamageEvent and state then
-			return
-		end
-
-		return self[method](self, ...)
-	end))
-)
-
-function noFall.on()
-	state = true
-end
-
-function noFall.off()
-	state = false
-end
-
-return noFall
-
-end)
-__bundle_register("Features/Removal/DashNoCD", function(require, _LOADED, __bundle_register, __bundle_modules)
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-
-local localPlayer = Players.LocalPlayer
-local NoDashCD = {}
-local instance
-
-local connection
-local resetDash
-
-function NoDashCD.on()
-	connection = RunService.RenderStepped:Connect(LPH_NO_VIRTUALIZE(function()
-		resetDash = game.Players.LocalPlayer.Character:FindFirstChild("ResetDashCD")
-		if not resetDash then
-			resetDash = nil
-			resetDash = Instance.new("Folder")
-			resetDash.Name = "ResetDashCD"
-			resetDash.Parent = game.Players.LocalPlayer.Character
-		end
-		local DashDisabled = game.Players.LocalPlayer.Character:FindFirstChild("DashDisabled")
-		if DashDisabled then
-			DashDisabled:Destroy()
-		end
-	end))
-end
-
-function NoDashCD.off()
-	if connection then
-		connection:Disconnect()
-	end
-	if resetDash then
-		resetDash:Destroy()
-		resetDash = nil
-	end
-end
-
-return NoDashCD
-
-end)
-__bundle_register("Features/Removal/noEndlag", function(require, _LOADED, __bundle_register, __bundle_modules)
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-
-local localPlayer = Players.LocalPlayer
-local noEndlag = {}
-local instance
-
-local connection
-local resetDash
-
-function noEndlag.on()
-	connection = RunService.RenderStepped:Connect(LPH_NO_VIRTUALIZE(function()
-		local LightAttack = game.Players.LocalPlayer.Character:FindFirstChild("LightAttack")
-		if LightAttack then
-			LightAttack:Destroy()
-		end
-
-		local HeavyAttack = game.Players.LocalPlayer.Character:FindFirstChild("HeavyAttack")
-		if HeavyAttack then
-			HeavyAttack:Destroy()
-		end
-
-		local UsingMove = game.Players.LocalPlayer.Character:FindFirstChild("UsingMove")
-		if UsingMove then
-			UsingMove:Destroy()
-		end
-	end))
-end
-
-function noEndlag.off()
-	if connection then
-		connection:Disconnect()
-	end
-end
-
-return noEndlag
-
-end)
-__bundle_register("Menu/Automation", function(require, _LOADED, __bundle_register, __bundle_modules)
-local autoLib = require("Features/Automation/AutoLibrary")
-local autoWarp = require("Features/Automation/AutoWarp")
-local autoRailway = require("Features/Automation/AutoRailway")
-local autoGrade = require("Features/Automation/AutoGradeEvaluation")
-local autoLCorp = require("Features/Automation/AutoLCorpBosses")
-local autoRicardo = require("Features/Automation/AutoRicardo")
-
-local Automation = {}
-getgenv().autoRailwayLootPriority = {}
-
-if isfile("TelepathyOverload/Archived/loot_priority.txt") then
-	for item in readfile("TelepathyOverload/Archived/loot_priority.txt"):gmatch("[^,]+") do
-		table.insert(autoRailwayLootPriority, item)
-	end
-end
-
-function Automation.init()
-	LPH_NO_VIRTUALIZE(function()
-		local Tab = window:AddTab({ Title = "Automation", Icon = "" })
-		Tab:AddParagraph({
-			Title = "Auto Library Usage",
-			Content = "This is only usable when in the ordeal itself.",
-		})
-
-		local autoLibraryToggle = Tab:AddToggle("AutoLibrary", { Title = "Auto Library", Default = false })
-
-		autoLibraryToggle:OnChanged(function()
-			if Options.AutoLibrary.Value then
-				local state, err = autoLib.on(
-					Options.autoLibYOffset.Value,
-					Options.libraryFloorSelection.Value,
-					Options.buffLibrary.Value
-				)
-				if not state then
-					GUI:Notify({
-						Title = "Error Occurred.",
-						Content = err,
-						Duration = 8,
-					})
-				end
-			else
-				if Options.libraryFloorSelection then
-					autoLib.off(Options.libraryFloorSelection.Value)
-				end
-			end
-		end)
-
-		local libraryFloorSelectionDropDown = Tab:AddDropdown("libraryFloorSelection", {
-			Title = "Library Floor Selection",
-			Values = {
-				"Kether",
-				"Language",
-				"Philosophy",
-			},
-			Multi = false,
-			Default = 1,
-		})
-
-		local buffLibraryToggle = Tab:AddToggle("buffLibrary", { Title = "Buff Library", Default = false })
-
-		buffLibraryToggle:OnChanged(function()
-			if Options.AutoLibrary.Value then
-				local state, err = autoLib.on(
-					Options.autoLibYOffset.Value,
-					Options.libraryFloorSelection.Value,
-					Options.buffLibrary.Value
-				)
-				if not state then
-					GUI:Notify({
-						Title = "Error Occurred.",
-						Content = err,
-						Duration = 8,
-					})
-				end
-			end
-		end)
-		local autoLibraryYOffset = Tab:AddSlider("autoLibYOffset", {
-			Title = "Y Offset",
-			Description = "Depends on your weapons",
-			Default = 5,
-			Min = 0,
-			Max = 30,
-			Rounding = 0,
-			Callback = function(Value)
-				if Options.AutoLibrary.Value then
-					local state, err = autoLib.on(Value, Options.libraryFloorSelection.Value, Options.buffLibrary.Value)
-					if not state then
-						Options.AutoLibrary:SetValue(false)
-						GUI:Notify({
-							Title = "Error Occurred.",
-							Content = err,
-							Duration = 8,
-						})
-					end
-				end
-			end,
-		})
-
-		Tab:AddParagraph({
-			Title = "Auto Warp Train Usage",
-			Content = "This is only usable when in the Warp Train itself.",
-		})
-
-		local AutoWarpToggle = Tab:AddToggle("AutoWarp", { Title = "Auto Warp Train", Default = false })
-		Options.AutoWarp:SetValue(false)
-
-		AutoWarpToggle:OnChanged(function()
-			if Options.AutoWarp.Value then
-				local state, err = autoWarp.on(Options.autoWarpYOffset.Value)
-				if not state then
-					GUI:Notify({
-						Title = "Error Occurred.",
-						Content = err,
-						Duration = 8,
-					})
-				end
-			else
-				autoWarp.off()
-			end
-		end)
-
-		local autoWarpYOffset = Tab:AddSlider("autoWarpYOffset", {
-			Title = "Y Offset",
-			Description = "Depends on your weapons",
-			Default = 10,
-			Min = 0,
-			Max = 30,
-			Rounding = 0,
-			Callback = function(Value)
-				if Options.AutoWarp.Value then
-					local state, err = autoWarp.on(Value)
-					if not state then
-						Options.AutoWarp:SetValue(false)
-						GUI:Notify({
-							Title = "Error Occurred.",
-							Content = err,
-							Duration = 8,
-						})
-					end
-				end
-			end,
-		})
-		local autoGradeEva = Tab:AddToggle("autoGradeEva", { Title = "Auto Grade Evaluation", Default = false })
-		Options.autoGradeEva:SetValue(false)
-
-		autoGradeEva:OnChanged(function()
-			if Options.autoGradeEva.Value then
-				local state, err = autoGrade.on(Options.autoGradeEvaYOffset.Value)
-				if not state then
-					GUI:Notify({
-						Title = "Error Occurred.",
-						Content = err,
-						Duration = 8,
-					})
-				end
-			else
-				autoGrade.off()
-			end
-		end)
-
-		local autoGradeEvaYOffset = Tab:AddSlider("autoGradeEvaYOffset", {
-			Title = "Y Offset",
-			Description = "Depends on your weapons",
-			Default = 30,
-			Min = 0,
-			Max = 30,
-			Rounding = 0,
-			Callback = function(Value)
-				if Options.autoGradeEva.Value then
-					local state, err = autoGrade.on(Value)
-					if not state then
-						Options.autoGradeEva:SetValue(false)
-						GUI:Notify({
-							Title = "Error Occurred.",
-							Content = err,
-							Duration = 8,
-						})
-					end
-				end
-			end,
-		})
-		Tab:AddParagraph({
-			Title = "Auto Railway Usage",
-			Content = "This is only usable when in the Railway itself.",
-		})
-
-		local AutoRailwayToggle = Tab:AddToggle("AutoRailway", { Title = "Auto Railway", Default = false })
-
-		AutoRailwayToggle:OnChanged(function()
-			if Options.AutoRailway.Value then
-				local state, err = autoRailway.on(Options.autoRailwayYOffset.Value)
-				if not state then
-					Options.AutoRailway:SetValue(false)
-					GUI:Notify({
-						Title = "Error Occurred.",
-						Content = err,
-						Duration = 8,
-					})
-				end
-			else
-				autoRailway.off()
-			end
-		end)
-
-		local autoRailwayYOffset = Tab:AddSlider("autoRailwayYOffset", {
-			Title = "Y Offset",
-			Description = "Depends on your weapons",
-			Default = 5,
-			Min = 0,
-			Max = 30,
-			Rounding = 0,
-			Callback = function(Value)
-				if Options.AutoRailway.Value then
-					local state, err = autoRailway.on(Value)
-					if not state then
-						Options.AutoRailway:SetValue(false)
-						GUI:Notify({
-							Title = "Error Occurred.",
-							Content = err,
-							Duration = 8,
-						})
-					end
-				end
-			end,
-		})
-
-		local autoRailwayLootSelection = Tab:AddDropdown("autoRailwayLootSelection", {
-			Title = "Item Priority Selection",
-			Values = {
-				"Singularity",
-				"SkipFloors",
-				"RareItems",
-				"Item",
-				"HugeAhn",
-				"Ahn",
-				"RareAccessories",
-				"Accessories",
-				"HugeExperience",
-				"Experience",
-				"Heal",
-			},
-			Multi = true,
-			Default = {},
-			Callback = function(Value)
-				autoRailwayLootPriority = {}
-				if isfile("TelepathyOverload/Archived/loot_priority.txt") then
-					for item in readfile("TelepathyOverload/Archived/loot_priority.txt"):gmatch("[^,]+") do
-						if Value[item] == true then -- only keep if fluent also has it checked
-							table.insert(autoRailwayLootPriority, item)
-						end
-					end
-				end
-
-				-- real user click
-				local savedPriority = {}
-				if isfile("TelepathyOverload/Archived/loot_priority.txt") then
-					for item in readfile("TelepathyOverload/Archived/loot_priority.txt"):gmatch("[^,]+") do
-						table.insert(savedPriority, item)
-					end
-				end
-
-				for i = #savedPriority, 1, -1 do
-					if not Value[savedPriority[i]] then
-						table.remove(savedPriority, i)
-					end
-				end
-
-				for item, selected in pairs(Value) do
-					if selected then
-						local found = false
-						for _, v in ipairs(savedPriority) do
-							if v == item then
-								found = true
-								break
-							end
-						end
-						if not found then
-							table.insert(savedPriority, item)
-						end
-					end
-				end
-
-				autoRailwayLootPriority = savedPriority
-				writefile("TelepathyOverload/Archived/loot_priority.txt", table.concat(autoRailwayLootPriority, ","))
-
-				local display = table.concat(autoRailwayLootPriority, ", ")
-				GUI:Notify({
-					Title = "Current Item Priority",
-					Content = display ~= "" and display or "None selected",
-					Duration = 8,
-				})
-			end,
-		})
-
-		local AutoLCorpToggle = Tab:AddToggle("AutoLCorp", { Title = "Auto L Corp Bosses", Default = false })
-
-		AutoLCorpToggle:OnChanged(function()
-			if Options.AutoLCorp.Value then
-				autoLCorp.on()
-			else
-				autoLCorp.off()
-			end
-		end)
-
-		local AutoLCorpYOffset = Tab:AddSlider("AutoLCorpYOffset", {
-			Title = "Y Offset",
-			Description = "Depends on your weapons",
-			Default = 5,
-			Min = 0,
-			Max = 30,
-			Rounding = 0,
-		})
-
-		local LCorpBossSelection = Tab:AddDropdown("lCorpBossSelection", {
-			Title = "Boss Selection",
-			Values = {
-				"Lei Heng",
-				"Gloom",
-				"Pride",
-				"Wrath",
-				"Desire",
-				"Sloth",
-				"Envy",
-				"Gluttony",
-			},
-			Multi = false,
-			Default = "Lei Heng",
-		})
-
-		local AutoRicardoToggle = Tab:AddToggle("AutoRicardo", { Title = "Auto Ricardo", Default = false })
-
-		AutoRicardoToggle:OnChanged(function()
-			if Options.AutoRicardo.Value then
-				autoRicardo.on()
-			else
-				autoRicardo.off()
-			end
-		end)
-
-		local AutoRicardoYOffset = Tab:AddSlider("AutoRicardoYOffset", {
-			Title = "Y Offset",
-			Description = "Depends on your weapons",
-			Default = 5,
-			Min = 0,
-			Max = 30,
-			Rounding = 0,
-		})
-	end)()
-end
-
-return Automation
-
-end)
-__bundle_register("Features/Automation/AutoRicardo", function(require, _LOADED, __bundle_register, __bundle_modules)
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-
-local localPlayer = Players.LocalPlayer
-local AutoRicardo = {}
-
-local connection
-local track = {}
-local state = false
-
-local function clickButton(text)
-	for _, frame in game:GetService("Players").LocalPlayer.PlayerGui.Dialogue.MainFrame.Options.Scroll:GetChildren() do
-		if frame:IsA("Frame") then
-			if frame.OptionText.Text == text or frame.OptionText.Text:find(text) then
-				replicatesignal(frame.OptionButton.MouseButton1Click)
-				return true
-			end
-		end
-	end
-	return false
-end
-
-local gripDebounce = false
-
-function AutoRicardo.on(offset, floor, buff)
-	AutoRicardo.off()
-	state = true
-	local teleported = false
-	if game.PlaceId ~= 99831550635699 then
-		return false, "Not in the library"
-	end
-	if not workspace:GetAttribute("ServerType") == "Ricardo" then
-		return false, "Not in the library"
-	end
-
-	local kb = workspace:FindFirstChild("KillBricks")
-	if kb then
-		kb:Destroy()
-	end
-
-	if not localPlayer.Character:FindFirstChild("AirTime") then
-		local airTime = Instance.new("Folder")
-		airTime.Name = "AirTime"
-		airTime.Parent = localPlayer.Character
-	end
-	local talkPart = workspace.NPCS:FindFirstChild("RicardoChallengePart")
-	if talkPart and not workspace.Alive:FindFirstChild("Big Brother Of The Middle") then
-		local mainPart = talkPart:FindFirstChild("MainPart")
-		if mainPart then
-			local clickBring = false
-			repeat
-				task.wait()
-				localPlayer.Character:PivotTo(mainPart:GetPivot())
-				fireproximityprompt(talkPart.InteractPrompt)
-				if clickButton("Bring") then
-					clickBring = true
-				end
-			until clickBring
-		end
-	end
-
-	game:GetService("ReplicatedStorage").Events.Equip:FireServer(true)
-	local equipDebounce = false
-	connection = RunService.PostSimulation:Connect(LPH_NO_VIRTUALIZE(function(delta)
-		if not state then
-			return
-		end
-		if math.floor(workspace.DistributedGameTime) < 0 then
-			game:GetService("ReplicatedStorage").Events.Equip:FireServer(false)
-			for _, animTrack in track do
-				animTrack:AdjustSpeed(0)
-			end
-			workspace.CurrentCamera.CameraSubject = localPlayer.Character.Humanoid
-			localPlayer.Character:PivotTo(CFrame.new(-12874, -11, 1070))
-			return true
-		end
-		teleported = false
-		localPlayer.Data.Stamina.Value = 100
-		local targetTable = {}
-
-		for _, human in workspace.Alive:GetChildren() do
-			if
-				not Players:GetPlayerFromCharacter(human)
-				and human.Humanoid.Health > 0
-				and not human:FindFirstChild("GotGripped")
-			then
-				table.insert(targetTable, human)
-			end
-		end
-
-		table.sort(targetTable, function(a, b)
-			return a.Humanoid.MaxHealth > b.Humanoid.MaxHealth
-		end)
-
-		if #targetTable ~= 0 then
-			localPlayer.Character.HumanoidRootPart.Anchored = false
-			local isAllAlerted = true
-			for _, target in targetTable do
-				if target.Target.Value ~= localPlayer.Character then
-					localPlayer.Character.HumanoidRootPart:PivotTo(
-						targetTable[1].HumanoidRootPart.CFrame * CFrame.Angles(math.rad(90), 0, 0)
-							+ Vector3.new(0, 10, 0)
-					)
-					isAllAlerted = false
-				end
-			end
-			if not isAllAlerted then
-				return
-			end
-			if not equipDebounce then
-				equipDebounce = true
-				game:GetService("ReplicatedStorage").Events.Equip:FireServer(true)
-				for _, anim in track do
-					anim:Stop()
-					anim:Destroy()
-				end
-				table.clear(track)
-				local m1Count = 0
-				for _, animation in
-					game:GetService("ReplicatedStorage").WeaponINFO[game.Players.LocalPlayer.Data.Weapon.Value]
-						:GetChildren()
-				do
-					if animation:IsA("Animation") then
-						if animation.Name:find("AttackAnimation") and animation.Name ~= "ChargedAttackAnimation" then
-							m1Count = m1Count + 1
-						end
-					end
-				end
-				for i = 1, m1Count - 1 do
-					local animtrack = localPlayer.Character.Humanoid.Animator:LoadAnimation(
-						game:GetService("ReplicatedStorage").WeaponINFO[game.Players.LocalPlayer.Data.Weapon.Value]["AttackAnimation" .. tostring(
-							i
-						)]
-					)
-					animtrack:Play(0, 0.01, 100000)
-					animtrack.Looped = true
-					table.insert(track, animtrack)
-				end
-				task.delay(2.5, function()
-					if connection then
-						for _, anim in track do
-							anim:Stop()
-							anim:Destroy()
-						end
-						table.clear(track)
-						game:GetService("ReplicatedStorage").Events.Equip:FireServer(false)
-					end
-					equipDebounce = false
-				end)
-			end
-			local offset = Vector3.new(0, -Options.AutoRicardoYOffset.Value, 0)
-
-			if targetTable[1]:FindFirstChild("Knocked") and not gripDebounce then
-				gripDebounce = true
-				localPlayer.Character.HumanoidRootPart:PivotTo(targetTable[1].HumanoidRootPart.CFrame)
-				game:GetService("ReplicatedStorage")
-					:WaitForChild("Events")
-					:WaitForChild("Grip")
-					:FireServer(localPlayer.Character)
-				task.delay(1, function()
-					gripDebounce = false
-				end)
-			end
-
-			if targetTable[1]:FindFirstChild("GettingGripped") then
-				localPlayer.Character.HumanoidRootPart.Anchored = true
-				return
-			end
-			if targetTable[1].Target.Value ~= localPlayer.Character then
-				localPlayer.Character.HumanoidRootPart:PivotTo(
-					targetTable[1].HumanoidRootPart.CFrame * CFrame.Angles(math.rad(90), 0, 0) + Vector3.new(0, 5, 0)
-				)
-				return
-			end
-			localPlayer.Character.HumanoidRootPart:PivotTo(
-				targetTable[1].HumanoidRootPart.CFrame * CFrame.Angles(math.rad(90), 0, 0) + offset
-			)
-			workspace.CurrentCamera.CameraSubject = targetTable[1].Humanoid
-			localPlayer.Character.HumanoidRootPart.AssemblyLinearVelocity = Vector3.zero
-			localPlayer.Character.HumanoidRootPart.AssemblyAngularVelocity = Vector3.zero
-			localPlayer.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Ragdoll, false)
-		else
-			if not teleported then
-				teleported = true
-				equipDebounce = false
-				localPlayer.Character:PivotTo(CFrame.new(-12874, -11, 1070))
-				game:GetService("ReplicatedStorage").Events.Equip:FireServer(false)
-				for _, animTrack in track do
-					animTrack:AdjustSpeed(0)
-				end
-				workspace.CurrentCamera.CameraSubject = localPlayer.Character.Humanoid
-				localPlayer.Character:PivotTo(CFrame.new(-12874, -11, 1070))
-			end
-		end
-	end))
-	return true
-end
-
-function AutoRicardo.off(floor)
-	state = false
-	if connection then
-		connection:Disconnect()
-		connection = nil
-	end
-	for _, anim in track do
-		anim:Stop()
-		anim:Destroy()
-	end
-	table.clear(track)
-	workspace.CurrentCamera.CameraSubject = localPlayer.Character.Humanoid
-	localPlayer.Character.HumanoidRootPart.Anchored = false
-end
-
-return AutoRicardo
-
-end)
-__bundle_register("Features/Automation/AutoLCorpBosses", function(require, _LOADED, __bundle_register, __bundle_modules)
-local MarketplaceService = game:GetService("MarketplaceService")
-local VirtualInputManager = game:GetService("VirtualInputManager")
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-
-local localPlayer = Players.LocalPlayer
-local AutoLCorpBosses = {}
-
-local connection
-local track = {}
-local state = false
-
-local function clickButton(text)
-	for _, frame in game:GetService("Players").LocalPlayer.PlayerGui.Dialogue.MainFrame.Options.Scroll:GetChildren() do
-		if frame:IsA("Frame") then
-			if frame.OptionText.Text == text or frame.OptionText.Text:find(text) then
-				replicatesignal(frame.OptionButton.MouseButton1Click)
-				return true
-			end
-		end
-	end
-	return false
-end
-local ignoreLists = { "Thumb Soldato", "Thumb Soldato III" }
-local function isInIgnoreLists(name)
-	for _, value in ignoreLists do
-		if value:find(name) or value == name then
-			return true
-		end
-	end
-	return false
-end
-
-local function getDroppedItems()
-	local tabled = {}
-	for _, item in workspace.Thrown:GetChildren() do
-		for _, prompt in item:GetDescendants() do
-			if prompt:IsA("ProximityPrompt") then
-				table.insert(tabled, item)
-			end
-		end
-	end
-	return tabled
-end
-
-local gripDebounce = false
-local bossesName = {
-	["Lei Heng"] = "Capo IIII of The Thumb",
-	["Gloom"] = "Absolute Gloom",
-	["Pride"] = "Absolute Pride",
-	["Wrath"] = "Absolute Wrath",
-	["Desire"] = "Absolute Desire",
-	["Sloth"] = "Absolute Sloth",
-	["Envy"] = "Absolute Envy",
-	["Gluttony"] = "Absolute Gluttony",
-}
-local bossesFunctions = {
-	["Lei Heng"] = function()
-		local fragmentSelf = workspace.NPCS:FindFirstChild("Fragmented Self")
-		local ordealEntrance = false
-		if workspace.NPCS:FindFirstChild("Ordeal Entrance") then
-			ordealEntrance = true
-			if
-				not workspace.Alive:FindFirstChild("Capo IIII of The Thumb")
-				and not workspace.NPCS["Ordeal Entrance"]:FindFirstChild("LeiHengRig")
-			then
-				local clickFace = false
-				repeat
-					task.wait(0.5)
-					workspace.NPCS["Ordeal Entrance"].TalkToNPC:FireServer()
-					localPlayer.Character:PivotTo(workspace.NPCS["Ordeal Entrance"]:GetPivot())
-					if clickButton("Face") then
-						clickFace = true
-					end
-				until clickFace
-			end
-		end
-		if fragmentSelf and not ordealEntrance then
-			local clickedWorld = false
-			repeat
-				task.wait(0.5)
-				fragmentSelf.TalkToNPC:FireServer()
-				localPlayer.Character:PivotTo(fragmentSelf:GetPivot())
-				if clickButton("Worlds") then
-					clickedWorld = true
-				end
-			until clickedWorld
-			local clickThumb = false
-			repeat
-				task.wait(0.5)
-				fragmentSelf.TalkToNPC:FireServer()
-				localPlayer.Character:PivotTo(fragmentSelf:GetPivot())
-				if clickButton("Thumb") then
-					clickThumb = true
-				end
-			until clickThumb
-			repeat
-				task.wait()
-			until workspace.NPCS:FindFirstChild("Ordeal Entrance")
-			local clickFace = false
-			repeat
-				task.wait(0.5)
-				workspace.NPCS["Ordeal Entrance"].TalkToNPC:FireServer()
-				localPlayer.Character:PivotTo(workspace.NPCS["Ordeal Entrance"]:GetPivot())
-				if clickButton("Face") then
-					clickFace = true
-				end
-			until clickFace
-		end
-	end,
-	["Gloom"] = function()
-		local fragmentSelf = workspace.NPCS:FindFirstChild("Fragmented Self")
-		if not workspace.Alive:FindFirstChild("Absolute Gloom") then
-			local clickedSin = false
-			repeat
-				task.wait(0.5)
-				fragmentSelf.TalkToNPC:FireServer()
-				localPlayer.Character:PivotTo(fragmentSelf:GetPivot())
-				if clickButton("Sin") then
-					clickedSin = true
-				end
-			until clickedSin
-			local clickGloom = false
-			repeat
-				task.wait(0.5)
-				fragmentSelf.TalkToNPC:FireServer()
-				localPlayer.Character:PivotTo(fragmentSelf:GetPivot())
-				if clickButton("Gloom") then
-					clickGloom = true
-				end
-			until clickGloom
-		end
-	end,
-	["Pride"] = function()
-		local fragmentSelf = workspace.NPCS:FindFirstChild("Fragmented Self")
-		if not workspace.Alive:FindFirstChild("Absolute Pride") then
-			local clickedSin = false
-			repeat
-				task.wait(0.5)
-				fragmentSelf.TalkToNPC:FireServer()
-				localPlayer.Character:PivotTo(fragmentSelf:GetPivot())
-				if clickButton("Sin") then
-					clickedSin = true
-				end
-			until clickedSin
-			local click = false
-			repeat
-				task.wait(0.5)
-				fragmentSelf.TalkToNPC:FireServer()
-				localPlayer.Character:PivotTo(fragmentSelf:GetPivot())
-				if clickButton("Pride") then
-					click = true
-				end
-			until click
-		end
-	end,
-	["Wrath"] = function()
-		local fragmentSelf = workspace.NPCS:FindFirstChild("Fragmented Self")
-		if not workspace.Alive:FindFirstChild("Absolute Wrath") then
-			local clickedSin = false
-			repeat
-				task.wait(0.5)
-				fragmentSelf.TalkToNPC:FireServer()
-				localPlayer.Character:PivotTo(fragmentSelf:GetPivot())
-				if clickButton("Sin") then
-					clickedSin = true
-				end
-			until clickedSin
-			local click = false
-			repeat
-				task.wait(0.5)
-				fragmentSelf.TalkToNPC:FireServer()
-				localPlayer.Character:PivotTo(fragmentSelf:GetPivot())
-				if clickButton("Wrath") then
-					click = true
-				end
-			until click
-		end
-	end,
-	["Desire"] = function()
-		local fragmentSelf = workspace.NPCS:FindFirstChild("Fragmented Self")
-		if not workspace.Alive:FindFirstChild("Absolute Desire") then
-			local clickedSin = false
-			repeat
-				task.wait(0.5)
-				fragmentSelf.TalkToNPC:FireServer()
-				localPlayer.Character:PivotTo(fragmentSelf:GetPivot())
-				if clickButton("Sin") then
-					clickedSin = true
-				end
-			until clickedSin
-			local click = false
-			repeat
-				task.wait(0.5)
-				fragmentSelf.TalkToNPC:FireServer()
-				localPlayer.Character:PivotTo(fragmentSelf:GetPivot())
-				if clickButton("Desire") then
-					click = true
-				end
-			until click
-		end
-	end,
-	["Sloth"] = function()
-		local fragmentSelf = workspace.NPCS:FindFirstChild("Fragmented Self")
-		if not workspace.Alive:FindFirstChild("Absolute Sloth") then
-			local clickedSin = false
-			repeat
-				task.wait(0.5)
-				fragmentSelf.TalkToNPC:FireServer()
-				localPlayer.Character:PivotTo(fragmentSelf:GetPivot())
-				if clickButton("Sin") then
-					clickedSin = true
-				end
-			until clickedSin
-			local click = false
-			repeat
-				task.wait(0.5)
-				fragmentSelf.TalkToNPC:FireServer()
-				localPlayer.Character:PivotTo(fragmentSelf:GetPivot())
-				if clickButton("Sloth") then
-					click = true
-				end
-			until click
-		end
-	end,
-	["Envy"] = function()
-		local fragmentSelf = workspace.NPCS:FindFirstChild("Fragmented Self")
-		if not workspace.Alive:FindFirstChild("Absolute Envy") then
-			local clickedSin = false
-			repeat
-				task.wait(0.5)
-				fragmentSelf.TalkToNPC:FireServer()
-				localPlayer.Character:PivotTo(fragmentSelf:GetPivot())
-				if clickButton("Sin") then
-					clickedSin = true
-				end
-			until clickedSin
-			local click = false
-			repeat
-				task.wait(0.5)
-				fragmentSelf.TalkToNPC:FireServer()
-				localPlayer.Character:PivotTo(fragmentSelf:GetPivot())
-				if clickButton("Envy") then
-					click = true
-				end
-			until click
-		end
-	end,
-	["Gluttony"] = function()
-		local fragmentSelf = workspace.NPCS:FindFirstChild("Fragmented Self")
-		if not workspace.Alive:FindFirstChild("Absolute Gluttony") then
-			local clickedSin = false
-			repeat
-				task.wait(0.5)
-				fragmentSelf.TalkToNPC:FireServer()
-				localPlayer.Character:PivotTo(fragmentSelf:GetPivot())
-				if clickButton("Sin") then
-					clickedSin = true
-				end
-			until clickedSin
-			local click = false
-			repeat
-				task.wait(0.5)
-				fragmentSelf.TalkToNPC:FireServer()
-				localPlayer.Character:PivotTo(fragmentSelf:GetPivot())
-				if clickButton("Gluttony") then
-					click = true
-				end
-			until click
-		end
-	end,
-}
-
-function AutoLCorpBosses.on()
-	AutoLCorpBosses.off()
-	state = true
-	if game.PlaceId ~= 99831550635699 then
-		return false, "Not in the L Corp"
-	end
-	if not workspace:GetAttribute("ServerType") == "LCorpBranch" then
-		return false, "Not in the L Corp"
-	end
-
-	local kb = workspace:FindFirstChild("KillBricks")
-	if kb then
-		kb:Destroy()
-	end
-
-	if not localPlayer.Character:FindFirstChild("AirTime") then
-		local airTime = Instance.new("Folder")
-		airTime.Name = "AirTime"
-		airTime.Parent = localPlayer.Character
-	end
-
-	game:GetService("ReplicatedStorage").Events.Equip:FireServer(true)
-	local equipDebounce = false
-	local killBoss = false
-	local canDoAnythingAfterBoss = false
-	bossesFunctions[Options.lCorpBossSelection.Value]()
-	local db = false
-	connection = RunService.PostSimulation:Connect(LPH_NO_VIRTUALIZE(function(delta)
-		if not state then
-			return
-		end
-
-		if killBoss and canDoAnythingAfterBoss then
-			db = true
-			if localPlayer.Character then
-				if localPlayer.Character:FindFirstChild("Humanoid") then
-					workspace.CurrentCamera.CameraSubject = localPlayer.Character.Humanoid
-				end
-			end
-
-			local droppedItems = getDroppedItems()
-			if #droppedItems ~= 0 then
-				pickingUpItem = true
-				for _, item in droppedItems do
-					if not connection then
-						pickingUpItem = false
+			["Exclude"] = function()
+				for _, itemName in getSellLists(translatedItems, mode) do
+					if not workspace.NPCS:FindFirstChild(merchant[game.PlaceId]) then
+						db = false
 						return
 					end
-					for _, prompt in item:GetDescendants() do
-						if not connection then
-							pickingUpItem = false
+
+					local dist =
+						localPlayer:DistanceFromCharacter(workspace.NPCS[merchant[game.PlaceId]]:GetPivot().Position)
+
+					if dist > 8 then
+						db = false
+						return
+					end
+					if not localPlayer.PlayerGui.Dialogue.Enabled then
+						db = false
+						return
+					end
+					if not state then
+						db = false
+						return
+					end
+
+					if localPlayer.Character:FindFirstChildWhichIsA("Tool") then
+						localPlayer.Character:FindFirstChildWhichIsA("Tool").Parent = localPlayer.Backpack
+					end
+
+					local item = localPlayer.Backpack:FindFirstChild(itemName)
+					if not item then
+						continue
+					end
+
+					item.Parent = localPlayer.Character
+					local countdown = false
+					repeat
+						clickButton("Can")
+						clickButton("All")
+						clickButton("How")
+						if not state then
+							db = false
 							return
 						end
-						if prompt:IsA("ProximityPrompt") then
-							localPlayer.Character:PivotTo(item:GetPivot())
-							fireproximityprompt(prompt)
+						if not localPlayer.PlayerGui.Dialogue.Enabled then
+							db = false
+							return
+						end
+						task.wait()
+						if not countdown then
+							countdown = true
+							task.delay(10, function()
+								if item.Parent then
+									db = false
+									table.insert(notSellAbleLists, item)
+								end
+							end)
+						end
+					until not item.Parent
+				end
+				db = false
+			end,
+		}
+
+		connection = game.RunService.Stepped:Connect(LPH_NO_VIRTUALIZE(function(deltaTime)
+			if db then
+				return
+			end
+			if not workspace.NPCS:FindFirstChild(merchant[game.PlaceId]) then
+				return
+			end
+
+			local dist = localPlayer:DistanceFromCharacter(workspace.NPCS[merchant[game.PlaceId]]:GetPivot().Position)
+			if dist > 8 then
+				return
+			end
+
+			if not localPlayer.PlayerGui:FindFirstChild("InteractPromptGUI") then
+				return
+			end
+
+			if not localPlayer.Data.IsTalking.Value then
+				if promptCooldown then
+					return
+				end
+				promptCooldown = true
+				fireproximityprompt(
+					workspace.NPCS:FindFirstChild(merchant[game.PlaceId]):FindFirstChildWhichIsA("ProximityPrompt")
+				)
+				task.delay(2, function()
+					promptCooldown = false
+				end)
+			else
+				if db then
+					return
+				end
+				db = true
+				task.spawn(function() -- spawn so task.wait() inside doesn't block Stepped
+					modeFunctions[mode]()
+					db = false
+				end)
+			end
+		end))
+	end
+
+	function autoSell.off()
+		state = false
+		if connection then
+			connection:Disconnect()
+			connection = nil
+		end
+	end
+
+	return autoSell
+end)
+__bundle_register("Menu/AutoOpenCache", function(require, _LOADED, __bundle_register, __bundle_modules)
+	local AutoOpenContainerReq = require("Features/AutoOpenContainer/AutoOpenContainer")
+
+	local AutoOpenCache = {}
+
+	function AutoOpenCache.init()
+		LPH_NO_VIRTUALIZE(function()
+			local Tab = window:AddTab({ Title = "Auto Open Container", Icon = "" })
+
+			local autoOpenContainer =
+				Tab:AddToggle("autoOpenContainer", { Title = "Auto Open Container", Default = false })
+
+			autoOpenContainer:OnChanged(function()
+				if Options.autoOpenContainer.Value and #Options.autoOpenContainerSelection.Values ~= 0 then
+					AutoOpenContainerReq.on()
+				else
+					AutoOpenContainerReq.off()
+				end
+			end)
+
+			local autoOpenContainerSelection = Tab:AddDropdown("autoOpenContainerSelection", {
+				Title = "Auto Open Container Selection",
+				Values = {
+					"Caches",
+					"Seed Of Light",
+					"Fixer's Note",
+					"Exp Ticket",
+				},
+				Multi = true,
+				Default = {},
+			})
+		end)()
+	end
+
+	return AutoOpenCache
+end)
+__bundle_register(
+	"Features/AutoOpenContainer/AutoOpenContainer",
+	function(require, _LOADED, __bundle_register, __bundle_modules)
+		local Players = game:GetService("Players")
+		local RunService = game:GetService("RunService")
+
+		local localPlayer = Players.LocalPlayer
+
+		local AutoOpenContainer = {}
+
+		local connection
+		local onCd = false
+
+		local itemListsKeyword = {
+			["Caches"] = "Cache",
+			["Seed Of Light"] = "Seed Of Light",
+			["Fixer's Note"] = "Fixer's Note",
+			["Exp Ticket"] = "Training",
+		}
+
+		local ignoreLists = {}
+
+		function AutoOpenContainer.on()
+			AutoOpenContainer.off()
+			connection = RunService.Heartbeat:Connect(function(deltaTime)
+				localPlayer.PlayerGui.PageSelection.Enabled = false
+				local usedBook = localPlayer.Character:FindFirstChild("UsedBook")
+				if usedBook then
+					usedBook:Destroy()
+				end
+				if onCd then
+					return
+				end
+				local oldTool = localPlayer.Character:FindFirstAncestorWhichIsA("Tool")
+				if oldTool then
+					oldTool.Parent = localPlayer.Backpack
+				end
+				onCd = true
+				for _, item in localPlayer.Backpack:GetChildren() do
+					for _, value in Options.autoOpenContainerSelection.Values do
+						if
+							item.Name:find(itemListsKeyword[value])
+							and not item:FindFirstChild("SingularityStored")
+							and not table.find(ignoreLists, item)
+						then
 							if not connection then
-								pickingUpItem = false
-								return
+								break
 							end
+							local failSafe = false
+							local breakLoop = false
 							repeat
 								if not connection then
-									pickingUpItem = false
-									return
+									break
 								end
-								localPlayer.Character:PivotTo(item:GetPivot())
-								fireproximityprompt(prompt)
-								task.wait(1)
+								if breakLoop then
+									break
+								end
+								task.wait()
+								firesignal(item.Activated)
+								if not failSafe then
+									failSafe = true
+									task.delay(5, function()
+										if item.Parent then
+											breakLoop = true
+											table.insert(ignoreLists, item)
+										end
+									end)
+								end
 							until not item.Parent
 						end
 					end
 				end
-				pickingUpItem = false
-			else
-				local clickExtract = false
-				repeat
-					task.wait(1)
-					localPlayer.Character:PivotTo(CFrame.new(103.09710693359375, 981.3513793945312, -84.36695098876953))
-				until workspace.NPCS:FindFirstChild("Elevator Door")
-				repeat
-					task.wait()
-					workspace.NPCS["Elevator Door"].TalkToNPC:FireServer()
-					localPlayer.Character:PivotTo(CFrame.new(103.09710693359375, 981.3513793945312, -84.36695098876953))
-					if clickButton("Extract") then
-						clickExtract = true
-					end
-				until clickExtract
-			end
-			db = false
-			return
-		end
-		localPlayer.Data.Stamina.Value = 100
-		local targetTable = {}
-
-		for _, human in workspace.Alive:GetChildren() do
-			if
-				not Players:GetPlayerFromCharacter(human)
-				and human.Humanoid.Health > 0
-				and not human:FindFirstChild("GotGripped")
-				and not isInIgnoreLists(human.Name)
-			then
-				table.insert(targetTable, human)
-			end
+				onCd = false
+			end)
 		end
 
-		table.sort(targetTable, function(a, b)
-			return a.Humanoid.MaxHealth > b.Humanoid.MaxHealth
-		end)
+		function AutoOpenContainer.off()
+			if connection then
+				connection:Disconnect()
+			end
+			localPlayer.PlayerGui.PageSelection.Enabled = true
+		end
 
-		if #targetTable ~= 0 then
-			localPlayer.Character.HumanoidRootPart.Anchored = false
-			if not equipDebounce then
-				equipDebounce = true
-				game:GetService("ReplicatedStorage").Events.Equip:FireServer(true)
-				for _, anim in track do
-					anim:Stop()
-					anim:Destroy()
+		return AutoOpenContainer
+	end
+)
+__bundle_register("Menu/Teleportation", function(require, _LOADED, __bundle_register, __bundle_modules)
+	local Players = game:GetService("Players")
+
+	local Teleportation = {}
+
+	local function getPlayerNames()
+		local names = {}
+		for _, player in Players:GetPlayers() do
+			if player ~= Players.LocalPlayer then
+				table.insert(names, player.Name)
+			end
+		end
+		return names
+	end
+
+	function Teleportation.init()
+		LPH_NO_VIRTUALIZE(function()
+			local Tab = window:AddTab({ Title = "Teleportation", Icon = "" })
+			local playerSelectionDropDown = Tab:AddDropdown("playerSelection", {
+				Title = "Teleport Target",
+				Values = getPlayerNames(),
+				Multi = false,
+				Default = "",
+			})
+
+			for _, player in Players:GetPlayers() do
+				if player ~= Players.LocalPlayer then
+					Options.playerSelection:SetValues(getPlayerNames())
 				end
-				table.clear(track)
-				local m1Count = 0
-				for _, animation in
-					game:GetService("ReplicatedStorage").WeaponINFO[game.Players.LocalPlayer.Data.Weapon.Value]
-						:GetChildren()
-				do
-					if animation:IsA("Animation") then
-						if animation.Name:find("AttackAnimation") and animation.Name ~= "ChargedAttackAnimation" then
-							m1Count = m1Count + 1
+			end
+
+			Players.PlayerAdded:Connect(function(player)
+				if player == Players.LocalPlayer then
+					return
+				end
+				Options.playerSelection:SetValues(getPlayerNames())
+			end)
+
+			Players.PlayerRemoving:Connect(function(player)
+				if player == Players.LocalPlayer then
+					return
+				end
+				Options.playerSelection:SetValues(getPlayerNames())
+			end)
+
+			Tab:AddButton({
+				Title = "Refresh Player Lists",
+				Callback = function()
+					for _, player in Players:GetPlayers() do
+						if player ~= Players.LocalPlayer then
+							Options.playerSelection:SetValues(getPlayerNames())
 						end
 					end
-				end
-				for i = 1, m1Count - 1 do
-					local animtrack = localPlayer.Character.Humanoid.Animator:LoadAnimation(
-						game:GetService("ReplicatedStorage").WeaponINFO[game.Players.LocalPlayer.Data.Weapon.Value]["AttackAnimation" .. tostring(
-							i
-						)]
-					)
-					animtrack:Play(0, 0.01, 100000)
-					animtrack.Looped = true
-					table.insert(track, animtrack)
-				end
-				task.delay(2.5, function()
-					if connection then
-						for _, anim in track do
-							anim:Stop()
-							anim:Destroy()
-						end
-						table.clear(track)
-						game:GetService("ReplicatedStorage").Events.Equip:FireServer(false)
-					end
-					equipDebounce = false
-				end)
-			end
-			local offset = Vector3.new(0, -Options.AutoLCorpYOffset.Value, 0)
-
-			if targetTable[1]:FindFirstChild("Knocked") and not gripDebounce then
-				gripDebounce = true
-				localPlayer.Character.HumanoidRootPart:PivotTo(
-					targetTable[1].HumanoidRootPart.CFrame + Vector3.new(0, 2, 0)
-				)
-				game:GetService("ReplicatedStorage")
-					:WaitForChild("Events")
-					:WaitForChild("Grip")
-					:FireServer(localPlayer.Character)
-				task.delay(1, function()
-					gripDebounce = false
-				end)
-			end
-
-			if targetTable[1]:FindFirstChild("GettingGripped") and not killBoss then
-				if targetTable[1].Name == bossesName[Options.lCorpBossSelection.Value] then
-					killBoss = true
-					localPlayer.Character.HumanoidRootPart:PivotTo(
-						targetTable[1].HumanoidRootPart.CFrame + Vector3.new(0, 10, 0)
-					)
-					task.delay(5, function()
-						canDoAnythingAfterBoss = true
-					end)
-				end
-				return
-			end
-			if targetTable[1].Target.Value ~= localPlayer.Character then
-				localPlayer.Character.HumanoidRootPart:PivotTo(
-					targetTable[1].HumanoidRootPart.CFrame * CFrame.Angles(math.rad(90), 0, 0) + Vector3.new(0, 5, 0)
-				)
-				return
-			end
-			localPlayer.Character.HumanoidRootPart:PivotTo(
-				targetTable[1].HumanoidRootPart.CFrame * CFrame.Angles(math.rad(90), 0, 0) + offset
-			)
-			workspace.CurrentCamera.CameraSubject = targetTable[1].Humanoid
-			localPlayer.Character.HumanoidRootPart.AssemblyLinearVelocity = Vector3.zero
-			localPlayer.Character.HumanoidRootPart.AssemblyAngularVelocity = Vector3.zero
-			localPlayer.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Ragdoll, false)
-		end
-	end))
-	return true
-end
-
-function AutoLCorpBosses.off(floor)
-	state = false
-	if connection then
-		connection:Disconnect()
-		connection = nil
+				end,
+			})
+			Tab:AddButton({
+				Title = "Teleport",
+				Description = "Teleport To Chosen Player.",
+				Callback = function()
+					Players.LocalPlayer.Character:PivotTo(Players[Options.playerSelection.Value].Character:GetPivot())
+				end,
+			})
+		end)()
 	end
-	for _, anim in track do
-		anim:Stop()
-		anim:Destroy()
-	end
-	table.clear(track)
-	workspace.CurrentCamera.CameraSubject = localPlayer.Character.Humanoid
-	localPlayer.Character.HumanoidRootPart.Anchored = false
-end
 
-return AutoLCorpBosses
-
+	return Teleportation
 end)
-__bundle_register("Features/Automation/AutoGradeEvaluation", function(require, _LOADED, __bundle_register, __bundle_modules)
-local MarketplaceService = game:GetService("MarketplaceService")
-local VirtualInputManager = game:GetService("VirtualInputManager")
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
+__bundle_register("Menu/Troll", function(require, _LOADED, __bundle_register, __bundle_modules)
+	local Players = game:GetService("Players")
+	local void = require("Features/Troll/Void")
+	local killSomeone = require("Features/Troll/KillSomeone")
+	local killAura = require("Features/Troll/KillAura")
+	local Troll = {}
 
-local localPlayer = Players.LocalPlayer
-local AutoGradeEva = {}
-
-local connection
-local track = {}
-
-local didGoUpYet = true
-
-local function clickButton(text)
-	for _, frame in game:GetService("Players").LocalPlayer.PlayerGui.Dialogue.MainFrame.Options.Scroll:GetChildren() do
-		if frame:IsA("Frame") then
-			if frame.OptionText.Text == text or frame.OptionText.Text:find(text) then
-				replicatesignal(frame.OptionButton.MouseButton1Click)
-				return true
+	local function getPlayerNames()
+		local names = {}
+		for _, player in Players:GetPlayers() do
+			task.wait()
+			if player ~= Players.LocalPlayer then
+				table.insert(names, player.Name)
 			end
 		end
+		return names
 	end
-	return false
-end
 
-local equipedDb = false
-local state = false
+	function Troll.init()
+		LPH_NO_VIRTUALIZE(function()
+			local Tab = window:AddTab({ Title = "Troll", Icon = "" })
+			Tab:AddParagraph({
+				Title = "Void Character Usage",
+				Content = "Probably not working at the moment.\n It's something to do with network ownership.",
+			})
 
-local function killMob(offset)
-	connection = RunService.PostSimulation:Connect(LPH_NO_VIRTUALIZE(function(delta)
-		localPlayer.Data.Stamina.Value = 100
-		local targetTable = {}
-		for _, human in workspace.Alive:GetChildren() do
-			if
-				not Players:GetPlayerFromCharacter(human)
-				and human.Humanoid.Health > 0
-				and not human:FindFirstChild("GotGripped")
-			then
-				table.insert(targetTable, human)
-			end
-		end
+			local voidCharacterToggle = Tab:AddToggle("voidCharacter", { Title = "Void Character", Default = false })
 
-		table.sort(targetTable, function(a, b)
-			return a.Humanoid.MaxHealth > b.Humanoid.MaxHealth
-		end)
-
-		if #targetTable ~= 0 then
-			if not equipedDb then
-				equipedDb = true
-				game:GetService("ReplicatedStorage").Events.Equip:FireServer(true)
-				for _, anim in track do
-					anim:Stop()
-					anim:Destroy()
+			voidCharacterToggle:OnChanged(function()
+				if Options.voidCharacter.Value then
+					void.on()
+				else
+					void.off()
 				end
-				table.clear(track)
-				local m1Count = 0
-				for _, animation in
-					game:GetService("ReplicatedStorage").WeaponINFO[game.Players.LocalPlayer.Data.Weapon.Value]
-						:GetChildren()
-				do
-					if animation:IsA("Animation") then
-						if animation.Name:find("AttackAnimation") and animation.Name ~= "ChargedAttackAnimation" then
-							m1Count = m1Count + 1
+			end)
+
+			Tab:AddParagraph({
+				Title = "Teleport To Sky Usage",
+				Content = "I suggest use Index Cleaver and then press the keybind to take people to the sky.",
+			})
+			local teleportToSkyKeybind = Tab:AddKeybind("teleportToSky", {
+				Title = "Teleport To Sky Kebind",
+				Mode = "Toggle",
+				Default = "",
+				Callback = function(Value)
+					local oldPos = game.Players.LocalPlayer.Character:GetPivot()
+					game.Players.LocalPlayer.Character:PivotTo(oldPos + Vector3.new(0, 2000, 0))
+					task.delay(3, function()
+						game.TextChatService.TextChannels.RBXGeneral:SendAsync("mb all")
+					end)
+					task.delay(5, function()
+						game.Players.LocalPlayer.Character:PivotTo(oldPos)
+					end)
+				end,
+			})
+
+			local killAuraPlayer = Tab:AddToggle("KillAura", { Title = "Kill Selected Target", Default = false })
+			Options.KillAura:SetValue(false)
+
+			killAuraPlayer:OnChanged(function()
+				if Options.KillAura.Value then
+					killSomeone.on(-7, Players[Options.playerKillAuraSelection.Value].Character)
+				else
+					killSomeone.off()
+				end
+			end)
+
+			local playerKillAuraSelection = Tab:AddDropdown("playerKillAuraSelection", {
+				Title = "Kill Target",
+				Values = getPlayerNames(),
+				Multi = false,
+				Default = "",
+			})
+
+			for _, player in Players:GetPlayers() do
+				if player ~= Players.LocalPlayer then
+					Options.playerSelection:SetValues(getPlayerNames())
+				end
+			end
+
+			Players.PlayerAdded:Connect(function(player)
+				Options.playerSelection:SetValues(getPlayerNames())
+			end)
+
+			Players.PlayerRemoving:Connect(function(player)
+				Options.playerSelection:SetValues(getPlayerNames())
+			end)
+
+			Tab:AddButton({
+				Title = "Refresh Player Lists",
+				Callback = function()
+					for _, player in Players:GetPlayers() do
+						if player ~= Players.LocalPlayer then
+							Options.playerSelection:SetValues(getPlayerNames())
 						end
 					end
+				end,
+			})
+			local hitAuraPlayer = Tab:AddToggle("hitAura", { Title = "Hit Aura", Default = false })
+			Options.hitAura:SetValue(false)
+
+			hitAuraPlayer:OnChanged(function()
+				if Options.hitAura.Value then
+					killAura.on()
+				else
+					killAura.off()
 				end
-				for i = 1, m1Count - 1 do
-					local animtrack = localPlayer.Character.Humanoid.Animator:LoadAnimation(
-						game:GetService("ReplicatedStorage").WeaponINFO[game.Players.LocalPlayer.Data.Weapon.Value]["AttackAnimation" .. tostring(
-							i
-						)]
-					)
-					animtrack:Play(0, 0.01, 100000)
-					animtrack.Looped = true
-					table.insert(track, animtrack)
-				end
-				task.delay(5, function()
-					if connection then
-						for _, anim in track do
-							anim:Stop()
-							anim:Destroy()
-						end
-						table.clear(track)
-						game:GetService("ReplicatedStorage").Events.Equip:FireServer(false)
-					end
-					equipedDb = false
-				end)
-			end
-			for _, animTrack in track do
-				animTrack:AdjustSpeed(1000)
-			end
-			local offset = Vector3.new(0, -offset, 0)
-
-			localPlayer.Character.HumanoidRootPart:PivotTo(
-				targetTable[1].HumanoidRootPart.CFrame * CFrame.Angles(math.rad(90), 0, 0) + offset
-			)
-			workspace.CurrentCamera.CameraSubject = targetTable[1].Humanoid
-			localPlayer.Character.HumanoidRootPart.AssemblyLinearVelocity = Vector3.zero
-			localPlayer.Character.HumanoidRootPart.AssemblyAngularVelocity = Vector3.zero
-			localPlayer.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Ragdoll, false)
-		else
-			if equipedDb then
-				game:GetService("ReplicatedStorage").Events.Equip:FireServer(false)
-				equipedDb = false
-			end
-			for _, animTrack in track do
-				animTrack:AdjustSpeed(0)
-			end
-			connection:Disconnect()
-			workspace.CurrentCamera.CameraSubject = localPlayer.Character.Humanoid
-		end
-	end))
-end
-
-local animationLists = {}
-
-local nothingThereHitAnim = {
-	"rbxassetid://16428863879",
-	"rbxassetid://16390219304",
-	"rbxassetid://16390215619",
-	"rbxassetid://16390221563",
-	"rbxassetid://16390165394",
-	"rbxassetid://16390173071",
-	"rbxassetid://16390234461",
-	"rbxassetid://16390226552",
-	"rbxassetid://15151732756",
-	"rbxassetid://94944102411307",
-}
-
-local function checkAnimations(tabled, animator)
-	for _, track in animator:GetPlayingAnimationTracks() do
-		if track.Animation.AnimationId then
-			if table.find(tabled, track.Animation.AnimationId) then
-				return false
-			end
-		end
+			end)
+		end)()
 	end
-	return true
-end
 
-local function killBehind(offset)
-	local player = game.Players.LocalPlayer.Character.Humanoid.Animator
-	local m1Count = 0
-	for _, animation in
-		game:GetService("ReplicatedStorage").WeaponINFO[game.Players.LocalPlayer.Data.Weapon.Value]:GetChildren()
-	do
-		if animation:IsA("Animation") then
+	return Troll
+end)
+__bundle_register("Features/Troll/KillAura", function(require, _LOADED, __bundle_register, __bundle_modules)
+	local Players = game:GetService("Players")
+	local RunService = game:GetService("RunService")
+
+	local localPlayer = Players.LocalPlayer
+	local KillAura = {}
+	local track = {}
+	local connection
+	function KillAura.on()
+		KillAura.off()
+		local player = game.Players.LocalPlayer.Character.Humanoid.Animator
+		game:GetService("ReplicatedStorage").Events.Equip:FireServer(true)
+		local m1Count = 0
+		for _, animation in
+			game:GetService("ReplicatedStorage").WeaponINFO[game.Players.LocalPlayer.Data.Weapon.Value]:GetChildren()
+		do
 			if animation.Name:find("AttackAnimation") and animation.Name ~= "ChargedAttackAnimation" then
 				m1Count = m1Count + 1
 			end
 		end
-	end
-	for i = 1, m1Count - 1 do
-		local animtrack = player:LoadAnimation(
-			game:GetService("ReplicatedStorage").WeaponINFO[game.Players.LocalPlayer.Data.Weapon.Value]["AttackAnimation" .. tostring(
-				i
-			)]
-		)
-		animtrack:Play(0, 0.01, 100000)
-		animtrack.Looped = true
-		table.insert(track, animtrack)
-	end
-	connection = RunService.PostSimulation:Connect(LPH_NO_VIRTUALIZE(function(delta)
-		localPlayer.Data.Stamina.Value = 100
-		local targetTable = {}
-		for _, human in workspace.Alive:GetChildren() do
-			if
-				not Players:GetPlayerFromCharacter(human)
-				and human.Humanoid.Health > 0
-				and not human:FindFirstChild("GotGripped")
-			then
-				table.insert(targetTable, human)
-			end
+		for i = 1, m1Count - 1 do
+			local animtrack = player:LoadAnimation(
+				game:GetService("ReplicatedStorage").WeaponINFO[game.Players.LocalPlayer.Data.Weapon.Value]["AttackAnimation" .. tostring(
+					i
+				)]
+			)
+			animtrack:Play(0, 0.01, 100000)
+			animtrack.Looped = true
+			table.insert(track, animtrack)
 		end
-
-		table.sort(targetTable, function(a, b)
-			return a.Humanoid.MaxHealth > b.Humanoid.MaxHealth
+		connection = RunService.RenderStepped:Connect(function(deltaTime)
+			localPlayer.Data.Stamina.Value = 100
 		end)
+	end
 
-		if #targetTable ~= 0 then
-			if not equipedDb then
-				game:GetService("ReplicatedStorage").Events.Equip:FireServer(true)
-				equipedDb = true
-			end
-			for _, animTrack in track do
-				animTrack:AdjustSpeed(1000)
-			end
-			local backDirection = -targetTable[1].HumanoidRootPart.CFrame.LookVector
-			local teleportPosition = targetTable[1].HumanoidRootPart.CFrame.Position + (backDirection * 3)
-			if not checkAnimations(nothingThereHitAnim, targetTable[1].Humanoid.Animator) then
-				localPlayer.Character.HumanoidRootPart:PivotTo(targetTable[1]:GetPivot() + Vector3.new(0, 100, 0))
-			else
-				localPlayer.Character.HumanoidRootPart:PivotTo(
-					CFrame.new(teleportPosition, targetTable[1].HumanoidRootPart.CFrame.Position)
-				)
-				workspace.CurrentCamera.CameraSubject = targetTable[1].Humanoid
-			end
-			localPlayer.Character.HumanoidRootPart.AssemblyLinearVelocity = Vector3.zero
-			localPlayer.Character.HumanoidRootPart.AssemblyAngularVelocity = Vector3.zero
-			localPlayer.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Ragdoll, false)
-		else
-			if equipedDb then
-				game:GetService("ReplicatedStorage").Events.Equip:FireServer(false)
-				equipedDb = false
-			end
-			for _, animTrack in track do
-				animTrack:AdjustSpeed(0)
-			end
+	function KillAura.off()
+		if connection then
 			connection:Disconnect()
-			workspace.CurrentCamera.CameraSubject = localPlayer.Character.Humanoid
 		end
-	end))
-end
-
-local function goUpElavator()
-	if not didGoUpYet then
-		repeat
-			if not state then
-				break
-			end
-			task.wait(1)
-			for _, npc in workspace.NPCS:GetChildren() do
-				if npc.Name == "Elevator" and npc:FindFirstChild("NormalTP") then
-					localPlayer.Character:PivotTo(npc:GetPivot())
-					npc.TalkToNPC:FireServer()
-				end
-			end
-			if clickButton("Take") then
-				didGoUpYet = true
-			end
-		until didGoUpYet
-	end
-	didGoUpYet = true
-end
-
-local function clickBegin()
-	local clickBeginYet = false
-	if workspace.NPCS:FindFirstChild("Hana Association Examiner") then
-		repeat
-			if not state then
-				break
-			end
-			task.wait()
-			localPlayer.Character:PivotTo(workspace.NPCS["Hana Association Examiner"]:GetPivot())
-			workspace.NPCS["Hana Association Examiner"].TalkToNPC:FireServer()
-			if clickButton("Begin") then
-				clickBeginYet = true
-			end
-		until clickBeginYet
-	end
-end
-
-local gradeFunctions = {
-	[9] = function()
-		local fixerClick = false
-		goUpElavator()
-		repeat
-			if not state then
-				break
-			end
-			task.wait(0.5)
-			localPlayer.Character:PivotTo(workspace.NPCS["Hana Association Examiner"]:GetPivot())
-			workspace.NPCS["Hana Association Examiner"].TalkToNPC:FireServer()
-			clickButton("Begin")
-			clickButton("9")
-			clickButton("Every")
-			clickButton("125")
-			clickButton("13.5")
-			clickButton("Tower")
-			if clickButton("Fixer") then
-				fixerClick = true
-			end
-		until fixerClick
-	end,
-	[8] = function(offset)
-		local clickBeginYet = false
-		goUpElavator()
-		clickBegin()
-		killMob(offset)
-	end,
-	[7] = function(offset)
-		goUpElavator()
-		clickBegin()
-		task.wait(1)
-		killMob(offset)
-	end,
-	[6] = function(offset)
-		goUpElavator()
-		clickBegin()
-		task.wait(1)
-		killMob(offset)
-	end,
-	[5] = function(offset)
-		goUpElavator()
-		clickBegin()
-		repeat
-			task.wait()
-		until #workspace.Alive:GetChildren() >= 2
-		for _, npc in workspace.NPCS:GetChildren() do
-			if npc.Name == "Elevator" and npc:FindFirstChild("NormalTP") then
-				localPlayer.Character:PivotTo(npc:GetPivot())
-			end
+		game:GetService("ReplicatedStorage").Events.Equip:FireServer(false)
+		for _, anim in track do
+			anim:Stop()
+			anim:Destroy()
 		end
-	end,
-	[4] = function(offset)
-		goUpElavator()
-		clickBegin()
-		repeat
-			task.wait()
-		until #workspace.Alive:GetChildren() >= 2
-		killMob(offset)
-	end,
-	[3] = function(offset)
-		goUpElavator()
-		clickBegin()
-		repeat
-			task.wait()
-		until #workspace.Alive:GetChildren() >= 2
-		killMob(offset)
-	end,
-	[2] = function(offset)
-		goUpElavator()
-		clickBegin()
-		repeat
-			task.wait()
-		until #workspace.Alive:GetChildren() >= 2
-		killBehind(offset)
-	end,
-}
+		workspace.CurrentCamera.CameraSubject = localPlayer.Character.Humanoid
+	end
 
-function AutoGradeEva.on(offset)
-	AutoGradeEva.off()
-	if game.PlaceId ~= 99831550635699 then
-		return false, "Not in the exam"
-	end
-	if not workspace.Map:FindFirstChild("ExamRoom") then
-		return false, "Not in the exam"
-	end
-	state = true
-	if gradeFunctions[tonumber(game:GetService("Players").LocalPlayer.Data.Grade.Value)] then
-		pcall(function()
-			gradeFunctions[tonumber(game:GetService("Players").LocalPlayer.Data.Grade.Value)](offset)
-		end)
-		return true, "success"
-	else
-		return false, "not found"
-	end
-end
-
-function AutoGradeEva.off()
-	state = false
-	if connection then
-		connection:Disconnect()
-		connection = nil
-	end
-	for _, anim in track do
-		anim:Stop()
-		anim:Destroy()
-		anim = nil
-	end
-	workspace.CurrentCamera.CameraSubject = game.Players.LocalPlayer.Character.Humanoid
-end
-
-return AutoGradeEva
-
+	return KillAura
 end)
-__bundle_register("Features/Automation/AutoRailway", function(require, _LOADED, __bundle_register, __bundle_modules)
-local VirtualInputManager = game:GetService("VirtualInputManager")
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
+__bundle_register("Features/Troll/KillSomeone", function(require, _LOADED, __bundle_register, __bundle_modules)
+	local Players = game:GetService("Players")
+	local RunService = game:GetService("RunService")
 
-local localPlayer = Players.LocalPlayer
+	local localPlayer = Players.LocalPlayer
+	local KillSomeone = {}
+	local track = {}
+	local connection
+	local m1Debounce = false
+	local equippedDebounce = false
+	local gripDebounce = false
+	local oldPos
 
-local AutoRailway = {}
+	function KillSomeone.on(offset, target)
+		KillSomeone.off()
+		oldPos = localPlayer.Character:GetPivot()
+		local player = game.Players.LocalPlayer.Character.Humanoid.Animator
+		for i = 1, 3 do
+			local animtrack = player:LoadAnimation(
+				game:GetService("ReplicatedStorage").WeaponINFO[game.Players.LocalPlayer.Data.Weapon.Value]["AttackAnimation" .. tostring(
+					i
+				)]
+			)
 
-local connection
-local track = {}
-local isM1oneToThreeYet = false
+			game:GetService("ReplicatedStorage").Events.BegunM1:FireServer(game.Players.LocalPlayer.Data.Weapon.Value)
 
-local function clickButton(text)
-	for _, frame in game:GetService("Players").LocalPlayer.PlayerGui.Dialogue.MainFrame.Options.Scroll:GetChildren() do
-		if frame:IsA("Frame") then
-			if frame.OptionText.Text == text or frame.OptionText.Text:find(text) then
-				replicatesignal(frame.OptionButton.MouseButton1Click)
-				return true
-			end
-		end
-	end
-	return false
-end
-
-local function checkAnimations(tabled, animator)
-	for _, track in animator:GetPlayingAnimationTracks() do
-		if track.Animation.AnimationId then
-			if table.find(tabled, track.Animation.AnimationId) then
-				return false
-			end
-		end
-	end
-	return true
-end
-
-local function checkIfStationYet()
-	if not workspace.Map:FindFirstChild("StationDisplay") then
-		return false
-	end
-	for _, something in workspace.Map.StationDisplay:GetChildren() do
-		if something:IsA("Attachment") then
-			if something:FindFirstChildWhichIsA("ProximityPrompt") then
-				if something:FindFirstChildWhichIsA("ProximityPrompt").Enabled then
-					return true
-				end
-			end
-		end
-	end
-	return false
-end
-
-local function attachmentCounter()
-	local count = 0
-	if not workspace.Map:FindFirstChild("StationDisplay") then
-		return 0
-	end
-	for _, v in workspace.Map.StationDisplay:GetChildren() do
-		if v:IsA("Attachment") then
-			count = count + 1
-		end
-	end
-	return count
-end
-
-local function checkForStuffandClick(name)
-	if not workspace.Map:FindFirstChild("StationDisplay") then
-		return false
-	end
-	for _, v in workspace.Map.StationDisplay:GetChildren() do
-		if v:IsA("Attachment") then
-			if v.Name:find(name) or v.Name == name then
-				localPlayer.Character:PivotTo(v.WorldCFrame)
-				if v:FindFirstChildWhichIsA("ProximityPrompt").Enabled then
-					fireproximityprompt(v:FindFirstChildWhichIsA("ProximityPrompt"))
-					return true
-				end
-			end
-		end
-	end
-	return false
-end
-
-local function getDroppedItems()
-	local tabled = {}
-	for _, item in workspace.Thrown:GetChildren() do
-		for _, prompt in item:GetDescendants() do
-			if
-				prompt:IsA("ProximityPrompt")
-				and localPlayer:DistanceFromCharacter(item:GetPivot().Position) < 300
-				and item.Name ~= "DestroyedParts"
-			then
-				table.insert(tabled, item)
-			end
-		end
-	end
-	return tabled
-end
-
-local function splitString(str, sep)
-	sep = sep or ","
-	local result = {}
-	for item in str:gmatch("[^" .. sep .. "]+") do
-		table.insert(result, item:lower())
-	end
-	return result
-end
-
-local enemyLists = { "Nothing There", "Sweeper Brute" }
-
-local blackListedAnim = {
-	"rbxassetid://16428863879",
-	"rbxassetid://16390219304",
-	"rbxassetid://16390215619",
-	"rbxassetid://16390221563",
-	"rbxassetid://16390165394",
-	"rbxassetid://16390173071",
-	"rbxassetid://16390234461",
-	"rbxassetid://16390226552",
-	"rbxassetid://15151732756",
-	"rbxassetid://17452190205",
-	"rbxassetid://17450213059",
-	"rbxassetid://17450216584",
-	"rbxassetid://17452468519",
-	"rbxassetid://17457663944",
-	"rbxassetid://17460411925",
-}
-local Teleported = false
-local teleportToMerchantdb = false
-local pickingUpItem = false
-local equipedDb = false
-local currentExitPos
-
-local function killMob(offset)
-	local fuckKingVon
-	connection = RunService.PostSimulation:Connect(LPH_NO_VIRTUALIZE(function(delta)
-		localPlayer.Character.HumanoidRootPart.Anchored = false
-		if localPlayer.Character:FindFirstChild("Grabbed") then
-			return
-		end
-		--[[ 		local checkKingVon = workspace:FindFirstChild("Part")
-		if checkKingVon then
-			local texture = checkKingVon:FindFirstChildWhichIsA("Decal")
-			if texture then
-				return
-			end
-		end ]]
-		localPlayer.Data.Stamina.Value = 100
-		local targetTable = {}
-		for _, human in workspace.Alive:GetChildren() do
-			if
-				not Players:GetPlayerFromCharacter(human)
-				and human.Humanoid.Health > 0
-				and not human:FindFirstChild("GotGripped")
-			then
-				table.insert(targetTable, human)
-			end
+			animtrack:Play(0, 0.01, 1000)
+			animtrack.Looped = true
+			table.insert(track, animtrack)
 		end
 
-		table.sort(targetTable, function(a, b)
-			return a.Humanoid.MaxHealth > b.Humanoid.MaxHealth
-		end)
-
-		local offset = Vector3.new(0, -offset, 0)
-		localPlayer.Character.HumanoidRootPart.Velocity = Vector3.zero
-		if #targetTable ~= 0 then
-			if not equipedDb then
-				equipedDb = true
-				game:GetService("ReplicatedStorage").Events.Equip:FireServer(true)
+		connection = RunService.PostSimulation:Connect(LPH_NO_VIRTUALIZE(function(delta)
+			if target:FindFirstChild("GotGripped") then
+				localPlayer.Character.HumanoidRootPart.Anchored = false
+				game:GetService("ReplicatedStorage").Events.Equip:FireServer(false)
+				workspace.CurrentCamera.CameraSubject = localPlayer.Character.Humanoid
 				for _, anim in track do
 					anim:Stop()
 					anim:Destroy()
+					anim = nil
 				end
-				table.clear(track)
-				local m1Count = 0
-				for _, animation in
-					game:GetService("ReplicatedStorage").WeaponINFO[game.Players.LocalPlayer.Data.Weapon.Value]
-						:GetChildren()
-				do
-					if animation:IsA("Animation") then
-						if animation.Name:find("AttackAnimation") and animation.Name ~= "ChargedAttackAnimation" then
-							m1Count = m1Count + 1
-						end
-					end
+				if oldPos then
+					localPlayer.Character:PivotTo(oldPos)
+					oldPos = nil
 				end
-				for i = 1, m1Count - 1 do
-					local animtrack = localPlayer.Character.Humanoid.Animator:LoadAnimation(
-						game:GetService("ReplicatedStorage").WeaponINFO[game.Players.LocalPlayer.Data.Weapon.Value]["AttackAnimation" .. tostring(
-							i
-						)]
-					)
-					animtrack:Play(0, 0.01, 100000)
-					animtrack.Looped = true
-					table.insert(track, animtrack)
-				end
-				task.delay(5, function()
-					if connection then
-						for _, anim in track do
-							anim:Stop()
-							anim:Destroy()
-						end
-						table.clear(track)
-						game:GetService("ReplicatedStorage").Events.Equip:FireServer(false)
-					end
-					equipedDb = false
-				end)
+				connection:Disconnect()
+			end
+			if not equippedDebounce then
+				equippedDebounce = true
+				game:GetService("ReplicatedStorage").Events.Equip:FireServer(true)
 			end
 			localPlayer.Character.HumanoidRootPart.Anchored = false
 			for _, animTrack in track do
-				animTrack:AdjustSpeed(100000)
+				animTrack:AdjustSpeed(1000)
 			end
 			if not m1Debounce then
 				m1Debounce = true
+				game:GetService("ReplicatedStorage").Events.BegunM1
+					:FireServer(game.Players.LocalPlayer.Data.Weapon.Value)
 				task.delay(0.75, function()
 					m1Debounce = false
 				end)
 			end
-			if targetTable[1]:FindFirstChild("Knocked") and not gripDebounce then
+			if target:FindFirstChild("Knocked") and not gripDebounce then
 				gripDebounce = true
-				localPlayer.Character.HumanoidRootPart:PivotTo(targetTable[1].HumanoidRootPart.CFrame)
 				game:GetService("ReplicatedStorage")
 					:WaitForChild("Events")
 					:WaitForChild("Grip")
@@ -3230,122 +1233,2140 @@ local function killMob(offset)
 				localPlayer.Character.HumanoidRootPart.Anchored = true
 				return
 			end
-			if not table.find(enemyLists, targetTable[1].Name) then
+			localPlayer.Data.Stamina.Value = 100
+			for _, animTrack in track do
+				animTrack:AdjustSpeed(1000)
+			end
+			local offset =
+				Vector3.new(math.random(0, 1), math.random(offset, offset + math.random(1, 2)), math.random(0, 1))
+
+			localPlayer.Character.HumanoidRootPart:PivotTo(
+				target.HumanoidRootPart.CFrame * CFrame.Angles(math.rad(90), 0, 0) + offset
+			)
+			workspace.CurrentCamera.CameraSubject = target.Humanoid
+			localPlayer.Character.HumanoidRootPart.AssemblyLinearVelocity = Vector3.zero
+			localPlayer.Character.HumanoidRootPart.AssemblyAngularVelocity = Vector3.zero
+			localPlayer.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Ragdoll, false)
+		end))
+	end
+
+	function KillSomeone.off()
+		game:GetService("ReplicatedStorage").Events.Equip:FireServer(false)
+		if connection then
+			connection:Disconnect()
+			connection = nil
+		end
+		for _, anim in track do
+			anim:Stop()
+			anim:Destroy()
+			anim = nil
+		end
+		if oldPos then
+			localPlayer.Character:PivotTo(oldPos)
+			oldPos = nil
+		end
+		workspace.CurrentCamera.CameraSubject = localPlayer.Character.Humanoid
+		localPlayer.Character.HumanoidRootPart.Anchored = false
+	end
+
+	return KillSomeone
+end)
+__bundle_register("Features/Troll/Void", function(require, _LOADED, __bundle_register, __bundle_modules)
+	local Players = game:GetService("Players")
+	local RunService = game:GetService("RunService")
+
+	local localPlayer = Players.LocalPlayer
+
+	local Void = {}
+	local voidVelocity = {}
+	local connection
+
+	function Void.on()
+		Void.off()
+		if setsimulationradius then
+			setsimulationradius(math.huge, math.huge)
+		else
+			sethiddenproperty(localPlayer, "MaxSimulationRadius", 9e9)
+			sethiddenproperty(localPlayer, "SimulationRadius", 9e9)
+		end
+		connection = RunService.Heartbeat:Connect(LPH_NO_VIRTUALIZE(function()
+			for _, character in workspace.Alive:GetChildren() do
+				if character:FindFirstChild("HumanoidRootPart") and character.Name ~= localPlayer.Name then
+					if isnetworkowner(character.HumanoidRootPart) then
+						if localPlayer.Character.HumanoidRootPart:FindFirstChild("GrabWeld") then
+							localPlayer.Character.HumanoidRootPart:FindFirstChild("GrabWeld"):Destroy()
+						end
+						if not character.HumanoidRootPart:FindFirstChild("BodyVelocity") then
+							local partConstantVelocity = Instance.new("BodyVelocity")
+							partConstantVelocity.MaxForce = Vector3.new(1 / 0, 1 / 0, 1 / 0)
+							partConstantVelocity.Velocity = Vector3.new(100, -100000, 0)
+							partConstantVelocity.P = 1 / 0
+							table.insert(voidVelocity, partConstantVelocity)
+						end
+
+						-- Set part properties.
+						character.HumanoidRootPart.AssemblyLinearVelocity = Vector3.new(1000, -10000, 0)
+						character.HumanoidRootPart.Position = Vector3.new(
+							character.HumanoidRootPart.Position.X,
+							-4000,
+							character.HumanoidRootPart.Position.Z
+						)
+						character.HumanoidRootPart.CanCollide = false
+
+						-- Stop part from sleeping.
+						sethiddenproperty(character.HumanoidRootPart, "NetworkIsSleeping", false)
+					end
+				end
+			end
+		end))
+		for _, velocity in voidVelocity do
+			velocity:Destroy()
+			velocity = nil
+		end
+	end
+
+	function Void.off()
+		if connection then
+			connection:Disconnect()
+			connection = nil
+		end
+	end
+
+	return Void
+end)
+__bundle_register("Menu/Removal", function(require, _LOADED, __bundle_register, __bundle_modules)
+	local noEndlag = require("Features/Removal/noEndlag")
+	local dashNoCD = require("Features/Removal/DashNoCD")
+	local noFall = require("Features/Removal/NoFall")
+	local noKillBrick = require("Features/Removal/noKillBrick")
+	local noWeather = require("Features/Removal/noWeather")
+
+	local Removal = {}
+
+	function Removal.init()
+		LPH_NO_VIRTUALIZE(function()
+			local Tab = window:AddTab({ Title = "Removal", Icon = "" })
+			local fallDamageToggle = Tab:AddToggle("fallDamage", { Title = "No Fall Damage", Default = false })
+
+			fallDamageToggle:OnChanged(function()
+				if Options.fallDamage.Value then
+					noFall.on()
+				else
+					noFall.off()
+				end
+			end)
+
+			local noDashCDToggle = Tab:AddToggle("noDashCD", { Title = "No Dash Cooldown", Default = false })
+
+			noDashCDToggle:OnChanged(function()
+				if Options.noDashCD.Value then
+					dashNoCD.on()
+				else
+					dashNoCD.off()
+				end
+			end)
+
+			local noStunToggle = Tab:AddToggle("noStun", { Title = "No Slow", Default = false })
+
+			noStunToggle:OnChanged(function()
+				if Options.noStun.Value then
+					noEndlag.on()
+				else
+					noEndlag.off()
+				end
+			end)
+
+			local noKillBrickToggle = Tab:AddToggle("noKillBrick", { Title = "No Kill Bricks", Default = false })
+
+			noKillBrickToggle:OnChanged(function()
+				if Options.noKillBrick.Value then
+					noKillBrick.on()
+				else
+					noKillBrick.off()
+				end
+			end)
+
+			local noWeatherToggle = Tab:AddToggle("noWeather", { Title = "No Weather", Default = false })
+
+			noWeatherToggle:OnChanged(function()
+				if Options.noWeather.Value then
+					noWeather.on()
+				else
+					noWeather.off()
+				end
+			end)
+		end)()
+	end
+
+	return Removal
+end)
+__bundle_register("Features/Removal/noWeather", function(require, _LOADED, __bundle_register, __bundle_modules)
+	local Players = game:GetService("Players")
+	local ReplicatedStorage = game:GetService("ReplicatedStorage")
+	local Events = ReplicatedStorage:WaitForChild("Events")
+	local fallDamageEvent = Events:WaitForChild("FallDamage")
+
+	local localPlayer = Players.LocalPlayer
+
+	local connection
+
+	local noWeather = {}
+	local WeatherAttach
+
+	function noWeather.on()
+		WeatherAttach = workspace.Camera:FindFirstChild("WeatherAttach")
+		if WeatherAttach then
+			WeatherAttach.Parent = nil
+		end
+	end
+
+	function noWeather.off()
+		if WeatherAttach then
+			WeatherAttach.Parent = workspace.Camera
+		end
+	end
+
+	return noWeather
+end)
+__bundle_register("Features/Removal/noKillBrick", function(require, _LOADED, __bundle_register, __bundle_modules)
+	local Players = game:GetService("Players")
+	local ReplicatedStorage = game:GetService("ReplicatedStorage")
+	local Events = ReplicatedStorage:WaitForChild("Events")
+	local fallDamageEvent = Events:WaitForChild("FallDamage")
+
+	local localPlayer = Players.LocalPlayer
+
+	local connection
+
+	local noKillBrick = {}
+
+	function noKillBrick.on()
+		local kb = workspace:FindFirstChild("KillBricks")
+		if kb then
+			kb:Destroy()
+		end
+	end
+
+	function noKillBrick.off() end
+
+	return noKillBrick
+end)
+__bundle_register("Features/Removal/NoFall", function(require, _LOADED, __bundle_register, __bundle_modules)
+	local Players = game:GetService("Players")
+	local ReplicatedStorage = game:GetService("ReplicatedStorage")
+	local Events = ReplicatedStorage:WaitForChild("Events")
+	local fallDamageEvent = Events:WaitForChild("FallDamage")
+
+	local localPlayer = Players.LocalPlayer
+
+	local connection
+
+	local noFall = {}
+	local state = false
+
+	hookmetamethod(
+		game,
+		"__namecall",
+		newcclosure(LPH_NO_VIRTUALIZE(function(self, ...)
+			local method = getnamecallmethod()
+
+			if method == "FireServer" and self == fallDamageEvent and state then
+				return
+			end
+
+			return self[method](self, ...)
+		end))
+	)
+
+	function noFall.on()
+		state = true
+	end
+
+	function noFall.off()
+		state = false
+	end
+
+	return noFall
+end)
+__bundle_register("Features/Removal/DashNoCD", function(require, _LOADED, __bundle_register, __bundle_modules)
+	local Players = game:GetService("Players")
+	local RunService = game:GetService("RunService")
+
+	local localPlayer = Players.LocalPlayer
+	local NoDashCD = {}
+	local instance
+
+	local connection
+	local resetDash
+
+	function NoDashCD.on()
+		connection = RunService.RenderStepped:Connect(LPH_NO_VIRTUALIZE(function()
+			resetDash = game.Players.LocalPlayer.Character:FindFirstChild("ResetDashCD")
+			if not resetDash then
+				resetDash = nil
+				resetDash = Instance.new("Folder")
+				resetDash.Name = "ResetDashCD"
+				resetDash.Parent = game.Players.LocalPlayer.Character
+			end
+			local DashDisabled = game.Players.LocalPlayer.Character:FindFirstChild("DashDisabled")
+			if DashDisabled then
+				DashDisabled:Destroy()
+			end
+		end))
+	end
+
+	function NoDashCD.off()
+		if connection then
+			connection:Disconnect()
+		end
+		if resetDash then
+			resetDash:Destroy()
+			resetDash = nil
+		end
+	end
+
+	return NoDashCD
+end)
+__bundle_register("Features/Removal/noEndlag", function(require, _LOADED, __bundle_register, __bundle_modules)
+	local Players = game:GetService("Players")
+	local RunService = game:GetService("RunService")
+
+	local localPlayer = Players.LocalPlayer
+	local noEndlag = {}
+	local instance
+
+	local connection
+	local resetDash
+
+	function noEndlag.on()
+		connection = RunService.RenderStepped:Connect(LPH_NO_VIRTUALIZE(function()
+			local LightAttack = game.Players.LocalPlayer.Character:FindFirstChild("LightAttack")
+			if LightAttack then
+				LightAttack:Destroy()
+			end
+
+			local HeavyAttack = game.Players.LocalPlayer.Character:FindFirstChild("HeavyAttack")
+			if HeavyAttack then
+				HeavyAttack:Destroy()
+			end
+
+			local UsingMove = game.Players.LocalPlayer.Character:FindFirstChild("UsingMove")
+			if UsingMove then
+				UsingMove:Destroy()
+			end
+		end))
+	end
+
+	function noEndlag.off()
+		if connection then
+			connection:Disconnect()
+		end
+	end
+
+	return noEndlag
+end)
+__bundle_register("Menu/Automation", function(require, _LOADED, __bundle_register, __bundle_modules)
+	local autoLib = require("Features/Automation/AutoLibrary")
+	local autoWarp = require("Features/Automation/AutoWarp")
+	local autoRailway = require("Features/Automation/AutoRailway")
+	local autoGrade = require("Features/Automation/AutoGradeEvaluation")
+	local autoLCorp = require("Features/Automation/AutoLCorpBosses")
+	local autoRicardo = require("Features/Automation/AutoRicardo")
+
+	local Automation = {}
+	getgenv().autoRailwayLootPriority = {}
+
+	if isfile("TelepathyOverload/Archived/loot_priority.txt") then
+		for item in readfile("TelepathyOverload/Archived/loot_priority.txt"):gmatch("[^,]+") do
+			table.insert(autoRailwayLootPriority, item)
+		end
+	end
+
+	function Automation.init()
+		LPH_NO_VIRTUALIZE(function()
+			local Tab = window:AddTab({ Title = "Automation", Icon = "" })
+			Tab:AddParagraph({
+				Title = "Auto Library Usage",
+				Content = "This is only usable when in the ordeal itself.",
+			})
+
+			local autoLibraryToggle = Tab:AddToggle("AutoLibrary", { Title = "Auto Library", Default = false })
+
+			autoLibraryToggle:OnChanged(function()
+				if Options.AutoLibrary.Value then
+					local state, err = autoLib.on(
+						Options.autoLibYOffset.Value,
+						Options.libraryFloorSelection.Value,
+						Options.buffLibrary.Value
+					)
+					if not state then
+						GUI:Notify({
+							Title = "Error Occurred.",
+							Content = err,
+							Duration = 8,
+						})
+					end
+				else
+					if Options.libraryFloorSelection then
+						autoLib.off(Options.libraryFloorSelection.Value)
+					end
+				end
+			end)
+
+			local libraryFloorSelectionDropDown = Tab:AddDropdown("libraryFloorSelection", {
+				Title = "Library Floor Selection",
+				Values = {
+					"Kether",
+					"Language",
+					"Philosophy",
+				},
+				Multi = false,
+				Default = 1,
+			})
+
+			local buffLibraryToggle = Tab:AddToggle("buffLibrary", { Title = "Buff Library", Default = false })
+
+			buffLibraryToggle:OnChanged(function()
+				if Options.AutoLibrary.Value then
+					local state, err = autoLib.on(
+						Options.autoLibYOffset.Value,
+						Options.libraryFloorSelection.Value,
+						Options.buffLibrary.Value
+					)
+					if not state then
+						GUI:Notify({
+							Title = "Error Occurred.",
+							Content = err,
+							Duration = 8,
+						})
+					end
+				end
+			end)
+			local autoLibraryYOffset = Tab:AddSlider("autoLibYOffset", {
+				Title = "Y Offset",
+				Description = "Depends on your weapons",
+				Default = 5,
+				Min = 0,
+				Max = 30,
+				Rounding = 0,
+				Callback = function(Value)
+					if Options.AutoLibrary.Value then
+						local state, err =
+							autoLib.on(Value, Options.libraryFloorSelection.Value, Options.buffLibrary.Value)
+						if not state then
+							Options.AutoLibrary:SetValue(false)
+							GUI:Notify({
+								Title = "Error Occurred.",
+								Content = err,
+								Duration = 8,
+							})
+						end
+					end
+				end,
+			})
+
+			Tab:AddParagraph({
+				Title = "Auto Warp Train Usage",
+				Content = "This is only usable when in the Warp Train itself.",
+			})
+
+			local AutoWarpToggle = Tab:AddToggle("AutoWarp", { Title = "Auto Warp Train", Default = false })
+			Options.AutoWarp:SetValue(false)
+
+			AutoWarpToggle:OnChanged(function()
+				if Options.AutoWarp.Value then
+					local state, err = autoWarp.on(Options.autoWarpYOffset.Value)
+					if not state then
+						GUI:Notify({
+							Title = "Error Occurred.",
+							Content = err,
+							Duration = 8,
+						})
+					end
+				else
+					autoWarp.off()
+				end
+			end)
+
+			local autoWarpYOffset = Tab:AddSlider("autoWarpYOffset", {
+				Title = "Y Offset",
+				Description = "Depends on your weapons",
+				Default = 10,
+				Min = 0,
+				Max = 30,
+				Rounding = 0,
+				Callback = function(Value)
+					if Options.AutoWarp.Value then
+						local state, err = autoWarp.on(Value)
+						if not state then
+							Options.AutoWarp:SetValue(false)
+							GUI:Notify({
+								Title = "Error Occurred.",
+								Content = err,
+								Duration = 8,
+							})
+						end
+					end
+				end,
+			})
+			local autoGradeEva = Tab:AddToggle("autoGradeEva", { Title = "Auto Grade Evaluation", Default = false })
+			Options.autoGradeEva:SetValue(false)
+
+			autoGradeEva:OnChanged(function()
+				if Options.autoGradeEva.Value then
+					local state, err = autoGrade.on(Options.autoGradeEvaYOffset.Value)
+					if not state then
+						GUI:Notify({
+							Title = "Error Occurred.",
+							Content = err,
+							Duration = 8,
+						})
+					end
+				else
+					autoGrade.off()
+				end
+			end)
+
+			local autoGradeEvaYOffset = Tab:AddSlider("autoGradeEvaYOffset", {
+				Title = "Y Offset",
+				Description = "Depends on your weapons",
+				Default = 30,
+				Min = 0,
+				Max = 30,
+				Rounding = 0,
+				Callback = function(Value)
+					if Options.autoGradeEva.Value then
+						local state, err = autoGrade.on(Value)
+						if not state then
+							Options.autoGradeEva:SetValue(false)
+							GUI:Notify({
+								Title = "Error Occurred.",
+								Content = err,
+								Duration = 8,
+							})
+						end
+					end
+				end,
+			})
+			Tab:AddParagraph({
+				Title = "Auto Railway Usage",
+				Content = "This is only usable when in the Railway itself.",
+			})
+
+			local AutoRailwayToggle = Tab:AddToggle("AutoRailway", { Title = "Auto Railway", Default = false })
+
+			AutoRailwayToggle:OnChanged(function()
+				if Options.AutoRailway.Value then
+					local state, err = autoRailway.on(Options.autoRailwayYOffset.Value)
+					if not state then
+						Options.AutoRailway:SetValue(false)
+						GUI:Notify({
+							Title = "Error Occurred.",
+							Content = err,
+							Duration = 8,
+						})
+					end
+				else
+					autoRailway.off()
+				end
+			end)
+
+			local autoRailwayYOffset = Tab:AddSlider("autoRailwayYOffset", {
+				Title = "Y Offset",
+				Description = "Depends on your weapons",
+				Default = 5,
+				Min = 0,
+				Max = 30,
+				Rounding = 0,
+				Callback = function(Value)
+					if Options.AutoRailway.Value then
+						local state, err = autoRailway.on(Value)
+						if not state then
+							Options.AutoRailway:SetValue(false)
+							GUI:Notify({
+								Title = "Error Occurred.",
+								Content = err,
+								Duration = 8,
+							})
+						end
+					end
+				end,
+			})
+
+			local autoRailwayLootSelection = Tab:AddDropdown("autoRailwayLootSelection", {
+				Title = "Item Priority Selection",
+				Values = {
+					"Singularity",
+					"SkipFloors",
+					"RareItems",
+					"Item",
+					"HugeAhn",
+					"Ahn",
+					"RareAccessories",
+					"Accessories",
+					"HugeExperience",
+					"Experience",
+					"Heal",
+				},
+				Multi = true,
+				Default = {},
+				Callback = function(Value)
+					autoRailwayLootPriority = {}
+					if isfile("TelepathyOverload/Archived/loot_priority.txt") then
+						for item in readfile("TelepathyOverload/Archived/loot_priority.txt"):gmatch("[^,]+") do
+							if Value[item] == true then -- only keep if fluent also has it checked
+								table.insert(autoRailwayLootPriority, item)
+							end
+						end
+					end
+
+					-- real user click
+					local savedPriority = {}
+					if isfile("TelepathyOverload/Archived/loot_priority.txt") then
+						for item in readfile("TelepathyOverload/Archived/loot_priority.txt"):gmatch("[^,]+") do
+							table.insert(savedPriority, item)
+						end
+					end
+
+					for i = #savedPriority, 1, -1 do
+						if not Value[savedPriority[i]] then
+							table.remove(savedPriority, i)
+						end
+					end
+
+					for item, selected in pairs(Value) do
+						if selected then
+							local found = false
+							for _, v in ipairs(savedPriority) do
+								if v == item then
+									found = true
+									break
+								end
+							end
+							if not found then
+								table.insert(savedPriority, item)
+							end
+						end
+					end
+
+					autoRailwayLootPriority = savedPriority
+					writefile(
+						"TelepathyOverload/Archived/loot_priority.txt",
+						table.concat(autoRailwayLootPriority, ",")
+					)
+
+					local display = table.concat(autoRailwayLootPriority, ", ")
+					GUI:Notify({
+						Title = "Current Item Priority",
+						Content = display ~= "" and display or "None selected",
+						Duration = 8,
+					})
+				end,
+			})
+
+			local AutoLCorpToggle = Tab:AddToggle("AutoLCorp", { Title = "Auto L Corp Bosses", Default = false })
+
+			AutoLCorpToggle:OnChanged(function()
+				if Options.AutoLCorp.Value then
+					autoLCorp.on()
+				else
+					autoLCorp.off()
+				end
+			end)
+
+			local AutoLCorpYOffset = Tab:AddSlider("AutoLCorpYOffset", {
+				Title = "Y Offset",
+				Description = "Depends on your weapons",
+				Default = 5,
+				Min = 0,
+				Max = 30,
+				Rounding = 0,
+			})
+
+			local LCorpBossSelection = Tab:AddDropdown("lCorpBossSelection", {
+				Title = "Boss Selection",
+				Values = {
+					"Lei Heng",
+					"Gloom",
+					"Pride",
+					"Wrath",
+					"Desire",
+					"Sloth",
+					"Envy",
+					"Gluttony",
+				},
+				Multi = false,
+				Default = "Lei Heng",
+			})
+
+			local AutoRicardoToggle = Tab:AddToggle("AutoRicardo", { Title = "Auto Ricardo", Default = false })
+
+			AutoRicardoToggle:OnChanged(function()
+				if Options.AutoRicardo.Value then
+					autoRicardo.on()
+				else
+					autoRicardo.off()
+				end
+			end)
+
+			local AutoRicardoYOffset = Tab:AddSlider("AutoRicardoYOffset", {
+				Title = "Y Offset",
+				Description = "Depends on your weapons",
+				Default = 5,
+				Min = 0,
+				Max = 30,
+				Rounding = 0,
+			})
+		end)()
+	end
+
+	return Automation
+end)
+__bundle_register("Features/Automation/AutoRicardo", function(require, _LOADED, __bundle_register, __bundle_modules)
+	local Players = game:GetService("Players")
+	local RunService = game:GetService("RunService")
+
+	local localPlayer = Players.LocalPlayer
+	local AutoRicardo = {}
+
+	local connection
+	local track = {}
+	local state = false
+
+	local function clickButton(text)
+		for _, frame in game:GetService("Players").LocalPlayer.PlayerGui.Dialogue.MainFrame.Options.Scroll:GetChildren() do
+			if frame:IsA("Frame") then
+				if frame.OptionText.Text == text or frame.OptionText.Text:find(text) then
+					replicatesignal(frame.OptionButton.MouseButton1Click)
+					return true
+				end
+			end
+		end
+		return false
+	end
+
+	local gripDebounce = false
+
+	function AutoRicardo.on(offset, floor, buff)
+		AutoRicardo.off()
+		state = true
+		local teleported = false
+		if game.PlaceId ~= 99831550635699 then
+			return false, "Not in the library"
+		end
+		if not workspace:GetAttribute("ServerType") == "Ricardo" then
+			return false, "Not in the library"
+		end
+
+		local kb = workspace:FindFirstChild("KillBricks")
+		if kb then
+			kb:Destroy()
+		end
+
+		if not localPlayer.Character:FindFirstChild("AirTime") then
+			local airTime = Instance.new("Folder")
+			airTime.Name = "AirTime"
+			airTime.Parent = localPlayer.Character
+		end
+		local talkPart = workspace.NPCS:FindFirstChild("RicardoChallengePart")
+		if talkPart and not workspace.Alive:FindFirstChild("Big Brother Of The Middle") then
+			local mainPart = talkPart:FindFirstChild("MainPart")
+			if mainPart then
+				local clickBring = false
+				repeat
+					task.wait()
+					localPlayer.Character:PivotTo(mainPart:GetPivot())
+					fireproximityprompt(talkPart.InteractPrompt)
+					if clickButton("Bring") then
+						clickBring = true
+					end
+				until clickBring
+			end
+		end
+
+		game:GetService("ReplicatedStorage").Events.Equip:FireServer(true)
+		local equipDebounce = false
+		connection = RunService.PostSimulation:Connect(LPH_NO_VIRTUALIZE(function(delta)
+			if not state then
+				return
+			end
+			if math.floor(workspace.DistributedGameTime) < 0 then
+				game:GetService("ReplicatedStorage").Events.Equip:FireServer(false)
+				for _, animTrack in track do
+					animTrack:AdjustSpeed(0)
+				end
+				workspace.CurrentCamera.CameraSubject = localPlayer.Character.Humanoid
+				localPlayer.Character:PivotTo(CFrame.new(-12874, -11, 1070))
+				return true
+			end
+			teleported = false
+			localPlayer.Data.Stamina.Value = 100
+			local targetTable = {}
+
+			for _, human in workspace.Alive:GetChildren() do
 				if
-					targetTable[1].Name == "Sweeper δ"
-					or targetTable[1].Name == "Sweeper α"
-					or targetTable[1].Name == "Sweeper β"
+					not Players:GetPlayerFromCharacter(human)
+					and human.Humanoid.Health > 0
+					and not human:FindFirstChild("GotGripped")
 				then
-					if math.floor(targetTable[1].Humanoid.Health) == 1 then
-						local targetHRP = targetTable[1].HumanoidRootPart
-						local targetPos = targetHRP.Position
-						local behind = targetHRP.CFrame.LookVector * -5
-						local myPos = targetPos + behind
-						localPlayer.Character.HumanoidRootPart:PivotTo(CFrame.lookAt(myPos, targetPos))
+					table.insert(targetTable, human)
+				end
+			end
+
+			table.sort(targetTable, function(a, b)
+				return a.Humanoid.MaxHealth > b.Humanoid.MaxHealth
+			end)
+
+			if #targetTable ~= 0 then
+				localPlayer.Character.HumanoidRootPart.Anchored = false
+				local isAllAlerted = true
+				for _, target in targetTable do
+					if target.Target.Value ~= localPlayer.Character then
+						localPlayer.Character.HumanoidRootPart:PivotTo(
+							targetTable[1].HumanoidRootPart.CFrame * CFrame.Angles(math.rad(90), 0, 0)
+								+ Vector3.new(0, 10, 0)
+						)
+						isAllAlerted = false
+					end
+				end
+				if not isAllAlerted then
+					return
+				end
+				if not equipDebounce then
+					equipDebounce = true
+					game:GetService("ReplicatedStorage").Events.Equip:FireServer(true)
+					for _, anim in track do
+						anim:Stop()
+						anim:Destroy()
+					end
+					table.clear(track)
+					local m1Count = 0
+					for _, animation in
+						game:GetService("ReplicatedStorage").WeaponINFO[game.Players.LocalPlayer.Data.Weapon.Value]
+							:GetChildren()
+					do
+						if animation:IsA("Animation") then
+							if
+								animation.Name:find("AttackAnimation")
+								and animation.Name ~= "ChargedAttackAnimation"
+							then
+								m1Count = m1Count + 1
+							end
+						end
+					end
+					for i = 1, m1Count - 1 do
+						local animtrack = localPlayer.Character.Humanoid.Animator:LoadAnimation(
+							game:GetService("ReplicatedStorage").WeaponINFO[game.Players.LocalPlayer.Data.Weapon.Value]["AttackAnimation" .. tostring(
+								i
+							)]
+						)
+						animtrack:Play(0, 0.01, 100000)
+						animtrack.Looped = true
+						table.insert(track, animtrack)
+					end
+					task.delay(2.5, function()
+						if connection then
+							for _, anim in track do
+								anim:Stop()
+								anim:Destroy()
+							end
+							table.clear(track)
+							game:GetService("ReplicatedStorage").Events.Equip:FireServer(false)
+						end
+						equipDebounce = false
+					end)
+				end
+				local offset = Vector3.new(0, -Options.AutoRicardoYOffset.Value, 0)
+
+				if targetTable[1]:FindFirstChild("Knocked") and not gripDebounce then
+					gripDebounce = true
+					localPlayer.Character.HumanoidRootPart:PivotTo(targetTable[1].HumanoidRootPart.CFrame)
+					game:GetService("ReplicatedStorage")
+						:WaitForChild("Events")
+						:WaitForChild("Grip")
+						:FireServer(localPlayer.Character)
+					task.delay(1, function()
+						gripDebounce = false
+					end)
+				end
+
+				if targetTable[1]:FindFirstChild("GettingGripped") then
+					localPlayer.Character.HumanoidRootPart.Anchored = true
+					return
+				end
+				if targetTable[1].Target.Value ~= localPlayer.Character then
+					localPlayer.Character.HumanoidRootPart:PivotTo(
+						targetTable[1].HumanoidRootPart.CFrame * CFrame.Angles(math.rad(90), 0, 0)
+							+ Vector3.new(0, 5, 0)
+					)
+					return
+				end
+				localPlayer.Character.HumanoidRootPart:PivotTo(
+					targetTable[1].HumanoidRootPart.CFrame * CFrame.Angles(math.rad(90), 0, 0) + offset
+				)
+				workspace.CurrentCamera.CameraSubject = targetTable[1].Humanoid
+				localPlayer.Character.HumanoidRootPart.AssemblyLinearVelocity = Vector3.zero
+				localPlayer.Character.HumanoidRootPart.AssemblyAngularVelocity = Vector3.zero
+				localPlayer.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Ragdoll, false)
+			else
+				if not teleported then
+					teleported = true
+					equipDebounce = false
+					localPlayer.Character:PivotTo(CFrame.new(-12874, -11, 1070))
+					game:GetService("ReplicatedStorage").Events.Equip:FireServer(false)
+					for _, animTrack in track do
+						animTrack:AdjustSpeed(0)
+					end
+					workspace.CurrentCamera.CameraSubject = localPlayer.Character.Humanoid
+					localPlayer.Character:PivotTo(CFrame.new(-12874, -11, 1070))
+				end
+			end
+		end))
+		return true
+	end
+
+	function AutoRicardo.off(floor)
+		state = false
+		if connection then
+			connection:Disconnect()
+			connection = nil
+		end
+		for _, anim in track do
+			anim:Stop()
+			anim:Destroy()
+		end
+		table.clear(track)
+		workspace.CurrentCamera.CameraSubject = localPlayer.Character.Humanoid
+		localPlayer.Character.HumanoidRootPart.Anchored = false
+	end
+
+	return AutoRicardo
+end)
+__bundle_register("Features/Automation/AutoLCorpBosses", function(require, _LOADED, __bundle_register, __bundle_modules)
+	local MarketplaceService = game:GetService("MarketplaceService")
+	local VirtualInputManager = game:GetService("VirtualInputManager")
+	local Players = game:GetService("Players")
+	local RunService = game:GetService("RunService")
+
+	local localPlayer = Players.LocalPlayer
+	local AutoLCorpBosses = {}
+
+	local connection
+	local track = {}
+	local state = false
+
+	local function clickButton(text)
+		for _, frame in game:GetService("Players").LocalPlayer.PlayerGui.Dialogue.MainFrame.Options.Scroll:GetChildren() do
+			if frame:IsA("Frame") then
+				if frame.OptionText.Text == text or frame.OptionText.Text:find(text) then
+					replicatesignal(frame.OptionButton.MouseButton1Click)
+					return true
+				end
+			end
+		end
+		return false
+	end
+	local ignoreLists = { "Thumb Soldato", "Thumb Soldato III" }
+	local function isInIgnoreLists(name)
+		for _, value in ignoreLists do
+			if value:find(name) or value == name then
+				return true
+			end
+		end
+		return false
+	end
+
+	local function getDroppedItems()
+		local tabled = {}
+		for _, item in workspace.Thrown:GetChildren() do
+			for _, prompt in item:GetDescendants() do
+				if prompt:IsA("ProximityPrompt") then
+					table.insert(tabled, item)
+				end
+			end
+		end
+		return tabled
+	end
+
+	local gripDebounce = false
+	local bossesName = {
+		["Lei Heng"] = "Capo IIII of The Thumb",
+		["Gloom"] = "Absolute Gloom",
+		["Pride"] = "Absolute Pride",
+		["Wrath"] = "Absolute Wrath",
+		["Desire"] = "Absolute Desire",
+		["Sloth"] = "Absolute Sloth",
+		["Envy"] = "Absolute Envy",
+		["Gluttony"] = "Absolute Gluttony",
+	}
+	local bossesFunctions = {
+		["Lei Heng"] = function()
+			local fragmentSelf = workspace.NPCS:FindFirstChild("Fragmented Self")
+			local ordealEntrance = false
+			if workspace.NPCS:FindFirstChild("Ordeal Entrance") then
+				ordealEntrance = true
+				if
+					not workspace.Alive:FindFirstChild("Capo IIII of The Thumb")
+					and not workspace.NPCS["Ordeal Entrance"]:FindFirstChild("LeiHengRig")
+				then
+					local clickFace = false
+					repeat
+						task.wait(0.5)
+						workspace.NPCS["Ordeal Entrance"].TalkToNPC:FireServer()
+						localPlayer.Character:PivotTo(workspace.NPCS["Ordeal Entrance"]:GetPivot())
+						if clickButton("Face") then
+							clickFace = true
+						end
+					until clickFace
+				end
+			end
+			if fragmentSelf and not ordealEntrance then
+				local clickedWorld = false
+				repeat
+					task.wait(0.5)
+					fragmentSelf.TalkToNPC:FireServer()
+					localPlayer.Character:PivotTo(fragmentSelf:GetPivot())
+					if clickButton("Worlds") then
+						clickedWorld = true
+					end
+				until clickedWorld
+				local clickThumb = false
+				repeat
+					task.wait(0.5)
+					fragmentSelf.TalkToNPC:FireServer()
+					localPlayer.Character:PivotTo(fragmentSelf:GetPivot())
+					if clickButton("Thumb") then
+						clickThumb = true
+					end
+				until clickThumb
+				repeat
+					task.wait()
+				until workspace.NPCS:FindFirstChild("Ordeal Entrance")
+				local clickFace = false
+				repeat
+					task.wait(0.5)
+					workspace.NPCS["Ordeal Entrance"].TalkToNPC:FireServer()
+					localPlayer.Character:PivotTo(workspace.NPCS["Ordeal Entrance"]:GetPivot())
+					if clickButton("Face") then
+						clickFace = true
+					end
+				until clickFace
+			end
+		end,
+		["Gloom"] = function()
+			local fragmentSelf = workspace.NPCS:FindFirstChild("Fragmented Self")
+			if not workspace.Alive:FindFirstChild("Absolute Gloom") then
+				local clickedSin = false
+				repeat
+					task.wait(0.5)
+					fragmentSelf.TalkToNPC:FireServer()
+					localPlayer.Character:PivotTo(fragmentSelf:GetPivot())
+					if clickButton("Sin") then
+						clickedSin = true
+					end
+				until clickedSin
+				local clickGloom = false
+				repeat
+					task.wait(0.5)
+					fragmentSelf.TalkToNPC:FireServer()
+					localPlayer.Character:PivotTo(fragmentSelf:GetPivot())
+					if clickButton("Gloom") then
+						clickGloom = true
+					end
+				until clickGloom
+			end
+		end,
+		["Pride"] = function()
+			local fragmentSelf = workspace.NPCS:FindFirstChild("Fragmented Self")
+			if not workspace.Alive:FindFirstChild("Absolute Pride") then
+				local clickedSin = false
+				repeat
+					task.wait(0.5)
+					fragmentSelf.TalkToNPC:FireServer()
+					localPlayer.Character:PivotTo(fragmentSelf:GetPivot())
+					if clickButton("Sin") then
+						clickedSin = true
+					end
+				until clickedSin
+				local click = false
+				repeat
+					task.wait(0.5)
+					fragmentSelf.TalkToNPC:FireServer()
+					localPlayer.Character:PivotTo(fragmentSelf:GetPivot())
+					if clickButton("Pride") then
+						click = true
+					end
+				until click
+			end
+		end,
+		["Wrath"] = function()
+			local fragmentSelf = workspace.NPCS:FindFirstChild("Fragmented Self")
+			if not workspace.Alive:FindFirstChild("Absolute Wrath") then
+				local clickedSin = false
+				repeat
+					task.wait(0.5)
+					fragmentSelf.TalkToNPC:FireServer()
+					localPlayer.Character:PivotTo(fragmentSelf:GetPivot())
+					if clickButton("Sin") then
+						clickedSin = true
+					end
+				until clickedSin
+				local click = false
+				repeat
+					task.wait(0.5)
+					fragmentSelf.TalkToNPC:FireServer()
+					localPlayer.Character:PivotTo(fragmentSelf:GetPivot())
+					if clickButton("Wrath") then
+						click = true
+					end
+				until click
+			end
+		end,
+		["Desire"] = function()
+			local fragmentSelf = workspace.NPCS:FindFirstChild("Fragmented Self")
+			if not workspace.Alive:FindFirstChild("Absolute Desire") then
+				local clickedSin = false
+				repeat
+					task.wait(0.5)
+					fragmentSelf.TalkToNPC:FireServer()
+					localPlayer.Character:PivotTo(fragmentSelf:GetPivot())
+					if clickButton("Sin") then
+						clickedSin = true
+					end
+				until clickedSin
+				local click = false
+				repeat
+					task.wait(0.5)
+					fragmentSelf.TalkToNPC:FireServer()
+					localPlayer.Character:PivotTo(fragmentSelf:GetPivot())
+					if clickButton("Desire") then
+						click = true
+					end
+				until click
+			end
+		end,
+		["Sloth"] = function()
+			local fragmentSelf = workspace.NPCS:FindFirstChild("Fragmented Self")
+			if not workspace.Alive:FindFirstChild("Absolute Sloth") then
+				local clickedSin = false
+				repeat
+					task.wait(0.5)
+					fragmentSelf.TalkToNPC:FireServer()
+					localPlayer.Character:PivotTo(fragmentSelf:GetPivot())
+					if clickButton("Sin") then
+						clickedSin = true
+					end
+				until clickedSin
+				local click = false
+				repeat
+					task.wait(0.5)
+					fragmentSelf.TalkToNPC:FireServer()
+					localPlayer.Character:PivotTo(fragmentSelf:GetPivot())
+					if clickButton("Sloth") then
+						click = true
+					end
+				until click
+			end
+		end,
+		["Envy"] = function()
+			local fragmentSelf = workspace.NPCS:FindFirstChild("Fragmented Self")
+			if not workspace.Alive:FindFirstChild("Absolute Envy") then
+				local clickedSin = false
+				repeat
+					task.wait(0.5)
+					fragmentSelf.TalkToNPC:FireServer()
+					localPlayer.Character:PivotTo(fragmentSelf:GetPivot())
+					if clickButton("Sin") then
+						clickedSin = true
+					end
+				until clickedSin
+				local click = false
+				repeat
+					task.wait(0.5)
+					fragmentSelf.TalkToNPC:FireServer()
+					localPlayer.Character:PivotTo(fragmentSelf:GetPivot())
+					if clickButton("Envy") then
+						click = true
+					end
+				until click
+			end
+		end,
+		["Gluttony"] = function()
+			local fragmentSelf = workspace.NPCS:FindFirstChild("Fragmented Self")
+			if not workspace.Alive:FindFirstChild("Absolute Gluttony") then
+				local clickedSin = false
+				repeat
+					task.wait(0.5)
+					fragmentSelf.TalkToNPC:FireServer()
+					localPlayer.Character:PivotTo(fragmentSelf:GetPivot())
+					if clickButton("Sin") then
+						clickedSin = true
+					end
+				until clickedSin
+				local click = false
+				repeat
+					task.wait(0.5)
+					fragmentSelf.TalkToNPC:FireServer()
+					localPlayer.Character:PivotTo(fragmentSelf:GetPivot())
+					if clickButton("Gluttony") then
+						click = true
+					end
+				until click
+			end
+		end,
+	}
+
+	function AutoLCorpBosses.on()
+		AutoLCorpBosses.off()
+		state = true
+		if game.PlaceId ~= 99831550635699 then
+			return false, "Not in the L Corp"
+		end
+		if not workspace:GetAttribute("ServerType") == "LCorpBranch" then
+			return false, "Not in the L Corp"
+		end
+
+		local kb = workspace:FindFirstChild("KillBricks")
+		if kb then
+			kb:Destroy()
+		end
+
+		if not localPlayer.Character:FindFirstChild("AirTime") then
+			local airTime = Instance.new("Folder")
+			airTime.Name = "AirTime"
+			airTime.Parent = localPlayer.Character
+		end
+
+		game:GetService("ReplicatedStorage").Events.Equip:FireServer(true)
+		local equipDebounce = false
+		local killBoss = false
+		local canDoAnythingAfterBoss = false
+		bossesFunctions[Options.lCorpBossSelection.Value]()
+		local db = false
+		connection = RunService.PostSimulation:Connect(LPH_NO_VIRTUALIZE(function(delta)
+			if not state then
+				return
+			end
+
+			if killBoss and canDoAnythingAfterBoss then
+				db = true
+				if localPlayer.Character then
+					if localPlayer.Character:FindFirstChild("Humanoid") then
+						workspace.CurrentCamera.CameraSubject = localPlayer.Character.Humanoid
+					end
+				end
+
+				local droppedItems = getDroppedItems()
+				if #droppedItems ~= 0 then
+					pickingUpItem = true
+					for _, item in droppedItems do
+						if not connection then
+							pickingUpItem = false
+							return
+						end
+						for _, prompt in item:GetDescendants() do
+							if not connection then
+								pickingUpItem = false
+								return
+							end
+							if prompt:IsA("ProximityPrompt") then
+								localPlayer.Character:PivotTo(item:GetPivot())
+								fireproximityprompt(prompt)
+								if not connection then
+									pickingUpItem = false
+									return
+								end
+								repeat
+									if not connection then
+										pickingUpItem = false
+										return
+									end
+									localPlayer.Character:PivotTo(item:GetPivot())
+									fireproximityprompt(prompt)
+									task.wait(1)
+								until not item.Parent
+							end
+						end
+					end
+					pickingUpItem = false
+				else
+					local clickExtract = false
+					repeat
+						task.wait(1)
+						localPlayer.Character:PivotTo(
+							CFrame.new(103.09710693359375, 981.3513793945312, -84.36695098876953)
+						)
+					until workspace.NPCS:FindFirstChild("Elevator Door")
+					repeat
+						task.wait()
+						workspace.NPCS["Elevator Door"].TalkToNPC:FireServer()
+						localPlayer.Character:PivotTo(
+							CFrame.new(103.09710693359375, 981.3513793945312, -84.36695098876953)
+						)
+						if clickButton("Extract") then
+							clickExtract = true
+						end
+					until clickExtract
+				end
+				db = false
+				return
+			end
+			localPlayer.Data.Stamina.Value = 100
+			local targetTable = {}
+
+			for _, human in workspace.Alive:GetChildren() do
+				if
+					not Players:GetPlayerFromCharacter(human)
+					and human.Humanoid.Health > 0
+					and not human:FindFirstChild("GotGripped")
+					and not isInIgnoreLists(human.Name)
+				then
+					table.insert(targetTable, human)
+				end
+			end
+
+			table.sort(targetTable, function(a, b)
+				return a.Humanoid.MaxHealth > b.Humanoid.MaxHealth
+			end)
+
+			if #targetTable ~= 0 then
+				localPlayer.Character.HumanoidRootPart.Anchored = false
+				if not equipDebounce then
+					equipDebounce = true
+					game:GetService("ReplicatedStorage").Events.Equip:FireServer(true)
+					for _, anim in track do
+						anim:Stop()
+						anim:Destroy()
+					end
+					table.clear(track)
+					local m1Count = 0
+					for _, animation in
+						game:GetService("ReplicatedStorage").WeaponINFO[game.Players.LocalPlayer.Data.Weapon.Value]
+							:GetChildren()
+					do
+						if animation:IsA("Animation") then
+							if
+								animation.Name:find("AttackAnimation")
+								and animation.Name ~= "ChargedAttackAnimation"
+							then
+								m1Count = m1Count + 1
+							end
+						end
+					end
+					for i = 1, m1Count - 1 do
+						local animtrack = localPlayer.Character.Humanoid.Animator:LoadAnimation(
+							game:GetService("ReplicatedStorage").WeaponINFO[game.Players.LocalPlayer.Data.Weapon.Value]["AttackAnimation" .. tostring(
+								i
+							)]
+						)
+						animtrack:Play(0, 0.01, 100000)
+						animtrack.Looped = true
+						table.insert(track, animtrack)
+					end
+					task.delay(2.5, function()
+						if connection then
+							for _, anim in track do
+								anim:Stop()
+								anim:Destroy()
+							end
+							table.clear(track)
+							game:GetService("ReplicatedStorage").Events.Equip:FireServer(false)
+						end
+						equipDebounce = false
+					end)
+				end
+				local offset = Vector3.new(0, -Options.AutoLCorpYOffset.Value, 0)
+
+				if targetTable[1]:FindFirstChild("Knocked") and not gripDebounce then
+					gripDebounce = true
+					localPlayer.Character.HumanoidRootPart:PivotTo(
+						targetTable[1].HumanoidRootPart.CFrame + Vector3.new(0, 2, 0)
+					)
+					game:GetService("ReplicatedStorage")
+						:WaitForChild("Events")
+						:WaitForChild("Grip")
+						:FireServer(localPlayer.Character)
+					task.delay(1, function()
+						gripDebounce = false
+					end)
+				end
+
+				if targetTable[1]:FindFirstChild("GettingGripped") and not killBoss then
+					if targetTable[1].Name == bossesName[Options.lCorpBossSelection.Value] then
+						killBoss = true
+						localPlayer.Character.HumanoidRootPart:PivotTo(
+							targetTable[1].HumanoidRootPart.CFrame + Vector3.new(0, 10, 0)
+						)
+						task.delay(5, function()
+							canDoAnythingAfterBoss = true
+						end)
+					end
+					return
+				end
+				if targetTable[1].Target.Value ~= localPlayer.Character then
+					localPlayer.Character.HumanoidRootPart:PivotTo(
+						targetTable[1].HumanoidRootPart.CFrame * CFrame.Angles(math.rad(90), 0, 0)
+							+ Vector3.new(0, 5, 0)
+					)
+					return
+				end
+				localPlayer.Character.HumanoidRootPart:PivotTo(
+					targetTable[1].HumanoidRootPart.CFrame * CFrame.Angles(math.rad(90), 0, 0) + offset
+				)
+				workspace.CurrentCamera.CameraSubject = targetTable[1].Humanoid
+				localPlayer.Character.HumanoidRootPart.AssemblyLinearVelocity = Vector3.zero
+				localPlayer.Character.HumanoidRootPart.AssemblyAngularVelocity = Vector3.zero
+				localPlayer.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Ragdoll, false)
+			end
+		end))
+		return true
+	end
+
+	function AutoLCorpBosses.off(floor)
+		state = false
+		if connection then
+			connection:Disconnect()
+			connection = nil
+		end
+		for _, anim in track do
+			anim:Stop()
+			anim:Destroy()
+		end
+		table.clear(track)
+		workspace.CurrentCamera.CameraSubject = localPlayer.Character.Humanoid
+		localPlayer.Character.HumanoidRootPart.Anchored = false
+	end
+
+	return AutoLCorpBosses
+end)
+__bundle_register(
+	"Features/Automation/AutoGradeEvaluation",
+	function(require, _LOADED, __bundle_register, __bundle_modules)
+		local MarketplaceService = game:GetService("MarketplaceService")
+		local VirtualInputManager = game:GetService("VirtualInputManager")
+		local Players = game:GetService("Players")
+		local RunService = game:GetService("RunService")
+
+		local localPlayer = Players.LocalPlayer
+		local AutoGradeEva = {}
+
+		local connection
+		local track = {}
+
+		local didGoUpYet = true
+
+		local function clickButton(text)
+			for _, frame in
+				game:GetService("Players").LocalPlayer.PlayerGui.Dialogue.MainFrame.Options.Scroll:GetChildren()
+			do
+				if frame:IsA("Frame") then
+					if frame.OptionText.Text == text or frame.OptionText.Text:find(text) then
+						replicatesignal(frame.OptionButton.MouseButton1Click)
+						return true
+					end
+				end
+			end
+			return false
+		end
+
+		local equipedDb = false
+		local state = false
+
+		local function killMob(offset)
+			connection = RunService.PostSimulation:Connect(LPH_NO_VIRTUALIZE(function(delta)
+				localPlayer.Data.Stamina.Value = 100
+				local targetTable = {}
+				for _, human in workspace.Alive:GetChildren() do
+					if
+						not Players:GetPlayerFromCharacter(human)
+						and human.Humanoid.Health > 0
+						and not human:FindFirstChild("GotGripped")
+					then
+						table.insert(targetTable, human)
+					end
+				end
+
+				table.sort(targetTable, function(a, b)
+					return a.Humanoid.MaxHealth > b.Humanoid.MaxHealth
+				end)
+
+				if #targetTable ~= 0 then
+					if not equipedDb then
+						equipedDb = true
+						game:GetService("ReplicatedStorage").Events.Equip:FireServer(true)
+						for _, anim in track do
+							anim:Stop()
+							anim:Destroy()
+						end
+						table.clear(track)
+						local m1Count = 0
+						for _, animation in
+							game:GetService("ReplicatedStorage").WeaponINFO[game.Players.LocalPlayer.Data.Weapon.Value]
+								:GetChildren()
+						do
+							if animation:IsA("Animation") then
+								if
+									animation.Name:find("AttackAnimation")
+									and animation.Name ~= "ChargedAttackAnimation"
+								then
+									m1Count = m1Count + 1
+								end
+							end
+						end
+						for i = 1, m1Count - 1 do
+							local animtrack = localPlayer.Character.Humanoid.Animator:LoadAnimation(
+								game:GetService("ReplicatedStorage").WeaponINFO[game.Players.LocalPlayer.Data.Weapon.Value]["AttackAnimation" .. tostring(
+									i
+								)]
+							)
+							animtrack:Play(0, 0.01, 100000)
+							animtrack.Looped = true
+							table.insert(track, animtrack)
+						end
+						task.delay(5, function()
+							if connection then
+								for _, anim in track do
+									anim:Stop()
+									anim:Destroy()
+								end
+								table.clear(track)
+								game:GetService("ReplicatedStorage").Events.Equip:FireServer(false)
+							end
+							equipedDb = false
+						end)
+					end
+					for _, animTrack in track do
+						animTrack:AdjustSpeed(1000)
+					end
+					local offset = Vector3.new(0, -offset, 0)
+
+					localPlayer.Character.HumanoidRootPart:PivotTo(
+						targetTable[1].HumanoidRootPart.CFrame * CFrame.Angles(math.rad(90), 0, 0) + offset
+					)
+					workspace.CurrentCamera.CameraSubject = targetTable[1].Humanoid
+					localPlayer.Character.HumanoidRootPart.AssemblyLinearVelocity = Vector3.zero
+					localPlayer.Character.HumanoidRootPart.AssemblyAngularVelocity = Vector3.zero
+					localPlayer.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Ragdoll, false)
+				else
+					if equipedDb then
+						game:GetService("ReplicatedStorage").Events.Equip:FireServer(false)
+						equipedDb = false
+					end
+					for _, animTrack in track do
+						animTrack:AdjustSpeed(0)
+					end
+					connection:Disconnect()
+					workspace.CurrentCamera.CameraSubject = localPlayer.Character.Humanoid
+				end
+			end))
+		end
+
+		local animationLists = {}
+
+		local nothingThereHitAnim = {
+			"rbxassetid://16428863879",
+			"rbxassetid://16390219304",
+			"rbxassetid://16390215619",
+			"rbxassetid://16390221563",
+			"rbxassetid://16390165394",
+			"rbxassetid://16390173071",
+			"rbxassetid://16390234461",
+			"rbxassetid://16390226552",
+			"rbxassetid://15151732756",
+			"rbxassetid://94944102411307",
+		}
+
+		local function checkAnimations(tabled, animator)
+			for _, track in animator:GetPlayingAnimationTracks() do
+				if track.Animation.AnimationId then
+					if table.find(tabled, track.Animation.AnimationId) then
+						return false
+					end
+				end
+			end
+			return true
+		end
+
+		local function killBehind(offset)
+			local player = game.Players.LocalPlayer.Character.Humanoid.Animator
+			local m1Count = 0
+			for _, animation in
+				game:GetService("ReplicatedStorage").WeaponINFO[game.Players.LocalPlayer.Data.Weapon.Value]
+					:GetChildren()
+			do
+				if animation:IsA("Animation") then
+					if animation.Name:find("AttackAnimation") and animation.Name ~= "ChargedAttackAnimation" then
+						m1Count = m1Count + 1
+					end
+				end
+			end
+			for i = 1, m1Count - 1 do
+				local animtrack = player:LoadAnimation(
+					game:GetService("ReplicatedStorage").WeaponINFO[game.Players.LocalPlayer.Data.Weapon.Value]["AttackAnimation" .. tostring(
+						i
+					)]
+				)
+				animtrack:Play(0, 0.01, 100000)
+				animtrack.Looped = true
+				table.insert(track, animtrack)
+			end
+			connection = RunService.PostSimulation:Connect(LPH_NO_VIRTUALIZE(function(delta)
+				localPlayer.Data.Stamina.Value = 100
+				local targetTable = {}
+				for _, human in workspace.Alive:GetChildren() do
+					if
+						not Players:GetPlayerFromCharacter(human)
+						and human.Humanoid.Health > 0
+						and not human:FindFirstChild("GotGripped")
+					then
+						table.insert(targetTable, human)
+					end
+				end
+
+				table.sort(targetTable, function(a, b)
+					return a.Humanoid.MaxHealth > b.Humanoid.MaxHealth
+				end)
+
+				if #targetTable ~= 0 then
+					if not equipedDb then
+						game:GetService("ReplicatedStorage").Events.Equip:FireServer(true)
+						equipedDb = true
+					end
+					for _, animTrack in track do
+						animTrack:AdjustSpeed(1000)
+					end
+					local backDirection = -targetTable[1].HumanoidRootPart.CFrame.LookVector
+					local teleportPosition = targetTable[1].HumanoidRootPart.CFrame.Position + (backDirection * 3)
+					if not checkAnimations(nothingThereHitAnim, targetTable[1].Humanoid.Animator) then
+						localPlayer.Character.HumanoidRootPart:PivotTo(
+							targetTable[1]:GetPivot() + Vector3.new(0, 100, 0)
+						)
+					else
+						localPlayer.Character.HumanoidRootPart:PivotTo(
+							CFrame.new(teleportPosition, targetTable[1].HumanoidRootPart.CFrame.Position)
+						)
+						workspace.CurrentCamera.CameraSubject = targetTable[1].Humanoid
+					end
+					localPlayer.Character.HumanoidRootPart.AssemblyLinearVelocity = Vector3.zero
+					localPlayer.Character.HumanoidRootPart.AssemblyAngularVelocity = Vector3.zero
+					localPlayer.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Ragdoll, false)
+				else
+					if equipedDb then
+						game:GetService("ReplicatedStorage").Events.Equip:FireServer(false)
+						equipedDb = false
+					end
+					for _, animTrack in track do
+						animTrack:AdjustSpeed(0)
+					end
+					connection:Disconnect()
+					workspace.CurrentCamera.CameraSubject = localPlayer.Character.Humanoid
+				end
+			end))
+		end
+
+		local function goUpElavator()
+			if not didGoUpYet then
+				repeat
+					if not state then
+						break
+					end
+					task.wait(1)
+					for _, npc in workspace.NPCS:GetChildren() do
+						if npc.Name == "Elevator" and npc:FindFirstChild("NormalTP") then
+							localPlayer.Character:PivotTo(npc:GetPivot())
+							npc.TalkToNPC:FireServer()
+						end
+					end
+					if clickButton("Take") then
+						didGoUpYet = true
+					end
+				until didGoUpYet
+			end
+			didGoUpYet = true
+		end
+
+		local function clickBegin()
+			local clickBeginYet = false
+			if workspace.NPCS:FindFirstChild("Hana Association Examiner") then
+				repeat
+					if not state then
+						break
+					end
+					task.wait()
+					localPlayer.Character:PivotTo(workspace.NPCS["Hana Association Examiner"]:GetPivot())
+					workspace.NPCS["Hana Association Examiner"].TalkToNPC:FireServer()
+					if clickButton("Begin") then
+						clickBeginYet = true
+					end
+				until clickBeginYet
+			end
+		end
+
+		local gradeFunctions = {
+			[9] = function()
+				local fixerClick = false
+				goUpElavator()
+				repeat
+					if not state then
+						break
+					end
+					task.wait(0.5)
+					localPlayer.Character:PivotTo(workspace.NPCS["Hana Association Examiner"]:GetPivot())
+					workspace.NPCS["Hana Association Examiner"].TalkToNPC:FireServer()
+					clickButton("Begin")
+					clickButton("9")
+					clickButton("Every")
+					clickButton("125")
+					clickButton("13.5")
+					clickButton("Tower")
+					if clickButton("Fixer") then
+						fixerClick = true
+					end
+				until fixerClick
+			end,
+			[8] = function(offset)
+				local clickBeginYet = false
+				goUpElavator()
+				clickBegin()
+				killMob(offset)
+			end,
+			[7] = function(offset)
+				goUpElavator()
+				clickBegin()
+				task.wait(1)
+				killMob(offset)
+			end,
+			[6] = function(offset)
+				goUpElavator()
+				clickBegin()
+				task.wait(1)
+				killMob(offset)
+			end,
+			[5] = function(offset)
+				goUpElavator()
+				clickBegin()
+				repeat
+					task.wait()
+				until #workspace.Alive:GetChildren() >= 2
+				for _, npc in workspace.NPCS:GetChildren() do
+					if npc.Name == "Elevator" and npc:FindFirstChild("NormalTP") then
+						localPlayer.Character:PivotTo(npc:GetPivot())
+					end
+				end
+			end,
+			[4] = function(offset)
+				goUpElavator()
+				clickBegin()
+				repeat
+					task.wait()
+				until #workspace.Alive:GetChildren() >= 2
+				killMob(offset)
+			end,
+			[3] = function(offset)
+				goUpElavator()
+				clickBegin()
+				repeat
+					task.wait()
+				until #workspace.Alive:GetChildren() >= 2
+				killMob(offset)
+			end,
+			[2] = function(offset)
+				goUpElavator()
+				clickBegin()
+				repeat
+					task.wait()
+				until #workspace.Alive:GetChildren() >= 2
+				killBehind(offset)
+			end,
+		}
+
+		function AutoGradeEva.on(offset)
+			AutoGradeEva.off()
+			if game.PlaceId ~= 99831550635699 then
+				return false, "Not in the exam"
+			end
+			if not workspace.Map:FindFirstChild("ExamRoom") then
+				return false, "Not in the exam"
+			end
+			state = true
+			if gradeFunctions[tonumber(game:GetService("Players").LocalPlayer.Data.Grade.Value)] then
+				pcall(function()
+					gradeFunctions[tonumber(game:GetService("Players").LocalPlayer.Data.Grade.Value)](offset)
+				end)
+				return true, "success"
+			else
+				return false, "not found"
+			end
+		end
+
+		function AutoGradeEva.off()
+			state = false
+			if connection then
+				connection:Disconnect()
+				connection = nil
+			end
+			for _, anim in track do
+				anim:Stop()
+				anim:Destroy()
+				anim = nil
+			end
+			workspace.CurrentCamera.CameraSubject = game.Players.LocalPlayer.Character.Humanoid
+		end
+
+		return AutoGradeEva
+	end
+)
+__bundle_register("Features/Automation/AutoRailway", function(require, _LOADED, __bundle_register, __bundle_modules)
+	local VirtualInputManager = game:GetService("VirtualInputManager")
+	local Players = game:GetService("Players")
+	local RunService = game:GetService("RunService")
+
+	local localPlayer = Players.LocalPlayer
+
+	local AutoRailway = {}
+
+	local connection
+	local track = {}
+	local isM1oneToThreeYet = false
+
+	local function clickButton(text)
+		for _, frame in game:GetService("Players").LocalPlayer.PlayerGui.Dialogue.MainFrame.Options.Scroll:GetChildren() do
+			if frame:IsA("Frame") then
+				if frame.OptionText.Text == text or frame.OptionText.Text:find(text) then
+					replicatesignal(frame.OptionButton.MouseButton1Click)
+					return true
+				end
+			end
+		end
+		return false
+	end
+
+	local function checkAnimations(tabled, animator)
+		for _, track in animator:GetPlayingAnimationTracks() do
+			if track.Animation.AnimationId then
+				if table.find(tabled, track.Animation.AnimationId) then
+					return false
+				end
+			end
+		end
+		return true
+	end
+
+	local function checkIfStationYet()
+		if not workspace.Map:FindFirstChild("StationDisplay") then
+			return false
+		end
+		for _, something in workspace.Map.StationDisplay:GetChildren() do
+			if something:IsA("Attachment") then
+				if something:FindFirstChildWhichIsA("ProximityPrompt") then
+					if something:FindFirstChildWhichIsA("ProximityPrompt").Enabled then
+						return true
+					end
+				end
+			end
+		end
+		return false
+	end
+
+	local function attachmentCounter()
+		local count = 0
+		if not workspace.Map:FindFirstChild("StationDisplay") then
+			return 0
+		end
+		for _, v in workspace.Map.StationDisplay:GetChildren() do
+			if v:IsA("Attachment") then
+				count = count + 1
+			end
+		end
+		return count
+	end
+
+	local function checkForStuffandClick(name)
+		if not workspace.Map:FindFirstChild("StationDisplay") then
+			return false
+		end
+		for _, v in workspace.Map.StationDisplay:GetChildren() do
+			if v:IsA("Attachment") then
+				if v.Name:find(name) or v.Name == name then
+					localPlayer.Character:PivotTo(v.WorldCFrame)
+					if v:FindFirstChildWhichIsA("ProximityPrompt").Enabled then
+						fireproximityprompt(v:FindFirstChildWhichIsA("ProximityPrompt"))
+						return true
+					end
+				end
+			end
+		end
+		return false
+	end
+
+	local function getDroppedItems()
+		local tabled = {}
+		for _, item in workspace.Thrown:GetChildren() do
+			for _, prompt in item:GetDescendants() do
+				if
+					prompt:IsA("ProximityPrompt")
+					and localPlayer:DistanceFromCharacter(item:GetPivot().Position) < 300
+					and item.Name ~= "DestroyedParts"
+				then
+					table.insert(tabled, item)
+				end
+			end
+		end
+		return tabled
+	end
+
+	local function splitString(str, sep)
+		sep = sep or ","
+		local result = {}
+		for item in str:gmatch("[^" .. sep .. "]+") do
+			table.insert(result, item:lower())
+		end
+		return result
+	end
+
+	local enemyLists = { "Nothing There", "Sweeper Brute" }
+
+	local blackListedAnim = {
+		"rbxassetid://16428863879",
+		"rbxassetid://16390219304",
+		"rbxassetid://16390215619",
+		"rbxassetid://16390221563",
+		"rbxassetid://16390165394",
+		"rbxassetid://16390173071",
+		"rbxassetid://16390234461",
+		"rbxassetid://16390226552",
+		"rbxassetid://15151732756",
+		"rbxassetid://17452190205",
+		"rbxassetid://17450213059",
+		"rbxassetid://17450216584",
+		"rbxassetid://17452468519",
+		"rbxassetid://17457663944",
+		"rbxassetid://17460411925",
+	}
+	local Teleported = false
+	local teleportToMerchantdb = false
+	local pickingUpItem = false
+	local equipedDb = false
+	local currentExitPos
+
+	local function killMob(offset)
+		local fuckKingVon
+		connection = RunService.PostSimulation:Connect(LPH_NO_VIRTUALIZE(function(delta)
+			localPlayer.Character.HumanoidRootPart.Anchored = false
+			if localPlayer.Character:FindFirstChild("Grabbed") then
+				return
+			end
+			--[[ 		local checkKingVon = workspace:FindFirstChild("Part")
+		if checkKingVon then
+			local texture = checkKingVon:FindFirstChildWhichIsA("Decal")
+			if texture then
+				return
+			end
+		end ]]
+			localPlayer.Data.Stamina.Value = 100
+			local targetTable = {}
+			for _, human in workspace.Alive:GetChildren() do
+				if
+					not Players:GetPlayerFromCharacter(human)
+					and human.Humanoid.Health > 0
+					and not human:FindFirstChild("GotGripped")
+				then
+					table.insert(targetTable, human)
+				end
+			end
+
+			table.sort(targetTable, function(a, b)
+				return a.Humanoid.MaxHealth > b.Humanoid.MaxHealth
+			end)
+
+			local offset = Vector3.new(0, -offset, 0)
+			localPlayer.Character.HumanoidRootPart.Velocity = Vector3.zero
+			if #targetTable ~= 0 then
+				if not equipedDb then
+					equipedDb = true
+					game:GetService("ReplicatedStorage").Events.Equip:FireServer(true)
+					for _, anim in track do
+						anim:Stop()
+						anim:Destroy()
+					end
+					table.clear(track)
+					local m1Count = 0
+					for _, animation in
+						game:GetService("ReplicatedStorage").WeaponINFO[game.Players.LocalPlayer.Data.Weapon.Value]
+							:GetChildren()
+					do
+						if animation:IsA("Animation") then
+							if
+								animation.Name:find("AttackAnimation")
+								and animation.Name ~= "ChargedAttackAnimation"
+							then
+								m1Count = m1Count + 1
+							end
+						end
+					end
+					for i = 1, m1Count - 1 do
+						local animtrack = localPlayer.Character.Humanoid.Animator:LoadAnimation(
+							game:GetService("ReplicatedStorage").WeaponINFO[game.Players.LocalPlayer.Data.Weapon.Value]["AttackAnimation" .. tostring(
+								i
+							)]
+						)
+						animtrack:Play(0, 0.01, 100000)
+						animtrack.Looped = true
+						table.insert(track, animtrack)
+					end
+					task.delay(5, function()
+						if connection then
+							for _, anim in track do
+								anim:Stop()
+								anim:Destroy()
+							end
+							table.clear(track)
+							game:GetService("ReplicatedStorage").Events.Equip:FireServer(false)
+						end
+						equipedDb = false
+					end)
+				end
+				localPlayer.Character.HumanoidRootPart.Anchored = false
+				for _, animTrack in track do
+					animTrack:AdjustSpeed(100000)
+				end
+				if not m1Debounce then
+					m1Debounce = true
+					task.delay(0.75, function()
+						m1Debounce = false
+					end)
+				end
+				if targetTable[1]:FindFirstChild("Knocked") and not gripDebounce then
+					gripDebounce = true
+					localPlayer.Character.HumanoidRootPart:PivotTo(targetTable[1].HumanoidRootPart.CFrame)
+					game:GetService("ReplicatedStorage")
+						:WaitForChild("Events")
+						:WaitForChild("Grip")
+						:FireServer(localPlayer.Character)
+					task.delay(1, function()
+						gripDebounce = false
+					end)
+				end
+				if localPlayer.Character:FindFirstChild("GripNotInterrupted") then
+					localPlayer.Character.HumanoidRootPart.Anchored = true
+					return
+				end
+				if not table.find(enemyLists, targetTable[1].Name) then
+					if
+						targetTable[1].Name == "Sweeper δ"
+						or targetTable[1].Name == "Sweeper α"
+						or targetTable[1].Name == "Sweeper β"
+					then
+						if math.floor(targetTable[1].Humanoid.Health) == 1 then
+							local targetHRP = targetTable[1].HumanoidRootPart
+							local targetPos = targetHRP.Position
+							local behind = targetHRP.CFrame.LookVector * -5
+							local myPos = targetPos + behind
+							localPlayer.Character.HumanoidRootPart:PivotTo(CFrame.lookAt(myPos, targetPos))
+						else
+							localPlayer.Character.HumanoidRootPart:PivotTo(
+								targetTable[1].HumanoidRootPart.CFrame * CFrame.Angles(math.rad(90), 0, 0) + offset
+							)
+						end
+					elseif targetTable[1].Name == "Gnome" then
+						localPlayer.Character.HumanoidRootPart:PivotTo(
+							targetTable[1].HumanoidRootPart.CFrame * CFrame.Angles(math.rad(90), 0, 0)
+								+ Vector3.new(0, -5, 0)
+						)
 					else
 						localPlayer.Character.HumanoidRootPart:PivotTo(
 							targetTable[1].HumanoidRootPart.CFrame * CFrame.Angles(math.rad(90), 0, 0) + offset
 						)
 					end
-				elseif targetTable[1].Name == "Gnome" then
-					localPlayer.Character.HumanoidRootPart:PivotTo(
-						targetTable[1].HumanoidRootPart.CFrame * CFrame.Angles(math.rad(90), 0, 0)
-							+ Vector3.new(0, -5, 0)
-					)
-				else
-					localPlayer.Character.HumanoidRootPart:PivotTo(
-						targetTable[1].HumanoidRootPart.CFrame * CFrame.Angles(math.rad(90), 0, 0) + offset
-					)
-				end
 
-				workspace.CurrentCamera.CameraSubject = targetTable[1].Humanoid
-				localPlayer.Character.HumanoidRootPart.AssemblyLinearVelocity = Vector3.zero
-				localPlayer.Character.HumanoidRootPart.AssemblyAngularVelocity = Vector3.zero
-				localPlayer.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Ragdoll, false)
-				if targetTable[1]:FindFirstChild("Knocked") and targetTable[1].Name ~= "Sweeper δ" then
-					localPlayer.Character.HumanoidRootPart:PivotTo(
-						targetTable[1].HumanoidRootPart.CFrame + Vector3.new(0, 4, 0)
-					)
-				elseif targetTable[1]:FindFirstChild("Knocked") then
-					localPlayer.Character.HumanoidRootPart:PivotTo(
-						targetTable[1].HumanoidRootPart.CFrame + Vector3.new(0, -5, 0)
-					)
-				end
-			else
-				if targetTable[1].Name == "Nothing There" then
-					if not checkAnimations(blackListedAnim, targetTable[1].Humanoid.Animator) then
+					workspace.CurrentCamera.CameraSubject = targetTable[1].Humanoid
+					localPlayer.Character.HumanoidRootPart.AssemblyLinearVelocity = Vector3.zero
+					localPlayer.Character.HumanoidRootPart.AssemblyAngularVelocity = Vector3.zero
+					localPlayer.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Ragdoll, false)
+					if targetTable[1]:FindFirstChild("Knocked") and targetTable[1].Name ~= "Sweeper δ" then
 						localPlayer.Character.HumanoidRootPart:PivotTo(
-							targetTable[1]:GetPivot() + Vector3.new(0, 100, 0)
+							targetTable[1].HumanoidRootPart.CFrame + Vector3.new(0, 4, 0)
 						)
-					else
-						localPlayer.Character.HumanoidRootPart:PivotTo(targetTable[1].HumanoidRootPart.CFrame)
+					elseif targetTable[1]:FindFirstChild("Knocked") then
+						localPlayer.Character.HumanoidRootPart:PivotTo(
+							targetTable[1].HumanoidRootPart.CFrame + Vector3.new(0, -5, 0)
+						)
+					end
+				else
+					if targetTable[1].Name == "Nothing There" then
+						if not checkAnimations(blackListedAnim, targetTable[1].Humanoid.Animator) then
+							localPlayer.Character.HumanoidRootPart:PivotTo(
+								targetTable[1]:GetPivot() + Vector3.new(0, 100, 0)
+							)
+						else
+							localPlayer.Character.HumanoidRootPart:PivotTo(targetTable[1].HumanoidRootPart.CFrame)
+							workspace.CurrentCamera.CameraSubject = targetTable[1].Humanoid
+						end
+					elseif targetTable[1].Name == "Sweeper Brute" then
+						localPlayer.Character.HumanoidRootPart:PivotTo(
+							targetTable[1].HumanoidRootPart.CFrame * CFrame.Angles(math.rad(90), 0, 0)
+								+ Vector3.new(0, -11, 0)
+						)
 						workspace.CurrentCamera.CameraSubject = targetTable[1].Humanoid
 					end
-				elseif targetTable[1].Name == "Sweeper Brute" then
-					localPlayer.Character.HumanoidRootPart:PivotTo(
-						targetTable[1].HumanoidRootPart.CFrame * CFrame.Angles(math.rad(90), 0, 0)
-							+ Vector3.new(0, -11, 0)
-					)
-					workspace.CurrentCamera.CameraSubject = targetTable[1].Humanoid
 				end
-			end
-		else
-			localPlayer.Character.HumanoidRootPart.Anchored = false
-			workspace.CurrentCamera.CameraSubject = game.Players.LocalPlayer.Character.Humanoid
-			for _, animTrack in track do
-				animTrack:Play()
-				animTrack:AdjustSpeed(0)
-			end
-			if equipedDb then
-				game:GetService("ReplicatedStorage").Events.Equip:FireServer(false)
-				equipedDb = false
-			end
-			if pickingUpItem then
-				return
-			end
-			local droppedItems = getDroppedItems()
-			if #droppedItems ~= 0 then
-				pickingUpItem = true
-				for _, item in droppedItems do
-					if not connection then
-						pickingUpItem = false
-						return
-					end
-					for _, prompt in item:GetDescendants() do
+			else
+				localPlayer.Character.HumanoidRootPart.Anchored = false
+				workspace.CurrentCamera.CameraSubject = game.Players.LocalPlayer.Character.Humanoid
+				for _, animTrack in track do
+					animTrack:Play()
+					animTrack:AdjustSpeed(0)
+				end
+				if equipedDb then
+					game:GetService("ReplicatedStorage").Events.Equip:FireServer(false)
+					equipedDb = false
+				end
+				if pickingUpItem then
+					return
+				end
+				local droppedItems = getDroppedItems()
+				if #droppedItems ~= 0 then
+					pickingUpItem = true
+					for _, item in droppedItems do
 						if not connection then
 							pickingUpItem = false
 							return
 						end
-						if prompt:IsA("ProximityPrompt") then
-							localPlayer.Character:PivotTo(item:GetPivot())
-							print(item:GetFullName())
-							fireproximityprompt(prompt)
+						for _, prompt in item:GetDescendants() do
 							if not connection then
 								pickingUpItem = false
 								return
 							end
-							repeat
+							if prompt:IsA("ProximityPrompt") then
+								localPlayer.Character:PivotTo(item:GetPivot())
+								print(item:GetFullName())
+								fireproximityprompt(prompt)
 								if not connection then
 									pickingUpItem = false
 									return
 								end
-								localPlayer.Character:PivotTo(item:GetPivot())
-								fireproximityprompt(prompt)
-								task.wait(0.5)
-							until not item.Parent
+								repeat
+									if not connection then
+										pickingUpItem = false
+										return
+									end
+									localPlayer.Character:PivotTo(item:GetPivot())
+									fireproximityprompt(prompt)
+									task.wait(0.5)
+								until not item.Parent
+							end
 						end
 					end
+					pickingUpItem = false
 				end
-				pickingUpItem = false
-			end
-			if checkIfStationYet() and not workspace.NPCS:FindFirstChild("Railway Merchant") then
-				if attachmentCounter() == 4 then
-					for _, chosen in ipairs(autoRailwayLootPriority) do
-						if checkForStuffandClick(chosen) then
-							return
+				if checkIfStationYet() and not workspace.NPCS:FindFirstChild("Railway Merchant") then
+					if attachmentCounter() == 4 then
+						for _, chosen in ipairs(autoRailwayLootPriority) do
+							if checkForStuffandClick(chosen) then
+								return
+							end
 						end
-					end
-					--[[ 					if checkForStuffandClick("Sing") then
+						--[[ 					if checkForStuffandClick("Sing") then
 						return
 					end
 					if checkForStuffandClick("SkipFloors") then
@@ -3375,546 +3396,516 @@ local function killMob(offset)
 					if checkForStuffandClick("Heal") then
 						return
 					end ]]
+					end
+				elseif workspace.NPCS:FindFirstChild("Railway Merchant") then
+					if Options.autoSellExclude.Value or Options.autoSellInclude.Value then
+						local translatedString = splitString(Options.sellInput.Value)
+						if Options.autoSellExclude.Value then
+							getSellLists(translatedString, "Exclude")
+						end
+						if Options.autoSellInclude.Value then
+							getSellLists(translatedString, "Include")
+						end
+						if isSellAble then
+							localPlayer.Character:PivotTo(
+								workspace.NPCS:FindFirstChild("Railway Merchant"):GetPivot() + Vector3.new(-0.5, 0, 0)
+							)
+							return
+						end
+					end
 				end
-			elseif workspace.NPCS:FindFirstChild("Railway Merchant") then
-				if Options.autoSellExclude.Value or Options.autoSellInclude.Value then
-					local translatedString = splitString(Options.sellInput.Value)
-					if Options.autoSellExclude.Value then
-						getSellLists(translatedString, "Exclude")
-					end
-					if Options.autoSellInclude.Value then
-						getSellLists(translatedString, "Include")
-					end
-					if isSellAble then
-						localPlayer.Character:PivotTo(
-							workspace.NPCS:FindFirstChild("Railway Merchant"):GetPivot() + Vector3.new(-0.5, 0, 0)
-						)
-						return
-					end
+				if workspace.Map:FindFirstChild("Exit") then
+					currentExitPos = workspace.Map:FindFirstChild("Exit"):GetPivot()
+					localPlayer.Character:PivotTo(workspace.Map:FindFirstChild("Exit"):GetPivot())
 				end
 			end
+		end))
+	end
+
+	function AutoRailway.on(offset, floor)
+		AutoRailway.off()
+		for _, anim in track do
+			anim:Stop()
+			anim:Destroy()
+		end
+		table.clear(track)
+		if game.PlaceId ~= 99831550635699 then
+			return false, "Not in the Railway"
+		end
+		if workspace:GetAttribute("ServerType") ~= "RefractionRailway" then
+			return false, "Not in the Railway"
+		end
+
+		local kb = workspace:FindFirstChild("KillBricks")
+		if kb then
+			kb:Destroy()
+		end
+
+		if not localPlayer.Character:FindFirstChild("AirTime") then
+			local airTime = Instance.new("Folder")
+			airTime.Name = "AirTime"
+			airTime.Parent = localPlayer.Character
+		end
+
+		game:GetService("ReplicatedStorage").Events.Equip:FireServer(true)
+
+		killMob(offset)
+
+		return true
+	end
+
+	function AutoRailway.off()
+		if connection then
+			connection:Disconnect()
+			connection = nil
 			if workspace.Map:FindFirstChild("Exit") then
 				currentExitPos = workspace.Map:FindFirstChild("Exit"):GetPivot()
+				localPlayer.Character.HumanoidRootPart.Velocity = Vector3.zero
 				localPlayer.Character:PivotTo(workspace.Map:FindFirstChild("Exit"):GetPivot())
 			end
 		end
-	end))
-end
-
-function AutoRailway.on(offset, floor)
-	AutoRailway.off()
-	for _, anim in track do
-		anim:Stop()
-		anim:Destroy()
-	end
-	table.clear(track)
-	if game.PlaceId ~= 99831550635699 then
-		return false, "Not in the Railway"
-	end
-	if workspace:GetAttribute("ServerType") ~= "RefractionRailway" then
-		return false, "Not in the Railway"
-	end
-
-	local kb = workspace:FindFirstChild("KillBricks")
-	if kb then
-		kb:Destroy()
-	end
-
-	if not localPlayer.Character:FindFirstChild("AirTime") then
-		local airTime = Instance.new("Folder")
-		airTime.Name = "AirTime"
-		airTime.Parent = localPlayer.Character
-	end
-
-	game:GetService("ReplicatedStorage").Events.Equip:FireServer(true)
-
-	killMob(offset)
-
-	return true
-end
-
-function AutoRailway.off()
-	if connection then
-		connection:Disconnect()
-		connection = nil
-		if workspace.Map:FindFirstChild("Exit") then
-			currentExitPos = workspace.Map:FindFirstChild("Exit"):GetPivot()
-			localPlayer.Character.HumanoidRootPart.Velocity = Vector3.zero
-			localPlayer.Character:PivotTo(workspace.Map:FindFirstChild("Exit"):GetPivot())
+		for _, anim in track do
+			anim:Stop()
+			anim:Destroy()
 		end
+		table.clear(track)
+		m1Debounce = false
+		gripDebounce = false
+		equipedDb = false
+		pickingUpItem = false
+		localPlayer.Character.HumanoidRootPart.Anchored = false
+		workspace.CurrentCamera.CameraSubject = localPlayer.Character.Humanoid
 	end
-	for _, anim in track do
-		anim:Stop()
-		anim:Destroy()
-	end
-	table.clear(track)
-	m1Debounce = false
-	gripDebounce = false
-	equipedDb = false
-	pickingUpItem = false
-	localPlayer.Character.HumanoidRootPart.Anchored = false
-	workspace.CurrentCamera.CameraSubject = localPlayer.Character.Humanoid
-end
 
-return AutoRailway
-
+	return AutoRailway
 end)
 __bundle_register("Features/Automation/AutoWarp", function(require, _LOADED, __bundle_register, __bundle_modules)
-local VirtualInputManager = game:GetService("VirtualInputManager")
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
+	local VirtualInputManager = game:GetService("VirtualInputManager")
+	local Players = game:GetService("Players")
+	local RunService = game:GetService("RunService")
 
-local localPlayer = Players.LocalPlayer
+	local localPlayer = Players.LocalPlayer
 
-local AutoWarp = {}
+	local AutoWarp = {}
 
-local connection
-local track = {}
-local state = false
-local killingMob = false
-local talkRemoteCd = false
+	local connection
+	local track = {}
+	local state = false
+	local killingMob = false
+	local talkRemoteCd = false
 
-local function clickButton(text)
-	for _, frame in game:GetService("Players").LocalPlayer.PlayerGui.Dialogue.MainFrame.Options.Scroll:GetChildren() do
-		if frame:IsA("Frame") then
-			if frame.OptionText.Text == text or frame.OptionText.Text:find(text) then
-				replicatesignal(frame.OptionButton.MouseButton1Click)
-				return true
-			end
-		end
-	end
-	return false
-end
-
-local function openDoorWithTiedToString(text, section)
-	for _, model in workspace.Map.Map["Carriage_" .. tostring(section)].Doors:GetChildren() do
-		if model:IsA("Model") then
-			if model:FindFirstChild("TiedTo") then
-				if model.TiedTo.Value.Name == text or model.TiedTo.Value.Name:find(text) then
-					if model:FindFirstChildWhichIsA("ProximityPrompt").Enabled then
-						localPlayer.Character:PivotTo(model:GetPivot())
-						fireproximityprompt(model:FindFirstChildWhichIsA("ProximityPrompt"))
-						return true
-					else
-						return false
-					end
+	local function clickButton(text)
+		for _, frame in game:GetService("Players").LocalPlayer.PlayerGui.Dialogue.MainFrame.Options.Scroll:GetChildren() do
+			if frame:IsA("Frame") then
+				if frame.OptionText.Text == text or frame.OptionText.Text:find(text) then
+					replicatesignal(frame.OptionButton.MouseButton1Click)
+					return true
 				end
 			end
 		end
+		return false
 	end
-end
 
-local Teleported = false
-local m1Debounce = false
-local equippedDebounce = false
-local gripDebounce = false
-local function killMob(offset)
-	connection = RunService.PostSimulation:Connect(LPH_NO_VIRTUALIZE(function(delta)
-		-- only run logic every 0.1s instead of every frame
-
-		localPlayer.Data.Stamina.Value = 100
-		local targetTable = {}
-		for _, human in workspace.Alive:GetChildren() do
-			if
-				not Players:GetPlayerFromCharacter(human)
-				and human.Humanoid.Health > 0
-				and not human:FindFirstChild("GotGripped")
-			then
-				table.insert(targetTable, human)
-			end
-		end
-
-		table.sort(targetTable, function(a, b)
-			return a.Humanoid.MaxHealth > b.Humanoid.MaxHealth
-		end)
-
-		if #targetTable ~= 0 then
-			if not equippedDebounce then
-				equippedDebounce = true
-				game:GetService("ReplicatedStorage").Events.Equip:FireServer(true)
-				for _, anim in track do
-					anim:Stop()
-					anim:Destroy()
-				end
-				table.clear(track)
-				local m1Count = 0
-				for _, animation in
-					game:GetService("ReplicatedStorage").WeaponINFO[game.Players.LocalPlayer.Data.Weapon.Value]
-						:GetChildren()
-				do
-					if animation:IsA("Animation") then
-						if animation.Name:find("AttackAnimation") and animation.Name ~= "ChargedAttackAnimation" then
-							m1Count = m1Count + 1
+	local function openDoorWithTiedToString(text, section)
+		for _, model in workspace.Map.Map["Carriage_" .. tostring(section)].Doors:GetChildren() do
+			if model:IsA("Model") then
+				if model:FindFirstChild("TiedTo") then
+					if model.TiedTo.Value.Name == text or model.TiedTo.Value.Name:find(text) then
+						if model:FindFirstChildWhichIsA("ProximityPrompt").Enabled then
+							localPlayer.Character:PivotTo(model:GetPivot())
+							fireproximityprompt(model:FindFirstChildWhichIsA("ProximityPrompt"))
+							return true
+						else
+							return false
 						end
 					end
 				end
-				for i = 1, m1Count - 1 do
-					local animtrack = localPlayer.Character.Humanoid.Animator:LoadAnimation(
-						game:GetService("ReplicatedStorage").WeaponINFO[game.Players.LocalPlayer.Data.Weapon.Value]["AttackAnimation" .. tostring(
-							i
-						)]
-					)
-					animtrack:Play(0, 0.01, 100000)
-					animtrack.Looped = true
-					table.insert(track, animtrack)
+			end
+		end
+	end
+
+	local Teleported = false
+	local m1Debounce = false
+	local equippedDebounce = false
+	local gripDebounce = false
+	local function killMob(offset)
+		connection = RunService.PostSimulation:Connect(LPH_NO_VIRTUALIZE(function(delta)
+			-- only run logic every 0.1s instead of every frame
+
+			localPlayer.Data.Stamina.Value = 100
+			local targetTable = {}
+			for _, human in workspace.Alive:GetChildren() do
+				if
+					not Players:GetPlayerFromCharacter(human)
+					and human.Humanoid.Health > 0
+					and not human:FindFirstChild("GotGripped")
+				then
+					table.insert(targetTable, human)
 				end
-				task.delay(5, function()
-					if connection then
-						for _, anim in track do
-							anim:Stop()
-							anim:Destroy()
-						end
-						table.clear(track)
-						game:GetService("ReplicatedStorage").Events.Equip:FireServer(false)
+			end
+
+			table.sort(targetTable, function(a, b)
+				return a.Humanoid.MaxHealth > b.Humanoid.MaxHealth
+			end)
+
+			if #targetTable ~= 0 then
+				if not equippedDebounce then
+					equippedDebounce = true
+					game:GetService("ReplicatedStorage").Events.Equip:FireServer(true)
+					for _, anim in track do
+						anim:Stop()
+						anim:Destroy()
 					end
-					equippedDebounce = false
-				end)
-			end
-			localPlayer.Character.HumanoidRootPart.Anchored = false
-			killingMob = true
-			Teleported = false
-			for _, animTrack in track do
-				animTrack:Play()
-				animTrack:AdjustSpeed(1000)
-			end
-			local offset = Vector3.new(0, -offset, 0)
-			if not m1Debounce then
-				m1Debounce = true
-				task.delay(1.5, function()
-					m1Debounce = false
-				end)
-			end
-			if targetTable[1]:FindFirstChild("Knocked") and not gripDebounce then
-				gripDebounce = true
-				localPlayer.Character.HumanoidRootPart:PivotTo(targetTable[1].HumanoidRootPart.CFrame)
-				game:GetService("ReplicatedStorage")
-					:WaitForChild("Events")
-					:WaitForChild("Grip")
-					:FireServer(localPlayer.Character)
-				task.delay(1, function()
-					gripDebounce = false
-				end)
-			end
-			if localPlayer.Character:FindFirstChild("GripNotInterrupted") then
-				localPlayer.Character.HumanoidRootPart.Anchored = true
-				return
-			end
-			localPlayer.Character.HumanoidRootPart:PivotTo(
-				targetTable[1].HumanoidRootPart.CFrame * CFrame.Angles(math.rad(90), 0, 0) + offset
-			)
-			workspace.CurrentCamera.CameraSubject = targetTable[1].Humanoid
-			localPlayer.Character.HumanoidRootPart.AssemblyLinearVelocity = Vector3.zero
-			localPlayer.Character.HumanoidRootPart.AssemblyAngularVelocity = Vector3.zero
-			localPlayer.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Ragdoll, false)
-		else
-			if equippedDebounce then
-				equippedDebounce = false
-				game:GetService("ReplicatedStorage").Events.Equip:FireServer(false)
-			end
-			workspace.CurrentCamera.CameraSubject = game.Players.LocalPlayer.Character.Humanoid
-			killingMob = false
-			if not Teleported then
-				Teleported = true
-				localPlayer.Character:PivotTo(CFrame.new(-318.950195, 391.98999, 551.724976, 1, 0, 0, 0, 1, 0, 0, 0, 1))
+					table.clear(track)
+					local m1Count = 0
+					for _, animation in
+						game:GetService("ReplicatedStorage").WeaponINFO[game.Players.LocalPlayer.Data.Weapon.Value]
+							:GetChildren()
+					do
+						if animation:IsA("Animation") then
+							if
+								animation.Name:find("AttackAnimation")
+								and animation.Name ~= "ChargedAttackAnimation"
+							then
+								m1Count = m1Count + 1
+							end
+						end
+					end
+					for i = 1, m1Count - 1 do
+						local animtrack = localPlayer.Character.Humanoid.Animator:LoadAnimation(
+							game:GetService("ReplicatedStorage").WeaponINFO[game.Players.LocalPlayer.Data.Weapon.Value]["AttackAnimation" .. tostring(
+								i
+							)]
+						)
+						animtrack:Play(0, 0.01, 100000)
+						animtrack.Looped = true
+						table.insert(track, animtrack)
+					end
+					task.delay(5, function()
+						if connection then
+							for _, anim in track do
+								anim:Stop()
+								anim:Destroy()
+							end
+							table.clear(track)
+							game:GetService("ReplicatedStorage").Events.Equip:FireServer(false)
+						end
+						equippedDebounce = false
+					end)
+				end
+				localPlayer.Character.HumanoidRootPart.Anchored = false
+				killingMob = true
+				Teleported = false
 				for _, animTrack in track do
-					animTrack:Stop()
+					animTrack:Play()
+					animTrack:AdjustSpeed(1000)
 				end
-			end
-		end
-
-		if killingMob then
-			return
-		end
-		if not connection then
-			return
-		end
-		localPlayer.Character.HumanoidRootPart.Anchored = false
-
-		if not openDoorWithTiedToString("CarriageEntranceDoor", 6) then
-			localPlayer.Character:PivotTo(
-				workspace
-					:WaitForChild("NPCS")
-					:WaitForChild("PrinceFight")
-					:WaitForChild("The Prince of the Parade")
-					:GetPivot()
-			)
-			if not talkRemoteCd then
-				talkRemoteCd = true
-				workspace
-					:WaitForChild("NPCS")
-					:WaitForChild("PrinceFight")
-					:WaitForChild("The Prince of the Parade")
-					:WaitForChild("TalkToNPC")
-					:FireServer()
-				clickButton("I'm here to end")
-				clickButton("...")
-				clickButton("What")
-				task.delay(1, function()
-					talkRemoteCd = false
-				end)
-			end
-		end
-	end))
-end
-
-function AutoWarp.on(offset, floor)
-	AutoWarp.off()
-	state = false
-
-	if game.PlaceId ~= 99831550635699 then
-		return false, "Not in the Warp Train"
-	end
-
-	if not workspace:GetAttribute("WARPServer") then
-		return false, "Not in the Warp Train"
-	end
-
-	if not workspace:FindFirstChild("Spawns") then
-		if not workspace.Spawns:FindFirstChild("WARPSpawn") then
-			return false, "Not in the Warp Train"
-		end
-		return false, "Not in the Warp Train"
-	end
-
-	local kb = workspace:FindFirstChild("KillBricks")
-	if kb then
-		kb:Destroy()
-	end
-
-	if not localPlayer.Character:FindFirstChild("AirTime") then
-		local airTime = Instance.new("Folder")
-		airTime.Name = "AirTime"
-		airTime.Parent = localPlayer.Character
-	end
-
-	game:GetService("ReplicatedStorage").Events.Equip:FireServer(true)
-
-	killMob(offset)
-
-	return true
-end
-
-function AutoWarp.off()
-	state = true
-	killingMob = false
-	if connection then
-		connection:Disconnect()
-		connection = nil
-		localPlayer.Character:PivotTo(
-			CFrame.new(
-				-331.066559,
-				392.213531,
-				550.836121,
-				-0.0747568682,
-				0.00394378649,
-				-0.997193992,
-				-1.45631475e-05,
-				0.999992192,
-				0.00395594304,
-				0.997201741,
-				0.00031024238,
-				-0.0747562274
-			)
-		)
-	end
-	for _, anim in track do
-		anim:Stop()
-		anim:Destroy()
-		anim = nil
-	end
-	workspace.CurrentCamera.CameraSubject = game.Players.LocalPlayer.Character.Humanoid
-	localPlayer.Character.HumanoidRootPart.Anchored = false
-end
-
-return AutoWarp
-
-end)
-__bundle_register("Features/Automation/AutoLibrary", function(require, _LOADED, __bundle_register, __bundle_modules)
-local MarketplaceService = game:GetService("MarketplaceService")
-local VirtualInputManager = game:GetService("VirtualInputManager")
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-
-local localPlayer = Players.LocalPlayer
-local AutoLibrary = {}
-
-local connection
-local track = {}
-local state = false
-
-local safeZone = {
-	["Kether"] = CFrame.new(
-		4729.77637,
-		338.901337,
-		-1197.84521,
-		0.998169243,
-		-4.15211643e-09,
-		0.0604829043,
-		1.09101705e-09,
-		1,
-		5.06440081e-08,
-		-0.0604829043,
-		-5.04853013e-08,
-		0.998169243
-	),
-	["Language"] = CFrame.new(4799.5625, 390.056946, -1166.06909, 1, 0, 0, 0, 1, 0, 0, 0, 1),
-	["Philosophy"] = CFrame.new(
-		996.82196,
-		1746.71643,
-		-1511.82288,
-		-0.932488382,
-		-7.2899482e-08,
-		0.361200005,
-		-2.38091999e-08,
-		1,
-		1.40359035e-07,
-		-0.361200005,
-		1.22283282e-07,
-		-0.932488382
-	),
-}
-
-local floorIdentifier = {
-	["Kether"] = "Books",
-	["Language"] = "Language VFX",
-	["Philosophy"] = "Binah Floor",
-}
-
-local function clickButton(text)
-	for _, frame in game:GetService("Players").LocalPlayer.PlayerGui.Dialogue.MainFrame.Options.Scroll:GetChildren() do
-		if frame:IsA("Frame") then
-			if frame.OptionText.Text == text or frame.OptionText.Text:find(text) then
-				replicatesignal(frame.OptionButton.MouseButton1Click)
-				return true
-			end
-		end
-	end
-	return false
-end
-
-local waitingPeriod = false
-local bossWaited = false
-local pressedOrdeal = false
-local teleported = false
-local gripDebounce = false
-local pickingUpItem = false
-
-local function getDroppedItems()
-	local tabled = {}
-	for _, item in workspace.Thrown:GetChildren() do
-		for _, prompt in item:GetDescendants() do
-			if prompt:IsA("ProximityPrompt") and localPlayer:DistanceFromCharacter(item:GetPivot().Position) < 500 then
-				table.insert(tabled, item)
-			end
-		end
-	end
-	return tabled
-end
-
-function AutoLibrary.on(offset, floor, buff)
-	AutoLibrary.off()
-	state = true
-	local teleported = false
-	if game.PlaceId ~= 99831550635699 then
-		return false, "Not in the library"
-	end
-	if not workspace:GetAttribute("ServerType") == "Library" then
-		return false, "Not in the library"
-	end
-	if not workspace.NPCS:FindFirstChild("Library Director") then
-		return false, "Not in the library"
-	end
-	task.wait(1)
-	if not state then
-		return
-	end
-	local bookOfTheLib = localPlayer.Backpack:FindFirstChild("Book Of The Library")
-	if buff and bookOfTheLib and not workspace.Map:FindFirstChild(floorIdentifier[floor]) and not pressedOrdeal then
-		if not state then
-			return
-		end
-		bookOfTheLib.Parent = localPlayer.Character
-		if not state then
-			return
-		end
-		localPlayer.Character:PivotTo(workspace.NPCS["Library Director"]:GetPivot())
-		task.wait(1)
-		if not state then
-			return
-		end
-		workspace.NPCS["Library Director"].TalkToNPC:FireServer()
-		if not localPlayer.Data.IsTalking.Value then
-			repeat
-				localPlayer.Character:PivotTo(workspace.NPCS["Library Director"]:GetPivot())
-				workspace.NPCS["Library Director"].TalkToNPC:FireServer()
-				if not state then
+				local offset = Vector3.new(0, -offset, 0)
+				if not m1Debounce then
+					m1Debounce = true
+					task.delay(1.5, function()
+						m1Debounce = false
+					end)
+				end
+				if targetTable[1]:FindFirstChild("Knocked") and not gripDebounce then
+					gripDebounce = true
+					localPlayer.Character.HumanoidRootPart:PivotTo(targetTable[1].HumanoidRootPart.CFrame)
+					game:GetService("ReplicatedStorage")
+						:WaitForChild("Events")
+						:WaitForChild("Grip")
+						:FireServer(localPlayer.Character)
+					task.delay(1, function()
+						gripDebounce = false
+					end)
+				end
+				if localPlayer.Character:FindFirstChild("GripNotInterrupted") then
+					localPlayer.Character.HumanoidRootPart.Anchored = true
 					return
 				end
-				task.wait(0.5)
-			until localPlayer.Data.IsTalking.Value
+				localPlayer.Character.HumanoidRootPart:PivotTo(
+					targetTable[1].HumanoidRootPart.CFrame * CFrame.Angles(math.rad(90), 0, 0) + offset
+				)
+				workspace.CurrentCamera.CameraSubject = targetTable[1].Humanoid
+				localPlayer.Character.HumanoidRootPart.AssemblyLinearVelocity = Vector3.zero
+				localPlayer.Character.HumanoidRootPart.AssemblyAngularVelocity = Vector3.zero
+				localPlayer.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Ragdoll, false)
+			else
+				if equippedDebounce then
+					equippedDebounce = false
+					game:GetService("ReplicatedStorage").Events.Equip:FireServer(false)
+				end
+				workspace.CurrentCamera.CameraSubject = game.Players.LocalPlayer.Character.Humanoid
+				killingMob = false
+				if not Teleported then
+					Teleported = true
+					localPlayer.Character:PivotTo(
+						CFrame.new(-318.950195, 391.98999, 551.724976, 1, 0, 0, 0, 1, 0, 0, 0, 1)
+					)
+					for _, animTrack in track do
+						animTrack:Stop()
+					end
+				end
+			end
+
+			if killingMob then
+				return
+			end
+			if not connection then
+				return
+			end
+			localPlayer.Character.HumanoidRootPart.Anchored = false
+
+			if not openDoorWithTiedToString("CarriageEntranceDoor", 6) then
+				localPlayer.Character:PivotTo(
+					workspace
+						:WaitForChild("NPCS")
+						:WaitForChild("PrinceFight")
+						:WaitForChild("The Prince of the Parade")
+						:GetPivot()
+				)
+				if not talkRemoteCd then
+					talkRemoteCd = true
+					workspace
+						:WaitForChild("NPCS")
+						:WaitForChild("PrinceFight")
+						:WaitForChild("The Prince of the Parade")
+						:WaitForChild("TalkToNPC")
+						:FireServer()
+					clickButton("I'm here to end")
+					clickButton("...")
+					clickButton("What")
+					task.delay(1, function()
+						talkRemoteCd = false
+					end)
+				end
+			end
+		end))
+	end
+
+	function AutoWarp.on(offset, floor)
+		AutoWarp.off()
+		state = false
+
+		if game.PlaceId ~= 99831550635699 then
+			return false, "Not in the Warp Train"
 		end
-		if not state then
-			return
+
+		if not workspace:GetAttribute("WARPServer") then
+			return false, "Not in the Warp Train"
+		end
+
+		if not workspace:FindFirstChild("Spawns") then
+			if not workspace.Spawns:FindFirstChild("WARPSpawn") then
+				return false, "Not in the Warp Train"
+			end
+			return false, "Not in the Warp Train"
+		end
+
+		local kb = workspace:FindFirstChild("KillBricks")
+		if kb then
+			kb:Destroy()
+		end
+
+		if not localPlayer.Character:FindFirstChild("AirTime") then
+			local airTime = Instance.new("Folder")
+			airTime.Name = "AirTime"
+			airTime.Parent = localPlayer.Character
+		end
+
+		game:GetService("ReplicatedStorage").Events.Equip:FireServer(true)
+
+		killMob(offset)
+
+		return true
+	end
+
+	function AutoWarp.off()
+		state = true
+		killingMob = false
+		if connection then
+			connection:Disconnect()
+			connection = nil
+			localPlayer.Character:PivotTo(
+				CFrame.new(
+					-331.066559,
+					392.213531,
+					550.836121,
+					-0.0747568682,
+					0.00394378649,
+					-0.997193992,
+					-1.45631475e-05,
+					0.999992192,
+					0.00395594304,
+					0.997201741,
+					0.00031024238,
+					-0.0747562274
+				)
+			)
+		end
+		for _, anim in track do
+			anim:Stop()
+			anim:Destroy()
+			anim = nil
+		end
+		workspace.CurrentCamera.CameraSubject = game.Players.LocalPlayer.Character.Humanoid
+		localPlayer.Character.HumanoidRootPart.Anchored = false
+	end
+
+	return AutoWarp
+end)
+__bundle_register("Features/Automation/AutoLibrary", function(require, _LOADED, __bundle_register, __bundle_modules)
+	local MarketplaceService = game:GetService("MarketplaceService")
+	local VirtualInputManager = game:GetService("VirtualInputManager")
+	local Players = game:GetService("Players")
+	local RunService = game:GetService("RunService")
+
+	local localPlayer = Players.LocalPlayer
+	local AutoLibrary = {}
+
+	local connection
+	local track = {}
+	local state = false
+
+	local safeZone = {
+		["Kether"] = CFrame.new(
+			4729.77637,
+			338.901337,
+			-1197.84521,
+			0.998169243,
+			-4.15211643e-09,
+			0.0604829043,
+			1.09101705e-09,
+			1,
+			5.06440081e-08,
+			-0.0604829043,
+			-5.04853013e-08,
+			0.998169243
+		),
+		["Language"] = CFrame.new(4799.5625, 390.056946, -1166.06909, 1, 0, 0, 0, 1, 0, 0, 0, 1),
+		["Philosophy"] = CFrame.new(
+			996.82196,
+			1746.71643,
+			-1511.82288,
+			-0.932488382,
+			-7.2899482e-08,
+			0.361200005,
+			-2.38091999e-08,
+			1,
+			1.40359035e-07,
+			-0.361200005,
+			1.22283282e-07,
+			-0.932488382
+		),
+	}
+
+	local floorIdentifier = {
+		["Kether"] = "Books",
+		["Language"] = "Language VFX",
+		["Philosophy"] = "Binah Floor",
+	}
+
+	local function clickButton(text)
+		for _, frame in game:GetService("Players").LocalPlayer.PlayerGui.Dialogue.MainFrame.Options.Scroll:GetChildren() do
+			if frame:IsA("Frame") then
+				if frame.OptionText.Text == text or frame.OptionText.Text:find(text) then
+					replicatesignal(frame.OptionButton.MouseButton1Click)
+					return true
+				end
+			end
+		end
+		return false
+	end
+
+	local waitingPeriod = false
+	local bossWaited = false
+	local pressedOrdeal = false
+	local teleported = false
+	local gripDebounce = false
+	local pickingUpItem = false
+
+	local function getDroppedItems()
+		local tabled = {}
+		for _, item in workspace.Thrown:GetChildren() do
+			for _, prompt in item:GetDescendants() do
+				if
+					prompt:IsA("ProximityPrompt")
+					and localPlayer:DistanceFromCharacter(item:GetPivot().Position) < 500
+				then
+					table.insert(tabled, item)
+				end
+			end
+		end
+		return tabled
+	end
+
+	function AutoLibrary.on(offset, floor, buff)
+		AutoLibrary.off()
+		state = true
+		local teleported = false
+		if game.PlaceId ~= 99831550635699 then
+			return false, "Not in the library"
+		end
+		if not workspace:GetAttribute("ServerType") == "Library" then
+			return false, "Not in the library"
+		end
+		if not workspace.NPCS:FindFirstChild("Library Director") then
+			return false, "Not in the library"
 		end
 		task.wait(1)
 		if not state then
 			return
 		end
-		local clickBye = false
-		repeat
-			task.wait()
+		local bookOfTheLib = localPlayer.Backpack:FindFirstChild("Book Of The Library")
+		if buff and bookOfTheLib and not workspace.Map:FindFirstChild(floorIdentifier[floor]) and not pressedOrdeal then
 			if not state then
 				return
 			end
-			if clickButton("Bye") then
-				clickBye = true
+			bookOfTheLib.Parent = localPlayer.Character
+			if not state then
+				return
 			end
-		until clickBye
+			localPlayer.Character:PivotTo(workspace.NPCS["Library Director"]:GetPivot())
+			task.wait(1)
+			if not state then
+				return
+			end
+			workspace.NPCS["Library Director"].TalkToNPC:FireServer()
+			if not localPlayer.Data.IsTalking.Value then
+				repeat
+					localPlayer.Character:PivotTo(workspace.NPCS["Library Director"]:GetPivot())
+					workspace.NPCS["Library Director"].TalkToNPC:FireServer()
+					if not state then
+						return
+					end
+					task.wait(0.5)
+				until localPlayer.Data.IsTalking.Value
+			end
+			if not state then
+				return
+			end
+			task.wait(1)
+			if not state then
+				return
+			end
+			local clickBye = false
+			repeat
+				task.wait()
+				if not state then
+					return
+				end
+				if clickButton("Bye") then
+					clickBye = true
+				end
+			until clickBye
+			if not state then
+				return
+			end
+		end
 		if not state then
 			return
 		end
-	end
-	if not state then
-		return
-	end
-	if not workspace.Map:FindFirstChild(floorIdentifier[floor]) and not pressedOrdeal then
-		localPlayer.Character:PivotTo(CFrame.new(731.274353, 525.687317, 1016.26477))
-		task.wait(1)
-		workspace.NPCS["Ordeal Entrance"].TalkToNPC:FireServer()
-		if not localPlayer.Data.IsTalking.Value then
-			repeat
-				if not state then
-					return
-				end
-				localPlayer.Character:PivotTo(CFrame.new(731.274353, 525.687317, 1016.26477))
-				workspace.NPCS["Ordeal Entrance"].TalkToNPC:FireServer()
-				task.wait(0.5)
-			until localPlayer.Data.IsTalking.Value
-		end
-		task.wait(1)
-		if clickButton("Begin") then
-			pressedOrdeal = true
-		else
-			local select = false
-			repeat
-				task.wait()
-				if not state then
-					return
-				end
-				if clickButton("Select") then
-					select = true
-				end
-			until select
-			local floorSelect = false
-			repeat
-				task.wait()
-				if clickButton(floor) then
-					floorSelect = true
-				end
-				if not state then
-					return
-				end
-			until floorSelect
+		if not workspace.Map:FindFirstChild(floorIdentifier[floor]) and not pressedOrdeal then
+			localPlayer.Character:PivotTo(CFrame.new(731.274353, 525.687317, 1016.26477))
 			task.wait(1)
 			workspace.NPCS["Ordeal Entrance"].TalkToNPC:FireServer()
 			if not localPlayer.Data.IsTalking.Value then
@@ -3928,882 +3919,916 @@ function AutoLibrary.on(offset, floor, buff)
 				until localPlayer.Data.IsTalking.Value
 			end
 			task.wait(1)
-			local begin = false
-			repeat
-				task.wait()
-				if not state then
-					return
-				end
-				if clickButton("Begin") then
-					begin = true
-				end
-			until begin
-			pressedOrdeal = true
-		end
-	else
-		pressedOrdeal = true
-	end
-
-	local kb = workspace:FindFirstChild("KillBricks")
-	if kb then
-		kb:Destroy()
-	end
-
-	if not localPlayer.Character:FindFirstChild("AirTime") then
-		local airTime = Instance.new("Folder")
-		airTime.Name = "AirTime"
-		airTime.Parent = localPlayer.Character
-	end
-
-	game:GetService("ReplicatedStorage").Events.Equip:FireServer(true)
-	local M1cooldown = false
-	repeat
-		task.wait()
-		if not state then
-			return
-		end
-	until workspace.Map:FindFirstChild(floorIdentifier[floor])
-	localPlayer.Character.HumanoidRootPart:PivotTo(safeZone[floor])
-	local equipDebounce = false
-	connection = RunService.PostSimulation:Connect(LPH_NO_VIRTUALIZE(function(delta)
-		if not state then
-			return
-		end
-		if math.floor(workspace.DistributedGameTime) < 0 then
-			game:GetService("ReplicatedStorage").Events.Equip:FireServer(false)
-			for _, animTrack in track do
-				animTrack:AdjustSpeed(0)
-			end
-			workspace.CurrentCamera.CameraSubject = localPlayer.Character.Humanoid
-			localPlayer.Character:PivotTo(safeZone[floor])
-			return true
-		end
-		teleported = false
-		localPlayer.Data.Stamina.Value = 100
-		local targetTable = {}
-
-		for _, human in workspace.Alive:GetChildren() do
-			if
-				not Players:GetPlayerFromCharacter(human)
-				and human.Humanoid.Health > 0
-				and not human:FindFirstChild("GotGripped")
-			then
-				table.insert(targetTable, human)
-			end
-		end
-
-		table.sort(targetTable, function(a, b)
-			return a.Humanoid.MaxHealth > b.Humanoid.MaxHealth
-		end)
-
-		if #targetTable ~= 0 then
-			localPlayer.Character.HumanoidRootPart.Anchored = false
-			local isAllAlerted = true
-			for _, target in targetTable do
-				if target.Target.Value ~= localPlayer.Character then
-					localPlayer.Character.HumanoidRootPart:PivotTo(
-						targetTable[1].HumanoidRootPart.CFrame * CFrame.Angles(math.rad(90), 0, 0)
-							+ Vector3.new(0, 10, 0)
-					)
-					isAllAlerted = false
-				end
-			end
-			if not isAllAlerted then
-				return
-			end
-			if not equipDebounce then
-				equipDebounce = true
-				game:GetService("ReplicatedStorage").Events.Equip:FireServer(true)
-				for _, anim in track do
-					anim:Stop()
-					anim:Destroy()
-				end
-				table.clear(track)
-				local m1Count = 0
-				for _, animation in
-					game:GetService("ReplicatedStorage").WeaponINFO[game.Players.LocalPlayer.Data.Weapon.Value]
-						:GetChildren()
-				do
-					if animation:IsA("Animation") then
-						if animation.Name:find("AttackAnimation") and animation.Name ~= "ChargedAttackAnimation" then
-							m1Count = m1Count + 1
-						end
-					end
-				end
-				for i = 1, m1Count - 1 do
-					local animtrack = localPlayer.Character.Humanoid.Animator:LoadAnimation(
-						game:GetService("ReplicatedStorage").WeaponINFO[game.Players.LocalPlayer.Data.Weapon.Value]["AttackAnimation" .. tostring(
-							i
-						)]
-					)
-					animtrack:Play(0, 0.01, 100000)
-					animtrack.Looped = true
-					table.insert(track, animtrack)
-				end
-				task.delay(2.5, function()
-					if connection then
-						for _, anim in track do
-							anim:Stop()
-							anim:Destroy()
-						end
-						table.clear(track)
-						game:GetService("ReplicatedStorage").Events.Equip:FireServer(false)
-					end
-					equipDebounce = false
-				end)
-			end
-			local offset = Vector3.new(0, -Options.autoLibYOffset.Value, 0)
-
-			if targetTable[1]:FindFirstChild("Knocked") then
-				if not gripDebounce then
-					gripDebounce = true
-					game:GetService("ReplicatedStorage")
-						:WaitForChild("Events")
-						:WaitForChild("Grip")
-						:FireServer(localPlayer.Character)
-					task.delay(1, function()
-						gripDebounce = false
-					end)
-				end
-				localPlayer.Character.HumanoidRootPart:PivotTo(
-					targetTable[1].HumanoidRootPart.CFrame + Vector3.new(0, 1, 0)
-				)
-				return
-			end
-
-			if targetTable[1]:FindFirstChild("GettingGripped") then
-				localPlayer.Character.HumanoidRootPart.Anchored = true
-				return
-			end
-			if targetTable[1].Target.Value ~= localPlayer.Character then
-				localPlayer.Character.HumanoidRootPart:PivotTo(
-					targetTable[1].HumanoidRootPart.CFrame * CFrame.Angles(math.rad(90), 0, 0) + Vector3.new(0, 5, 0)
-				)
-				return
-			end
-			localPlayer.Character.HumanoidRootPart:PivotTo(
-				targetTable[1].HumanoidRootPart.CFrame * CFrame.Angles(math.rad(90), 0, 0) + offset
-			)
-			workspace.CurrentCamera.CameraSubject = targetTable[1].Humanoid
-			localPlayer.Character.HumanoidRootPart.AssemblyLinearVelocity = Vector3.zero
-			localPlayer.Character.HumanoidRootPart.AssemblyAngularVelocity = Vector3.zero
-			localPlayer.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Ragdoll, false)
-		else
-			if pickingUpItem then
-				return
-			end
-			local droppedItems = getDroppedItems()
-			if #droppedItems ~= 0 then
-				pickingUpItem = true
-				for _, item in droppedItems do
-					if not connection then
-						pickingUpItem = false
+			if clickButton("Begin") then
+				pressedOrdeal = true
+			else
+				local select = false
+				repeat
+					task.wait()
+					if not state then
 						return
 					end
-					for _, prompt in item:GetDescendants() do
+					if clickButton("Select") then
+						select = true
+					end
+				until select
+				local floorSelect = false
+				repeat
+					task.wait()
+					if clickButton(floor) then
+						floorSelect = true
+					end
+					if not state then
+						return
+					end
+				until floorSelect
+				task.wait(1)
+				workspace.NPCS["Ordeal Entrance"].TalkToNPC:FireServer()
+				if not localPlayer.Data.IsTalking.Value then
+					repeat
+						if not state then
+							return
+						end
+						localPlayer.Character:PivotTo(CFrame.new(731.274353, 525.687317, 1016.26477))
+						workspace.NPCS["Ordeal Entrance"].TalkToNPC:FireServer()
+						task.wait(0.5)
+					until localPlayer.Data.IsTalking.Value
+				end
+				task.wait(1)
+				local begin = false
+				repeat
+					task.wait()
+					if not state then
+						return
+					end
+					if clickButton("Begin") then
+						begin = true
+					end
+				until begin
+				pressedOrdeal = true
+			end
+		else
+			pressedOrdeal = true
+		end
+
+		local kb = workspace:FindFirstChild("KillBricks")
+		if kb then
+			kb:Destroy()
+		end
+
+		if not localPlayer.Character:FindFirstChild("AirTime") then
+			local airTime = Instance.new("Folder")
+			airTime.Name = "AirTime"
+			airTime.Parent = localPlayer.Character
+		end
+
+		game:GetService("ReplicatedStorage").Events.Equip:FireServer(true)
+		local M1cooldown = false
+		repeat
+			task.wait()
+			if not state then
+				return
+			end
+		until workspace.Map:FindFirstChild(floorIdentifier[floor])
+		localPlayer.Character.HumanoidRootPart:PivotTo(safeZone[floor])
+		local equipDebounce = false
+		connection = RunService.PostSimulation:Connect(LPH_NO_VIRTUALIZE(function(delta)
+			if not state then
+				return
+			end
+			if math.floor(workspace.DistributedGameTime) < 0 then
+				game:GetService("ReplicatedStorage").Events.Equip:FireServer(false)
+				for _, animTrack in track do
+					animTrack:AdjustSpeed(0)
+				end
+				workspace.CurrentCamera.CameraSubject = localPlayer.Character.Humanoid
+				localPlayer.Character:PivotTo(safeZone[floor])
+				return true
+			end
+			teleported = false
+			localPlayer.Data.Stamina.Value = 100
+			local targetTable = {}
+
+			for _, human in workspace.Alive:GetChildren() do
+				if
+					not Players:GetPlayerFromCharacter(human)
+					and human.Humanoid.Health > 0
+					and not human:FindFirstChild("GotGripped")
+				then
+					table.insert(targetTable, human)
+				end
+			end
+
+			table.sort(targetTable, function(a, b)
+				return a.Humanoid.MaxHealth > b.Humanoid.MaxHealth
+			end)
+
+			if #targetTable ~= 0 then
+				localPlayer.Character.HumanoidRootPart.Anchored = false
+				local isAllAlerted = true
+				for _, target in targetTable do
+					if target.Target.Value ~= localPlayer.Character then
+						localPlayer.Character.HumanoidRootPart:PivotTo(
+							targetTable[1].HumanoidRootPart.CFrame * CFrame.Angles(math.rad(90), 0, 0)
+								+ Vector3.new(0, 10, 0)
+						)
+						isAllAlerted = false
+					end
+				end
+				if not isAllAlerted then
+					return
+				end
+				if not equipDebounce then
+					equipDebounce = true
+					game:GetService("ReplicatedStorage").Events.Equip:FireServer(true)
+					for _, anim in track do
+						anim:Stop()
+						anim:Destroy()
+					end
+					table.clear(track)
+					local m1Count = 0
+					for _, animation in
+						game:GetService("ReplicatedStorage").WeaponINFO[game.Players.LocalPlayer.Data.Weapon.Value]
+							:GetChildren()
+					do
+						if animation:IsA("Animation") then
+							if
+								animation.Name:find("AttackAnimation")
+								and animation.Name ~= "ChargedAttackAnimation"
+							then
+								m1Count = m1Count + 1
+							end
+						end
+					end
+					for i = 1, m1Count - 1 do
+						local animtrack = localPlayer.Character.Humanoid.Animator:LoadAnimation(
+							game:GetService("ReplicatedStorage").WeaponINFO[game.Players.LocalPlayer.Data.Weapon.Value]["AttackAnimation" .. tostring(
+								i
+							)]
+						)
+						animtrack:Play(0, 0.01, 100000)
+						animtrack.Looped = true
+						table.insert(track, animtrack)
+					end
+					task.delay(2.5, function()
+						if connection then
+							for _, anim in track do
+								anim:Stop()
+								anim:Destroy()
+							end
+							table.clear(track)
+							game:GetService("ReplicatedStorage").Events.Equip:FireServer(false)
+						end
+						equipDebounce = false
+					end)
+				end
+				local offset = Vector3.new(0, -Options.autoLibYOffset.Value, 0)
+
+				if targetTable[1]:FindFirstChild("Knocked") then
+					if not gripDebounce then
+						gripDebounce = true
+						game:GetService("ReplicatedStorage")
+							:WaitForChild("Events")
+							:WaitForChild("Grip")
+							:FireServer(localPlayer.Character)
+						task.delay(1, function()
+							gripDebounce = false
+						end)
+					end
+					localPlayer.Character.HumanoidRootPart:PivotTo(
+						targetTable[1].HumanoidRootPart.CFrame + Vector3.new(0, 1, 0)
+					)
+					return
+				end
+
+				if targetTable[1]:FindFirstChild("GettingGripped") then
+					localPlayer.Character.HumanoidRootPart.Anchored = true
+					return
+				end
+				if targetTable[1].Target.Value ~= localPlayer.Character then
+					localPlayer.Character.HumanoidRootPart:PivotTo(
+						targetTable[1].HumanoidRootPart.CFrame * CFrame.Angles(math.rad(90), 0, 0)
+							+ Vector3.new(0, 5, 0)
+					)
+					return
+				end
+				localPlayer.Character.HumanoidRootPart:PivotTo(
+					targetTable[1].HumanoidRootPart.CFrame * CFrame.Angles(math.rad(90), 0, 0) + offset
+				)
+				workspace.CurrentCamera.CameraSubject = targetTable[1].Humanoid
+				localPlayer.Character.HumanoidRootPart.AssemblyLinearVelocity = Vector3.zero
+				localPlayer.Character.HumanoidRootPart.AssemblyAngularVelocity = Vector3.zero
+				localPlayer.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Ragdoll, false)
+			else
+				if pickingUpItem then
+					return
+				end
+				local droppedItems = getDroppedItems()
+				if #droppedItems ~= 0 then
+					pickingUpItem = true
+					for _, item in droppedItems do
 						if not connection then
 							pickingUpItem = false
 							return
 						end
-						if prompt:IsA("ProximityPrompt") then
-							localPlayer.Character:PivotTo(item:GetPivot())
-							fireproximityprompt(prompt)
+						for _, prompt in item:GetDescendants() do
 							if not connection then
 								pickingUpItem = false
 								return
 							end
-							repeat
+							if prompt:IsA("ProximityPrompt") then
+								localPlayer.Character:PivotTo(item:GetPivot())
+								fireproximityprompt(prompt)
 								if not connection then
 									pickingUpItem = false
 									return
 								end
-								localPlayer.Character:PivotTo(item:GetPivot())
-								fireproximityprompt(prompt)
-								task.wait()
-							until not item.Parent
+								repeat
+									if not connection then
+										pickingUpItem = false
+										return
+									end
+									localPlayer.Character:PivotTo(item:GetPivot())
+									fireproximityprompt(prompt)
+									task.wait()
+								until not item.Parent
+							end
 						end
 					end
+					pickingUpItem = false
 				end
-				pickingUpItem = false
-			end
 
-			if not teleported then
-				teleported = true
-				equipDebounce = false
-				localPlayer.Character.HumanoidRootPart:PivotTo(safeZone[floor])
-				game:GetService("ReplicatedStorage").Events.Equip:FireServer(false)
-				for _, animTrack in track do
-					animTrack:Stop()
+				if not teleported then
+					teleported = true
+					equipDebounce = false
+					localPlayer.Character.HumanoidRootPart:PivotTo(safeZone[floor])
+					game:GetService("ReplicatedStorage").Events.Equip:FireServer(false)
+					for _, animTrack in track do
+						animTrack:Stop()
+					end
+					workspace.CurrentCamera.CameraSubject = localPlayer.Character.Humanoid
+					localPlayer.Character:PivotTo(safeZone[floor])
 				end
-				workspace.CurrentCamera.CameraSubject = localPlayer.Character.Humanoid
+			end
+		end))
+		return true
+	end
+
+	function AutoLibrary.off(floor)
+		state = false
+		if connection then
+			connection:Disconnect()
+			connection = nil
+			if safeZone[floor] then
 				localPlayer.Character:PivotTo(safeZone[floor])
 			end
 		end
-	end))
-	return true
-end
-
-function AutoLibrary.off(floor)
-	state = false
-	if connection then
-		connection:Disconnect()
-		connection = nil
-		if safeZone[floor] then
-			localPlayer.Character:PivotTo(safeZone[floor])
+		for _, anim in track do
+			anim:Stop()
+			anim:Destroy()
 		end
+		table.clear(track)
+		workspace.CurrentCamera.CameraSubject = localPlayer.Character.Humanoid
+		localPlayer.Character.HumanoidRootPart.Anchored = false
 	end
-	for _, anim in track do
-		anim:Stop()
-		anim:Destroy()
-	end
-	table.clear(track)
-	workspace.CurrentCamera.CameraSubject = localPlayer.Character.Humanoid
-	localPlayer.Character.HumanoidRootPart.Anchored = false
-end
 
-return AutoLibrary
-
+	return AutoLibrary
 end)
 __bundle_register("Menu/Visuals", function(require, _LOADED, __bundle_register, __bundle_modules)
-local ESPPlayer = require("Features/Visuals/ESPPlayer")
-local ESPMob = require("Features/Visuals/ESPMob")
-local ESPNpc = require("Features/Visuals/ESPNpc")
-local spectate = require("Features/Visuals/ClickToSpectate")
-local streamer = require("Features/Visuals/StreamerMode")
-local gradePoint = require("Features/Visuals/GradePoint")
+	local ESPPlayer = require("Features/Visuals/ESPPlayer")
+	local ESPMob = require("Features/Visuals/ESPMob")
+	local ESPNpc = require("Features/Visuals/ESPNpc")
+	local spectate = require("Features/Visuals/ClickToSpectate")
+	local streamer = require("Features/Visuals/StreamerMode")
+	local gradePoint = require("Features/Visuals/GradePoint")
 
-local Visuals = {}
+	local Visuals = {}
 
-function Visuals.init()
-	LPH_NO_VIRTUALIZE(function()
-		local Tab = window:AddTab({ Title = "Visuals", Icon = "" })
-		Tab:AddButton({
-			Title = "Streamer Mode",
-			Description = "Hide your info when screensharing",
-			Callback = function()
-				streamer.on()
-			end,
-		})
+	function Visuals.init()
+		LPH_NO_VIRTUALIZE(function()
+			local Tab = window:AddTab({ Title = "Visuals", Icon = "" })
+			Tab:AddButton({
+				Title = "Streamer Mode",
+				Description = "Hide your info when screensharing",
+				Callback = function()
+					streamer.on()
+				end,
+			})
 
-		local spectatePlayerToggle =
-			Tab:AddToggle("spectatePlayerToggle", { Title = "Click Leaderboard to Spectate", Default = false })
+			local spectatePlayerToggle =
+				Tab:AddToggle("spectatePlayerToggle", { Title = "Click Leaderboard to Spectate", Default = false })
 
-		spectatePlayerToggle:OnChanged(function()
-			if Options.spectatePlayerToggle.Value then
-				spectate.on()
-			else
-				spectate.off()
-			end
-		end)
-
-		local espPlayerToggle = Tab:AddToggle("espPlayerToggle", { Title = "ESP Player", Default = false })
-
-		espPlayerToggle:OnChanged(function()
-			if Options.espPlayerToggle.Value then
-				local Values = {}
-				for value, State in next, Options.espPlayerSelection.Value do
-					table.insert(Values, value)
+			spectatePlayerToggle:OnChanged(function()
+				if Options.spectatePlayerToggle.Value then
+					spectate.on()
+				else
+					spectate.off()
 				end
-				ESPPlayer.on(Options.espPlayerColor.Value, Values)
-			else
+			end)
+
+			local espPlayerToggle = Tab:AddToggle("espPlayerToggle", { Title = "ESP Player", Default = false })
+
+			espPlayerToggle:OnChanged(function()
+				if Options.espPlayerToggle.Value then
+					local Values = {}
+					for value, State in next, Options.espPlayerSelection.Value do
+						table.insert(Values, value)
+					end
+					ESPPlayer.on(Options.espPlayerColor.Value, Values)
+				else
+					ESPPlayer.off()
+				end
+			end)
+
+			local espPlayerColor = Tab:AddColorpicker("espPlayerColor", {
+				Title = "Player Color",
+				Default = Color3.fromRGB(96, 205, 255),
+			})
+
+			local espPlayerSelection = Tab:AddDropdown("espPlayerSelection", {
+				Title = "ESP Types",
+				Values = {
+					"Username",
+					"Character Name",
+					"Ping",
+					"Health",
+					"Grade",
+					"Singularity",
+					"Distance",
+				},
+				Multi = true,
+				Default = { "Username", "Character Name", "Health" },
+			})
+
+			espPlayerSelection:OnChanged(function(Value)
 				ESPPlayer.off()
-			end
-		end)
 
-		local espPlayerColor = Tab:AddColorpicker("espPlayerColor", {
-			Title = "Player Color",
-			Default = Color3.fromRGB(96, 205, 255),
-		})
-
-		local espPlayerSelection = Tab:AddDropdown("espPlayerSelection", {
-			Title = "ESP Types",
-			Values = {
-				"Username",
-				"Character Name",
-				"Ping",
-				"Health",
-				"Grade",
-				"Singularity",
-				"Distance",
-			},
-			Multi = true,
-			Default = { "Username", "Character Name", "Health" },
-		})
-
-		espPlayerSelection:OnChanged(function(Value)
-			ESPPlayer.off()
-
-			local Values = {}
-			for value, State in next, Value do
-				table.insert(Values, value)
-			end
-			if Options.espPlayerToggle.Value then
-				ESPPlayer.on(Options.espPlayerColor.Value, Values)
-			end
-		end)
-
-		espPlayerColor:OnChanged(function()
-			ESPPlayer.off()
-			if Options.espPlayerToggle.Value then
 				local Values = {}
-				for value, State in next, Options.espPlayerSelection.Value do
+				for value, State in next, Value do
 					table.insert(Values, value)
 				end
-				ESPPlayer.on(Options.espPlayerColor.Value, Values) -- pass Values not raw .Value
-			end
-		end)
+				if Options.espPlayerToggle.Value then
+					ESPPlayer.on(Options.espPlayerColor.Value, Values)
+				end
+			end)
 
-		local espPlayerKeybind = Tab:AddKeybind("espPlayerKeybind", {
-			Title = "ESP Player Keybind",
-			Mode = "Toggle",
-			Default = "",
-			Callback = function(Value)
-				Options.espPlayerToggle:SetValue(Value)
-			end,
-		})
+			espPlayerColor:OnChanged(function()
+				ESPPlayer.off()
+				if Options.espPlayerToggle.Value then
+					local Values = {}
+					for value, State in next, Options.espPlayerSelection.Value do
+						table.insert(Values, value)
+					end
+					ESPPlayer.on(Options.espPlayerColor.Value, Values) -- pass Values not raw .Value
+				end
+			end)
 
-		local espMobToggle = Tab:AddToggle("espMobToggle", { Title = "ESP Mob", Default = false })
+			local espPlayerKeybind = Tab:AddKeybind("espPlayerKeybind", {
+				Title = "ESP Player Keybind",
+				Mode = "Toggle",
+				Default = "",
+				Callback = function(Value)
+					Options.espPlayerToggle:SetValue(Value)
+				end,
+			})
 
-		espMobToggle:OnChanged(function()
-			if Options.espMobToggle.Value then
-				ESPMob.on(Options.espMobColor.Value)
-			else
+			local espMobToggle = Tab:AddToggle("espMobToggle", { Title = "ESP Mob", Default = false })
+
+			espMobToggle:OnChanged(function()
+				if Options.espMobToggle.Value then
+					ESPMob.on(Options.espMobColor.Value)
+				else
+					ESPMob.off()
+				end
+			end)
+
+			local espMobColor = Tab:AddColorpicker("espMobColor", {
+				Title = "Mob Color",
+				Default = Color3.fromRGB(211, 49, 8),
+			})
+
+			espMobColor:OnChanged(function()
 				ESPMob.off()
-			end
-		end)
+				if Options.espMobToggle.Value then
+					ESPMob.on(Options.espMobColor.Value)
+				end
+			end)
 
-		local espMobColor = Tab:AddColorpicker("espMobColor", {
-			Title = "Mob Color",
-			Default = Color3.fromRGB(211, 49, 8),
-		})
+			local espMobKeybind = Tab:AddKeybind("espMobKeybind", {
+				Title = "ESP Mob Keybind",
+				Mode = "Toggle",
+				Default = "",
+				Callback = function(Value)
+					Options.espMobToggle:SetValue(Value)
+				end,
+			})
 
-		espMobColor:OnChanged(function()
-			ESPMob.off()
-			if Options.espMobToggle.Value then
-				ESPMob.on(Options.espMobColor.Value)
-			end
-		end)
+			local espNpcToggle = Tab:AddToggle("espNpcToggle", { Title = "ESP Npc", Default = false })
 
-		local espMobKeybind = Tab:AddKeybind("espMobKeybind", {
-			Title = "ESP Mob Keybind",
-			Mode = "Toggle",
-			Default = "",
-			Callback = function(Value)
-				Options.espMobToggle:SetValue(Value)
-			end,
-		})
+			espNpcToggle:OnChanged(function()
+				if Options.espNpcToggle.Value then
+					ESPNpc.on(Options.espNpcColor.Value)
+				else
+					ESPNpc.off()
+				end
+			end)
 
-		local espNpcToggle = Tab:AddToggle("espNpcToggle", { Title = "ESP Npc", Default = false })
+			local espNpcColor = Tab:AddColorpicker("espNpcColor", {
+				Title = "Npc Color",
+				Default = Color3.fromRGB(155, 6, 255),
+			})
 
-		espNpcToggle:OnChanged(function()
-			if Options.espNpcToggle.Value then
-				ESPNpc.on(Options.espNpcColor.Value)
-			else
-				ESPNpc.off()
-			end
-		end)
+			espNpcColor:OnChanged(function()
+				ESPMob.off()
+				if Options.espNpcToggle.Value then
+					ESPNpc.on(Options.espNpcColor.Value)
+				end
+			end)
 
-		local espNpcColor = Tab:AddColorpicker("espNpcColor", {
-			Title = "Npc Color",
-			Default = Color3.fromRGB(155, 6, 255),
-		})
+			local espNpcKeybind = Tab:AddKeybind("espNpcKeybind", {
+				Title = "ESP Npc Keybind",
+				Mode = "Toggle",
+				Default = "",
+				Callback = function(Value)
+					Options.espNpcToggle:SetValue(Value)
+				end,
+			})
 
-		espNpcColor:OnChanged(function()
-			ESPMob.off()
-			if Options.espNpcToggle.Value then
-				ESPNpc.on(Options.espNpcColor.Value)
-			end
-		end)
+			local gradePointToggle = Tab:AddToggle("gradePointToggle", { Title = "Grade Point UI", Default = false })
 
-		local espNpcKeybind = Tab:AddKeybind("espNpcKeybind", {
-			Title = "ESP Npc Keybind",
-			Mode = "Toggle",
-			Default = "",
-			Callback = function(Value)
-				Options.espNpcToggle:SetValue(Value)
-			end,
-		})
+			gradePointToggle:OnChanged(function()
+				if Options.gradePointToggle.Value then
+					gradePoint.on()
+				else
+					gradePoint.off()
+				end
+			end)
+		end)()
+	end
 
-		local gradePointToggle = Tab:AddToggle("gradePointToggle", { Title = "Grade Point UI", Default = false })
-
-		gradePointToggle:OnChanged(function()
-			if Options.gradePointToggle.Value then
-				gradePoint.on()
-			else
-				gradePoint.off()
-			end
-		end)
-	end)()
-end
-
-return Visuals
-
+	return Visuals
 end)
 __bundle_register("Features/Visuals/GradePoint", function(require, _LOADED, __bundle_register, __bundle_modules)
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
+	local Players = game:GetService("Players")
+	local RunService = game:GetService("RunService")
 
-local localPlayer = Players.LocalPlayer
-local playerGui = localPlayer.PlayerGui
+	local localPlayer = Players.LocalPlayer
+	local playerGui = localPlayer.PlayerGui
 
-local GradePoint = {}
-LPH_NO_VIRTUALIZE(function()
-	GradePoint.GradePointsReq = {
-		10000,
-		3000,
-		2000,
-		1900,
-		1500,
-		1300,
-		1200,
-		500,
-		250,
-	}
+	local GradePoint = {}
+	LPH_NO_VIRTUALIZE(function()
+		GradePoint.GradePointsReq = {
+			10000,
+			3000,
+			2000,
+			1900,
+			1500,
+			1300,
+			1200,
+			500,
+			250,
+		}
 
-	local connection
-	local mouseEnter, mouseLeave
+		local connection
+		local mouseEnter, mouseLeave
 
-	function GradePoint.on()
-		GradePoint.off()
-		connection = RunService.Heartbeat:Connect(function(deltaTime)
-			playerGui.Stats.UI.GradeSlider.Visible = true
-			playerGui.Stats.UI.GradeSlider.SliderClip.Size = UDim2.fromScale(
-				localPlayer:WaitForChild("Data"):WaitForChild("GradeUpPoints").Value
-					/ GradePoint.GradePointsReq[localPlayer.Data.Grade.Value],
-				1
-			)
-		end)
+		function GradePoint.on()
+			GradePoint.off()
+			connection = RunService.Heartbeat:Connect(function(deltaTime)
+				playerGui.Stats.UI.GradeSlider.Visible = true
+				playerGui.Stats.UI.GradeSlider.SliderClip.Size = UDim2.fromScale(
+					localPlayer:WaitForChild("Data"):WaitForChild("GradeUpPoints").Value
+						/ GradePoint.GradePointsReq[localPlayer.Data.Grade.Value],
+					1
+				)
+			end)
 
-		mouseEnter = localPlayer
-	end
-
-	function GradePoint.off()
-		playerGui.Stats.UI.GradeSlider.Visible = false
-		if connection then
-			connection:Disconnect()
+			mouseEnter = localPlayer
 		end
-	end
-end)()
-return GradePoint
 
-end)
-__bundle_register("Features/Visuals/StreamerMode", function(require, _LOADED, __bundle_register, __bundle_modules)
-local httpService = game:GetService("HttpService")
-
-local streamer = {}
-
-function streamer.on()
-	local function changeText(frame)
-		for _, text in frame:GetDescendants() do
-			if text.Name == "IconLabel" then
-				text.Text = ""
+		function GradePoint.off()
+			playerGui.Stats.UI.GradeSlider.Visible = false
+			if connection then
+				connection:Disconnect()
 			end
 		end
+	end)()
+	return GradePoint
+end)
+__bundle_register("Features/Visuals/StreamerMode", function(require, _LOADED, __bundle_register, __bundle_modules)
+	local httpService = game:GetService("HttpService")
+
+	local streamer = {}
+
+	function streamer.on()
+		local function changeText(frame)
+			for _, text in frame:GetDescendants() do
+				if text.Name == "IconLabel" then
+					text.Text = ""
+				end
+			end
+		end
+
+		local Players = game:GetService("Players")
+		local localPlayer = Players.LocalPlayer
+		local playerGui = localPlayer.PlayerGui
+		local Topbar = playerGui:WaitForChild("TopbarStandard")
+		local main = Topbar:WaitForChild("Holders"):WaitForChild("Left")
+
+		local playerName = main:WaitForChild("PlayerName")
+
+		local whiteList = { "PlayerName", "ServerAge", "ServerName", "ServerRegion" }
+
+		for _, frame in main:GetChildren() do
+			changeText(frame)
+		end
+		local frame = playerGui.Leaderboard.NameFrame.ScrollingFrame:FindFirstChild(localPlayer.Name)
+		if frame then
+			frame:Destroy()
+		end
+		game:GetService("Players").LocalPlayer.PlayerGui.OverlayGui.SubtitleFrame.Visible = false
 	end
 
+	function streamer.off() end
+
+	return streamer
+end)
+__bundle_register("Features/Visuals/ClickToSpectate", function(require, _LOADED, __bundle_register, __bundle_modules)
 	local Players = game:GetService("Players")
 	local localPlayer = Players.LocalPlayer
 	local playerGui = localPlayer.PlayerGui
-	local Topbar = playerGui:WaitForChild("TopbarStandard")
-	local main = Topbar:WaitForChild("Holders"):WaitForChild("Left")
 
-	local playerName = main:WaitForChild("PlayerName")
+	local leaderboardGui = playerGui:WaitForChild("Leaderboard")
+	local scroll = leaderboardGui:WaitForChild("NameFrame"):WaitForChild("ScrollingFrame")
 
-	local whiteList = { "PlayerName", "ServerAge", "ServerName", "ServerRegion" }
+	local clickToSpectate = {}
 
-	for _, frame in main:GetChildren() do
-		changeText(frame)
-	end
-	local frame = playerGui.Leaderboard.NameFrame.ScrollingFrame:FindFirstChild(localPlayer.Name)
-	if frame then
-		frame:Destroy()
-	end
-	game:GetService("Players").LocalPlayer.PlayerGui.OverlayGui.SubtitleFrame.Visible = false
-end
+	local currentPlayer
 
-function streamer.off() end
+	local trash = {}
 
-return streamer
-
-end)
-__bundle_register("Features/Visuals/ClickToSpectate", function(require, _LOADED, __bundle_register, __bundle_modules)
-local Players = game:GetService("Players")
-local localPlayer = Players.LocalPlayer
-local playerGui = localPlayer.PlayerGui
-
-local leaderboardGui = playerGui:WaitForChild("Leaderboard")
-local scroll = leaderboardGui:WaitForChild("NameFrame"):WaitForChild("ScrollingFrame")
-
-local clickToSpectate = {}
-
-local currentPlayer
-
-local trash = {}
-
-local function createButton(frame)
-	if not frame:FindFirstChild("PlayerName2") then
-		return
-	end
-
-	local textButton = Instance.new("TextButton")
-	textButton.Name = "Button"
-	textButton.Size = UDim2.fromScale(1, 1)
-	textButton.Position = frame.PlayerName2.Position
-	textButton.AnchorPoint = frame.PlayerName2.AnchorPoint
-	textButton.BackgroundTransparency = 1
-	textButton.Text = ""
-	textButton.Parent = frame
-
-	textButton.Activated:Connect(function()
-		if currentPlayer == Players[frame.PlayerName2.Text] then
-			currentPlayer = nil
-			workspace.CurrentCamera.CameraSubject = localPlayer.Character.Humanoid
+	local function createButton(frame)
+		if not frame:FindFirstChild("PlayerName2") then
 			return
 		end
-		workspace.CurrentCamera.CameraSubject = game.Players[frame.PlayerName2.Text].Character.Humanoid
-		currentPlayer = game.Players[frame.PlayerName2.Text]
-	end)
 
-	table.insert(trash, textButton)
-end
+		local textButton = Instance.new("TextButton")
+		textButton.Name = "Button"
+		textButton.Size = UDim2.fromScale(1, 1)
+		textButton.Position = frame.PlayerName2.Position
+		textButton.AnchorPoint = frame.PlayerName2.AnchorPoint
+		textButton.BackgroundTransparency = 1
+		textButton.Text = ""
+		textButton.Parent = frame
 
-function clickToSpectate.on()
-	for _, frame in scroll:GetChildren() do
-		if frame:IsA("Frame") then
-			createButton(frame)
-		end
-	end
-end
-
-function clickToSpectate.off()
-	for _, part in trash do
-		part:Destroy()
-	end
-end
-
-return clickToSpectate
-
-end)
-__bundle_register("Features/Visuals/ESPNpc", function(require, _LOADED, __bundle_register, __bundle_modules)
-local ESP = require("Features/Visuals/ESPMain")
-local Players = game:GetService("Players")
-local localPlayer = Players.LocalPlayer
-
-local ESPNpc = {}
-LPH_NO_VIRTUALIZE(function()
-	local function characterESP(mob, espTag, color)
-		local part = Instance.new("Part")
-		part.Size = Vector3.new(4, 5, 4)
-		part.Anchored = true
-		part.Transparency = 1
-		part.CanCollide = false
-		part.CFrame = mob:GetPivot()
-
-		local isAlive = function()
-			if mob and mob.Parent then
-				-- keep part following mob
-				part.CFrame = mob:GetPivot()
-				return true
+		textButton.Activated:Connect(function()
+			if currentPlayer == Players[frame.PlayerName2.Text] then
+				currentPlayer = nil
+				workspace.CurrentCamera.CameraSubject = localPlayer.Character.Humanoid
+				return
 			end
-			return false
-		end
-
-		ESP.ESPPart(part, {
-			tag = espTag,
-			isAlive = isAlive,
-			getLines = function(distance)
-				return {
-					mob.Name,
-					tostring(distance) .. "m",
-				}
-			end,
-			getColor = function()
-				return color
-			end,
-		})
-	end
-
-	local connection
-
-	function ESPNpc.on(color)
-		if connection then
-			connection:Disconnect()
-		end
-
-		connection = workspace.NPCS.ChildAdded:Connect(function(mob)
-			if mob:IsA("Model") then
-				characterESP(mob, "npc", color)
-			end
+			workspace.CurrentCamera.CameraSubject = game.Players[frame.PlayerName2.Text].Character.Humanoid
+			currentPlayer = game.Players[frame.PlayerName2.Text]
 		end)
 
-		for _, mob in workspace.NPCS:GetChildren() do
-			if mob:IsA("Model") then
-				characterESP(mob, "npc", color)
+		table.insert(trash, textButton)
+	end
+
+	function clickToSpectate.on()
+		for _, frame in scroll:GetChildren() do
+			if frame:IsA("Frame") then
+				createButton(frame)
 			end
 		end
 	end
 
-	function ESPNpc.off()
-		if connection then
-			connection:Disconnect()
+	function clickToSpectate.off()
+		for _, part in trash do
+			part:Destroy()
 		end
-		ESP.Disable("npc")
 	end
-end)()
-return ESPNpc
 
+	return clickToSpectate
+end)
+__bundle_register("Features/Visuals/ESPNpc", function(require, _LOADED, __bundle_register, __bundle_modules)
+	local ESP = require("Features/Visuals/ESPMain")
+	local Players = game:GetService("Players")
+	local localPlayer = Players.LocalPlayer
+
+	local ESPNpc = {}
+	LPH_NO_VIRTUALIZE(function()
+		local function characterESP(mob, espTag, color)
+			local part = Instance.new("Part")
+			part.Size = Vector3.new(4, 5, 4)
+			part.Anchored = true
+			part.Transparency = 1
+			part.CanCollide = false
+			part.CFrame = mob:GetPivot()
+
+			local isAlive = function()
+				if mob and mob.Parent then
+					-- keep part following mob
+					part.CFrame = mob:GetPivot()
+					return true
+				end
+				return false
+			end
+
+			ESP.ESPPart(part, {
+				tag = espTag,
+				isAlive = isAlive,
+				getLines = function(distance)
+					return {
+						mob.Name,
+						tostring(distance) .. "m",
+					}
+				end,
+				getColor = function()
+					return color
+				end,
+			})
+		end
+
+		local connection
+
+		function ESPNpc.on(color)
+			if connection then
+				connection:Disconnect()
+			end
+
+			connection = workspace.NPCS.ChildAdded:Connect(function(mob)
+				if mob:IsA("Model") then
+					characterESP(mob, "npc", color)
+				end
+			end)
+
+			for _, mob in workspace.NPCS:GetChildren() do
+				if mob:IsA("Model") then
+					characterESP(mob, "npc", color)
+				end
+			end
+		end
+
+		function ESPNpc.off()
+			if connection then
+				connection:Disconnect()
+			end
+			ESP.Disable("npc")
+		end
+	end)()
+	return ESPNpc
 end)
 __bundle_register("Features/Visuals/ESPMain", function(require, _LOADED, __bundle_register, __bundle_modules)
-local ESP = {}
+	local ESP = {}
 
-ESP.Settings = {
-	TeamCheck = true,
-	Red = Color3.fromRGB(255, 0, 0),
-	Green = Color3.fromRGB(0, 255, 0),
-	Color = Color3.fromRGB(255, 0, 0),
-	TeamColor = false,
-	TextSize = 15,
-	TextColor = Color3.fromRGB(255, 255, 255),
-	BoxTransparency = 0.25,
-	LineHeight = 17,
-}
+	ESP.Settings = {
+		TeamCheck = true,
+		Red = Color3.fromRGB(255, 0, 0),
+		Green = Color3.fromRGB(0, 255, 0),
+		Color = Color3.fromRGB(255, 0, 0),
+		TeamColor = false,
+		TextSize = 15,
+		TextColor = Color3.fromRGB(255, 255, 255),
+		BoxTransparency = 0.25,
+		LineHeight = 17,
+	}
 
--- tag -> { entries = { {part, quads, textLines, options, tick, sX, sY, sZ} } }
-local tagLoops = {}
+	-- tag -> { entries = { {part, quads, textLines, options, tick, sX, sY, sZ} } }
+	local tagLoops = {}
 
-local camera = workspace.CurrentCamera
-local RunService = game:GetService("RunService")
+	local camera = workspace.CurrentCamera
+	local RunService = game:GetService("RunService")
 
--- ─── Drawing helpers ────────────────────────────────────────────────────────
-local SafeColor = LPH_NO_VIRTUALIZE(function(c)
-	return typeof(c) == "Color3" and c or ESP.Settings.Color
-end)
+	-- ─── Drawing helpers ────────────────────────────────────────────────────────
+	local SafeColor = LPH_NO_VIRTUALIZE(function(c)
+		return typeof(c) == "Color3" and c or ESP.Settings.Color
+	end)
 
-local NewQuad = LPH_NO_VIRTUALIZE(function(color)
-	local q = Drawing.new("Quad")
-	q.Visible = false
-	q.PointA = Vector2.zero
-	q.PointB = Vector2.zero
-	q.PointC = Vector2.zero
-	q.PointD = Vector2.zero
-	q.Color = SafeColor(color)
-	q.Filled = true
-	q.Thickness = 1
-	q.Transparency = ESP.Settings.BoxTransparency
-	return q
-end)
+	local NewQuad = LPH_NO_VIRTUALIZE(function(color)
+		local q = Drawing.new("Quad")
+		q.Visible = false
+		q.PointA = Vector2.zero
+		q.PointB = Vector2.zero
+		q.PointC = Vector2.zero
+		q.PointD = Vector2.zero
+		q.Color = SafeColor(color)
+		q.Filled = true
+		q.Thickness = 1
+		q.Transparency = ESP.Settings.BoxTransparency
+		return q
+	end)
 
-local NewTextLine = LPH_NO_VIRTUALIZE(function(color)
-	local t = Drawing.new("Text")
-	t.Visible = false
-	t.Size = ESP.Settings.TextSize
-	t.Color = SafeColor(color)
-	t.Outline = true
-	t.OutlineColor = Color3.fromRGB(0, 0, 0)
-	t.Center = true
-	return t
-end)
+	local NewTextLine = LPH_NO_VIRTUALIZE(function(color)
+		local t = Drawing.new("Text")
+		t.Visible = false
+		t.Size = ESP.Settings.TextSize
+		t.Color = SafeColor(color)
+		t.Outline = true
+		t.OutlineColor = Color3.fromRGB(0, 0, 0)
+		t.Center = true
+		return t
+	end)
 
-local RemoveDrawings = LPH_NO_VIRTUALIZE(function(drawings)
-	for _, d in pairs(drawings) do
-		d:Remove()
-	end
-end)
-
-local SetQuadsVisible = LPH_NO_VIRTUALIZE(function(quads, v)
-	quads.quad1.Visible = v
-	quads.quad2.Visible = v
-	quads.quad3.Visible = v
-	quads.quad4.Visible = v
-	quads.quad5.Visible = v
-	quads.quad6.Visible = v
-end)
-
-local Colorize = LPH_NO_VIRTUALIZE(function(quads, c)
-	quads.quad1.Color = c
-	quads.quad2.Color = c
-	quads.quad3.Color = c
-	quads.quad4.Color = c
-	quads.quad5.Color = c
-	quads.quad6.Color = c
-end)
-
--- ─── Quad geometry ──────────────────────────────────────────────────────────
-local vp = LPH_NO_VIRTUALIZE(function(v)
-	local p = camera:WorldToViewportPoint(v)
-	return Vector2.new(p.X, p.Y)
-end)
-
-local UpdateQuads = LPH_NO_VIRTUALIZE(function(quads, cf, sX, sY, sZ)
-	local p = cf.Position
-	local rX = cf.RightVector * sX
-	local rY = cf.UpVector * sY
-	local rZ = cf.LookVector * sZ
-
-	-- 8 corners, built from vectors (no CFrame allocation)
-	local Top1 = vp(p - rX + rY - rZ)
-	local Top2 = vp(p - rX + rY + rZ)
-	local Top3 = vp(p + rX + rY + rZ)
-	local Top4 = vp(p + rX + rY - rZ)
-	local Bot1 = vp(p - rX - rY - rZ)
-	local Bot2 = vp(p - rX - rY + rZ)
-	local Bot3 = vp(p + rX - rY + rZ)
-	local Bot4 = vp(p + rX - rY - rZ)
-
-	local q1 = quads.quad1
-	q1.PointA = Top1
-	q1.PointB = Top2
-	q1.PointC = Top3
-	q1.PointD = Top4
-
-	local q2 = quads.quad2
-	q2.PointA = Bot1
-	q2.PointB = Bot2
-	q2.PointC = Bot3
-	q2.PointD = Bot4
-
-	local q3 = quads.quad3
-	q3.PointA = Top1
-	q3.PointB = Top2
-	q3.PointC = Bot2
-	q3.PointD = Bot1
-
-	local q4 = quads.quad4
-	q4.PointA = Top2
-	q4.PointB = Top3
-	q4.PointC = Bot3
-	q4.PointD = Bot2
-
-	local q5 = quads.quad5
-	q5.PointA = Top3
-	q5.PointB = Top4
-	q5.PointC = Bot4
-	q5.PointD = Bot3
-
-	local q6 = quads.quad6
-	q6.PointA = Top4
-	q6.PointB = Top1
-	q6.PointC = Bot1
-	q6.PointD = Bot4
-end)
--- ─── Internal per-entry update ──────────────────────────────────────────────
-local UpdateEntry = LPH_NO_VIRTUALIZE(function(entry, camCF, camPos)
-	local part = entry.part
-
-	-- check alive
-	if not entry.isAlive() then
-		SetQuadsVisible(entry.quads, false)
-		for _, l in ipairs(entry.textLines) do
-			l.Visible = false
+	local RemoveDrawings = LPH_NO_VIRTUALIZE(function(drawings)
+		for _, d in pairs(drawings) do
+			d:Remove()
 		end
-		entry.dead = true
-		return
-	end
+	end)
 
-	local partPos = part.Position
-	local screenPos, onScreen = camera:WorldToViewportPoint(partPos)
+	local SetQuadsVisible = LPH_NO_VIRTUALIZE(function(quads, v)
+		quads.quad1.Visible = v
+		quads.quad2.Visible = v
+		quads.quad3.Visible = v
+		quads.quad4.Visible = v
+		quads.quad5.Visible = v
+		quads.quad6.Visible = v
+	end)
 
-	if not onScreen then
-		SetQuadsVisible(entry.quads, false)
-		for _, l in ipairs(entry.textLines) do
-			l.Visible = false
-		end
-		return
-	end
+	local Colorize = LPH_NO_VIRTUALIZE(function(quads, c)
+		quads.quad1.Color = c
+		quads.quad2.Color = c
+		quads.quad3.Color = c
+		quads.quad4.Color = c
+		quads.quad5.Color = c
+		quads.quad6.Color = c
+	end)
 
-	-- distance-based throttle
-	local dist = (camPos - partPos).Magnitude
-	local rate = dist > 100 and 4 or dist > 50 and 2 or 1
+	-- ─── Quad geometry ──────────────────────────────────────────────────────────
+	local vp = LPH_NO_VIRTUALIZE(function(v)
+		local p = camera:WorldToViewportPoint(v)
+		return Vector2.new(p.X, p.Y)
+	end)
 
-	entry.tick = entry.tick + 1
-	if entry.tick % rate ~= 0 then
-		-- still make quads visible between throttled frames
-		SetQuadsVisible(entry.quads, true)
-		return
-	end
+	local UpdateQuads = LPH_NO_VIRTUALIZE(function(quads, cf, sX, sY, sZ)
+		local p = cf.Position
+		local rX = cf.RightVector * sX
+		local rY = cf.UpVector * sY
+		local rZ = cf.LookVector * sZ
 
-	-- update box
-	UpdateQuads(entry.quads, part.CFrame, entry.sX, entry.sY, entry.sZ)
-	Colorize(entry.quads, SafeColor(entry.getColor()))
-	SetQuadsVisible(entry.quads, true)
+		-- 8 corners, built from vectors (no CFrame allocation)
+		local Top1 = vp(p - rX + rY - rZ)
+		local Top2 = vp(p - rX + rY + rZ)
+		local Top3 = vp(p + rX + rY + rZ)
+		local Top4 = vp(p + rX + rY - rZ)
+		local Bot1 = vp(p - rX - rY - rZ)
+		local Bot2 = vp(p - rX - rY + rZ)
+		local Bot3 = vp(p + rX - rY + rZ)
+		local Bot4 = vp(p + rX - rY - rZ)
 
-	-- update text labels
-	if entry.getLines then
-		local lines = entry.getLines(math.floor(dist))
-		if type(lines) == "table" and #lines > 0 then
-			-- reuse cached top-position: screenPos.Y - sY projected
-			local topScreen = camera:WorldToViewportPoint(partPos + part.CFrame.UpVector * (entry.sY + 0.3))
-			local topX = topScreen.X
-			local startY = topScreen.Y - #lines * ESP.Settings.LineHeight - 4
+		local q1 = quads.quad1
+		q1.PointA = Top1
+		q1.PointB = Top2
+		q1.PointC = Top3
+		q1.PointD = Top4
 
-			local textLines = entry.textLines
-			for i, lineText in ipairs(lines) do
-				local line = textLines[i]
-				if not line then
-					line = NewTextLine(SafeColor(entry.getColor()))
-					textLines[i] = line
-				end
-				line.Text = tostring(lineText)
-				line.Position = Vector2.new(topX, startY + (i - 1) * ESP.Settings.LineHeight)
-				line.Visible = true
-			end
+		local q2 = quads.quad2
+		q2.PointA = Bot1
+		q2.PointB = Bot2
+		q2.PointC = Bot3
+		q2.PointD = Bot4
 
-			-- hide leftover lines
-			for i = #lines + 1, #textLines do
-				textLines[i].Visible = false
-			end
-		else
+		local q3 = quads.quad3
+		q3.PointA = Top1
+		q3.PointB = Top2
+		q3.PointC = Bot2
+		q3.PointD = Bot1
+
+		local q4 = quads.quad4
+		q4.PointA = Top2
+		q4.PointB = Top3
+		q4.PointC = Bot3
+		q4.PointD = Bot2
+
+		local q5 = quads.quad5
+		q5.PointA = Top3
+		q5.PointB = Top4
+		q5.PointC = Bot4
+		q5.PointD = Bot3
+
+		local q6 = quads.quad6
+		q6.PointA = Top4
+		q6.PointB = Top1
+		q6.PointC = Bot1
+		q6.PointD = Bot4
+	end)
+	-- ─── Internal per-entry update ��─────────────────────────────────────────────
+	local UpdateEntry = LPH_NO_VIRTUALIZE(function(entry, camCF, camPos)
+		local part = entry.part
+
+		-- check alive
+		if not entry.isAlive() then
+			SetQuadsVisible(entry.quads, false)
 			for _, l in ipairs(entry.textLines) do
 				l.Visible = false
 			end
-		end
-	end
-end)
--- ─── Tag loop management ────────────────────────────────────────────────────
-local EnsureTagLoop = LPH_NO_VIRTUALIZE(function(tag)
-	if tagLoops[tag] then
-		return
-	end
-
-	local loop = { entries = {} }
-	tagLoops[tag] = loop
-
-	local bindName = "ESP_Tag_" .. tag
-
-	RunService:BindToRenderStep(bindName, Enum.RenderPriority.Camera.Value + 1, function()
-		local entries = loop.entries
-		if #entries == 0 then
+			entry.dead = true
 			return
 		end
 
-		local camCF = camera.CFrame
-		local camPos = camCF.Position
+		local partPos = part.Position
+		local screenPos, onScreen = camera:WorldToViewportPoint(partPos)
 
-		local i = 1
-		while i <= #entries do
-			local entry = entries[i]
-			UpdateEntry(entry, camCF, camPos)
+		if not onScreen then
+			SetQuadsVisible(entry.quads, false)
+			for _, l in ipairs(entry.textLines) do
+				l.Visible = false
+			end
+			return
+		end
 
-			if entry.dead then
-				-- clean up and remove from list
-				RemoveDrawings(entry.quads)
-				for _, l in ipairs(entry.textLines) do
-					l:Remove()
+		-- distance-based throttle
+		local dist = (camPos - partPos).Magnitude
+		local rate = dist > 100 and 4 or dist > 50 and 2 or 1
+
+		entry.tick = entry.tick + 1
+		if entry.tick % rate ~= 0 then
+			-- still make quads visible between throttled frames
+			SetQuadsVisible(entry.quads, true)
+			return
+		end
+
+		-- update box
+		UpdateQuads(entry.quads, part.CFrame, entry.sX, entry.sY, entry.sZ)
+		Colorize(entry.quads, SafeColor(entry.getColor()))
+		SetQuadsVisible(entry.quads, true)
+
+		-- update text labels
+		if entry.getLines then
+			local lines = entry.getLines(math.floor(dist))
+			if type(lines) == "table" and #lines > 0 then
+				-- reuse cached top-position: screenPos.Y - sY projected
+				local topScreen = camera:WorldToViewportPoint(partPos + part.CFrame.UpVector * (entry.sY + 0.3))
+				local topX = topScreen.X
+				local startY = topScreen.Y - #lines * ESP.Settings.LineHeight - 4
+
+				local textLines = entry.textLines
+				for i, lineText in ipairs(lines) do
+					local line = textLines[i]
+					if not line then
+						line = NewTextLine(SafeColor(entry.getColor()))
+						textLines[i] = line
+					end
+					line.Text = tostring(lineText)
+					line.Position = Vector2.new(topX, startY + (i - 1) * ESP.Settings.LineHeight)
+					line.Visible = true
 				end
-				table.remove(entries, i)
-				-- don't increment i
+
+				-- hide leftover lines
+				for i = #lines + 1, #textLines do
+					textLines[i].Visible = false
+				end
 			else
-				i = i + 1
+				for _, l in ipairs(entry.textLines) do
+					l.Visible = false
+				end
 			end
 		end
 	end)
+	-- ─── Tag loop management ────────────────────────────────────────────────────
+	local EnsureTagLoop = LPH_NO_VIRTUALIZE(function(tag)
+		if tagLoops[tag] then
+			return
+		end
 
-	loop.bindName = bindName
-end)
+		local loop = { entries = {} }
+		tagLoops[tag] = loop
 
--- ─── Public API ─────────────────────────────────────────────────────────────
+		local bindName = "ESP_Tag_" .. tag
 
---[[
+		RunService:BindToRenderStep(bindName, Enum.RenderPriority.Camera.Value + 1, function()
+			local entries = loop.entries
+			if #entries == 0 then
+				return
+			end
+
+			local camCF = camera.CFrame
+			local camPos = camCF.Position
+
+			local i = 1
+			while i <= #entries do
+				local entry = entries[i]
+				UpdateEntry(entry, camCF, camPos)
+
+				if entry.dead then
+					-- clean up and remove from list
+					RemoveDrawings(entry.quads)
+					for _, l in ipairs(entry.textLines) do
+						l:Remove()
+					end
+					table.remove(entries, i)
+				-- don't increment i
+				else
+					i = i + 1
+				end
+			end
+		end)
+
+		loop.bindName = bindName
+	end)
+
+	-- ─── Public API ─────────────────────────────────────────────────────────────
+
+	--[[
 	ESP.ESPPart(part, options)
 
 	options = {
@@ -4814,1337 +4839,1259 @@ end)
 	}
 ]]
 
-ESP.ESPPart = LPH_NO_VIRTUALIZE(function(part, options)
-	options = options or {}
+	ESP.ESPPart = LPH_NO_VIRTUALIZE(function(part, options)
+		options = options or {}
 
-	local tag = options.tag or "default"
-	local getColor = options.getColor or function()
-		return ESP.Settings.Color
-	end
-	local isAlive = options.isAlive or function()
-		return part and part.Parent ~= nil
-	end
+		local tag = options.tag or "default"
+		local getColor = options.getColor or function()
+			return ESP.Settings.Color
+		end
+		local isAlive = options.isAlive or function()
+			return part and part.Parent ~= nil
+		end
 
-	local color = SafeColor(getColor())
+		local color = SafeColor(getColor())
 
-	local quads = {
-		quad1 = NewQuad(color),
-		quad2 = NewQuad(color),
-		quad3 = NewQuad(color),
-		quad4 = NewQuad(color),
-		quad5 = NewQuad(color),
-		quad6 = NewQuad(color),
-	}
+		local quads = {
+			quad1 = NewQuad(color),
+			quad2 = NewQuad(color),
+			quad3 = NewQuad(color),
+			quad4 = NewQuad(color),
+			quad5 = NewQuad(color),
+			quad6 = NewQuad(color),
+		}
 
-	local entry = {
-		part = part,
-		quads = quads,
-		textLines = {},
-		getColor = getColor,
-		getLines = options.getLines,
-		isAlive = isAlive,
-		tick = 0,
-		dead = false,
-		sX = part.Size.X / 2,
-		sY = part.Size.Y / 2,
-		sZ = part.Size.Z / 2,
-	}
+		local entry = {
+			part = part,
+			quads = quads,
+			textLines = {},
+			getColor = getColor,
+			getLines = options.getLines,
+			isAlive = isAlive,
+			tick = 0,
+			dead = false,
+			sX = part.Size.X / 2,
+			sY = part.Size.Y / 2,
+			sZ = part.Size.Z / 2,
+		}
 
-	EnsureTagLoop(tag)
-	table.insert(tagLoops[tag].entries, entry)
-end)
-
--- Remove all ESP for a given tag
-ESP.Disable = LPH_NO_VIRTUALIZE(function(tag)
-	local loop = tagLoops[tag]
-	if not loop then
-		return
-	end
-
-	pcall(function()
-		RunService:UnbindFromRenderStep(loop.bindName)
+		EnsureTagLoop(tag)
+		table.insert(tagLoops[tag].entries, entry)
 	end)
 
-	for _, entry in ipairs(loop.entries) do
+	-- Remove all ESP for a given tag
+	ESP.Disable = LPH_NO_VIRTUALIZE(function(tag)
+		local loop = tagLoops[tag]
+		if not loop then
+			return
+		end
+
 		pcall(function()
-			RemoveDrawings(entry.quads)
+			RunService:UnbindFromRenderStep(loop.bindName)
 		end)
-		pcall(function()
-			for _, l in ipairs(entry.textLines) do
-				l:Remove()
-			end
-		end)
-	end
 
-	tagLoops[tag] = nil
-end)
+		for _, entry in ipairs(loop.entries) do
+			pcall(function()
+				RemoveDrawings(entry.quads)
+			end)
+			pcall(function()
+				for _, l in ipairs(entry.textLines) do
+					l:Remove()
+				end
+			end)
+		end
 
-ESP.DisableAll = LPH_NO_VIRTUALIZE(function()
-	for tag in pairs(tagLoops) do
-		ESP.Disable(tag)
-	end
-end)
+		tagLoops[tag] = nil
+	end)
 
--- True if tag has at least one live entry
+	ESP.DisableAll = LPH_NO_VIRTUALIZE(function()
+		for tag in pairs(tagLoops) do
+			ESP.Disable(tag)
+		end
+	end)
 
-ESP.IsEnabled = LPH_NO_VIRTUALIZE(function()
-	return tagLoops[tag] ~= nil and #tagLoops[tag].entries > 0
-end)
+	-- True if tag has at least one live entry
 
-return ESP
+	ESP.IsEnabled = LPH_NO_VIRTUALIZE(function()
+		return tagLoops[tag] ~= nil and #tagLoops[tag].entries > 0
+	end)
 
+	return ESP
 end)
 __bundle_register("Features/Visuals/ESPMob", function(require, _LOADED, __bundle_register, __bundle_modules)
-local ESP = require("Features/Visuals/ESPMain")
-local Players = game:GetService("Players")
-local localPlayer = Players.LocalPlayer
+	local ESP = require("Features/Visuals/ESPMain")
+	local Players = game:GetService("Players")
+	local localPlayer = Players.LocalPlayer
 
-local ESPMob = {}
-LPH_NO_VIRTUALIZE(function()
-	local R6_PARTS = { "HumanoidRootPart" }
+	local ESPMob = {}
+	LPH_NO_VIRTUALIZE(function()
+		local R6_PARTS = { "HumanoidRootPart" }
 
-	local function characterESP(character, espTag, color)
-		local humanoid = character:FindFirstChildWhichIsA("Humanoid")
-		if not humanoid then
-			return
-		end
+		local function characterESP(character, espTag, color)
+			local humanoid = character:FindFirstChildWhichIsA("Humanoid")
+			if not humanoid then
+				return
+			end
 
-		local isAlive = function()
-			return character and character.Parent and humanoid and humanoid.Parent and humanoid.Health > 0
-		end
+			local isAlive = function()
+				return character and character.Parent and humanoid and humanoid.Parent and humanoid.Health > 0
+			end
 
-		for _, partName in ipairs(R6_PARTS) do
-			local part = character:FindFirstChild(partName)
-			if part then
-				ESP.ESPPart(part, {
-					tag = espTag,
-					isAlive = isAlive,
-					getLines = partName == "HumanoidRootPart" and function(distance)
-						local username = character.Name
-						local health = "["
-							.. tostring(math.floor(character.Humanoid.Health))
-							.. "/"
-							.. tostring(character.Humanoid.MaxHealth)
-							.. "]"
-						return {
-							username,
-							health,
-							tostring(distance) .. "m",
-						}
-					end,
-					getColor = function()
-						return color
-					end,
-				})
+			for _, partName in ipairs(R6_PARTS) do
+				local part = character:FindFirstChild(partName)
+				if part then
+					ESP.ESPPart(part, {
+						tag = espTag,
+						isAlive = isAlive,
+						getLines = partName == "HumanoidRootPart" and function(distance)
+							local username = character.Name
+							local health = "["
+								.. tostring(math.floor(character.Humanoid.Health))
+								.. "/"
+								.. tostring(character.Humanoid.MaxHealth)
+								.. "]"
+							return {
+								username,
+								health,
+								tostring(distance) .. "m",
+							}
+						end,
+						getColor = function()
+							return color
+						end,
+					})
+				end
 			end
 		end
-	end
 
-	local connection
+		local connection
 
-	function ESPMob.on(color)
-		if connection then
-			connection:Disconnect()
-		end
-
-		connection = workspace.Alive.ChildAdded:Connect(function(mob)
-			if not Players:GetPlayerFromCharacter(mob) then
-				characterESP(mob, "mob", color)
+		function ESPMob.on(color)
+			if connection then
+				connection:Disconnect()
 			end
-		end)
 
-		for _, mob in workspace.Alive:GetChildren() do
-			if not Players:GetPlayerFromCharacter(mob) then
-				characterESP(mob, "mob", color)
+			connection = workspace.Alive.ChildAdded:Connect(function(mob)
+				if not Players:GetPlayerFromCharacter(mob) then
+					characterESP(mob, "mob", color)
+				end
+			end)
+
+			for _, mob in workspace.Alive:GetChildren() do
+				if not Players:GetPlayerFromCharacter(mob) then
+					characterESP(mob, "mob", color)
+				end
 			end
 		end
-	end
 
-	function ESPMob.off()
-		if connection then
-			connection:Disconnect()
+		function ESPMob.off()
+			if connection then
+				connection:Disconnect()
+			end
+			ESP.Disable("mob")
 		end
-		ESP.Disable("mob")
-	end
-end)()
-return ESPMob
-
+	end)()
+	return ESPMob
 end)
 __bundle_register("Features/Visuals/ESPPlayer", function(require, _LOADED, __bundle_register, __bundle_modules)
-local ESP = require("Features/Visuals/ESPMain")
-local Players = game:GetService("Players")
-local localPlayer = Players.LocalPlayer
+	local ESP = require("Features/Visuals/ESPMain")
+	local Players = game:GetService("Players")
+	local localPlayer = Players.LocalPlayer
 
-local ESPPlayer = {}
-LPH_NO_VIRTUALIZE(function()
-	local R6_PARTS = { "HumanoidRootPart" }
-	local function characterESP(character, espTag, color, espSelection)
-		local humanoid = character:FindFirstChildWhichIsA("Humanoid")
-		if not humanoid then
-			return
-		end
-
-		local isAlive = function()
-			return character and character.Parent and humanoid and humanoid.Parent and humanoid.Health > 0
-		end
-
-		for _, partName in ipairs(R6_PARTS) do
-			local part = character:FindFirstChild(partName)
-			if part then
-				ESP.ESPPart(part, {
-					tag = espTag,
-					isAlive = isAlive,
-					getLines = partName == "HumanoidRootPart" and function(distance)
-						local player = Players:GetPlayerFromCharacter(character)
-						local playerUsername = player.Name
-						local displayName = "[" .. tostring(player.Data.DisplayName.Value) .. "]"
-						local ping = "[" .. tostring(player:GetAttribute("AveragePing")) .. "ms" .. "]"
-						local health = "["
-							.. tostring(math.floor(player.Character.Humanoid.Health))
-							.. "/"
-							.. tostring(player.Character.Humanoid.MaxHealth)
-							.. "]"
-
-						local grade = "[Grade " .. tostring(player.Data.Grade.Value) .. "]"
-						local singu = " [" .. player.Data.Singularity.Value .. "]"
-						if player.Data.Singularity.Value == "" then
-							singu = ""
-						end
-
-						local finalizedTable = {}
-
-						local bothUser = false
-						if table.find(espSelection, "Username") and table.find(espSelection, "Character Name") then
-							table.insert(finalizedTable, playerUsername .. " " .. displayName)
-							bothUser = true
-						end
-
-						if table.find(espSelection, "Username") then
-							if not bothUser then
-								table.insert(finalizedTable, playerUsername)
-							end
-						end
-
-						if table.find(espSelection, "Character Name") then
-							if not bothUser then
-								table.insert(finalizedTable, displayName)
-							end
-						end
-						local bothPingAndH = false
-
-						if table.find(espSelection, "Ping") and table.find(espSelection, "Health") then
-							bothPingAndH = true
-							table.insert(finalizedTable, ping .. " " .. health)
-						end
-
-						if table.find(espSelection, "Ping") then
-							if not bothPingAndH then
-								table.insert(finalizedTable, ping)
-							end
-						end
-
-						if table.find(espSelection, "Health") then
-							if not bothPingAndH then
-								table.insert(finalizedTable, health)
-							end
-						end
-						local bothSinAndGrade = false
-
-						if table.find(espSelection, "Singularity") and table.find(espSelection, "Grade") then
-							bothSinAndGrade = true
-							table.insert(finalizedTable, grade .. singu)
-						end
-
-						if table.find(espSelection, "Grade") then
-							if not bothSinAndGrade then
-								table.insert(finalizedTable, grade)
-							end
-						end
-
-						if table.find(espSelection, "Singularity") then
-							if not bothSinAndGrade then
-								table.insert(finalizedTable, grade)
-							end
-						end
-
-						if table.find(espSelection, "Distance") then
-							table.insert(finalizedTable, tostring(distance) .. "m")
-						end
-						return finalizedTable
-					end,
-					getColor = function()
-						return color
-					end,
-				})
+	local ESPPlayer = {}
+	LPH_NO_VIRTUALIZE(function()
+		local R6_PARTS = { "HumanoidRootPart" }
+		local function characterESP(character, espTag, color, espSelection)
+			local humanoid = character:FindFirstChildWhichIsA("Humanoid")
+			if not humanoid then
+				return
 			end
-		end
-	end
 
-	local connection
+			local isAlive = function()
+				return character and character.Parent and humanoid and humanoid.Parent and humanoid.Health > 0
+			end
 
-	function ESPPlayer.on(color, espSelection)
-		if connection then
-			connection:Disconnect()
-			connection = nil
-		end
+			for _, partName in ipairs(R6_PARTS) do
+				local part = character:FindFirstChild(partName)
+				if part then
+					ESP.ESPPart(part, {
+						tag = espTag,
+						isAlive = isAlive,
+						getLines = partName == "HumanoidRootPart"
+							and function(distance)
+								local player = Players:GetPlayerFromCharacter(character)
+								local playerUsername = player.Name
+								local displayName = "[" .. tostring(player.Data.DisplayName.Value) .. "]"
+								local ping = "[" .. tostring(player:GetAttribute("AveragePing")) .. "ms" .. "]"
+								local health = "["
+									.. tostring(math.floor(player.Character.Humanoid.Health))
+									.. "/"
+									.. tostring(player.Character.Humanoid.MaxHealth)
+									.. "]"
 
-		for _, player in Players:GetPlayers() do
-			if player ~= localPlayer and player.Character then
-				characterESP(player.Character, "player", color, espSelection)
+								local grade = "[Grade " .. tostring(player.Data.Grade.Value) .. "]"
+								local singu = " [" .. player.Data.Singularity.Value .. "]"
+								if player.Data.Singularity.Value == "" then
+									singu = ""
+								end
+
+								local finalizedTable = {}
+
+								local bothUser = false
+								if
+									table.find(espSelection, "Username") and table.find(espSelection, "Character Name")
+								then
+									table.insert(finalizedTable, playerUsername .. " " .. displayName)
+									bothUser = true
+								end
+
+								if table.find(espSelection, "Username") then
+									if not bothUser then
+										table.insert(finalizedTable, playerUsername)
+									end
+								end
+
+								if table.find(espSelection, "Character Name") then
+									if not bothUser then
+										table.insert(finalizedTable, displayName)
+									end
+								end
+								local bothPingAndH = false
+
+								if table.find(espSelection, "Ping") and table.find(espSelection, "Health") then
+									bothPingAndH = true
+									table.insert(finalizedTable, ping .. " " .. health)
+								end
+
+								if table.find(espSelection, "Ping") then
+									if not bothPingAndH then
+										table.insert(finalizedTable, ping)
+									end
+								end
+
+								if table.find(espSelection, "Health") then
+									if not bothPingAndH then
+										table.insert(finalizedTable, health)
+									end
+								end
+								local bothSinAndGrade = false
+
+								if table.find(espSelection, "Singularity") and table.find(espSelection, "Grade") then
+									bothSinAndGrade = true
+									table.insert(finalizedTable, grade .. singu)
+								end
+
+								if table.find(espSelection, "Grade") then
+									if not bothSinAndGrade then
+										table.insert(finalizedTable, grade)
+									end
+								end
+
+								if table.find(espSelection, "Singularity") then
+									if not bothSinAndGrade then
+										table.insert(finalizedTable, grade)
+									end
+								end
+
+								if table.find(espSelection, "Distance") then
+									table.insert(finalizedTable, tostring(distance) .. "m")
+								end
+								return finalizedTable
+							end,
+						getColor = function()
+							return color
+						end,
+					})
+				end
 			end
 		end
 
-		connection = workspace.Alive.ChildAdded:Connect(function(character)
-			local player = Players:GetPlayerFromCharacter(character)
-			if player and player ~= localPlayer and player.Character then
-				characterESP(player.Character, "player", color, espSelection)
+		local connection
+
+		function ESPPlayer.on(color, espSelection)
+			if connection then
+				connection:Disconnect()
+				connection = nil
 			end
-		end)
-	end
 
-	function ESPPlayer.off()
-		ESP.Disable("player")
-		if connection then
-			connection:Disconnect()
-			connection = nil
+			for _, player in Players:GetPlayers() do
+				if player ~= localPlayer and player.Character then
+					characterESP(player.Character, "player", color, espSelection)
+				end
+			end
+
+			connection = workspace.Alive.ChildAdded:Connect(function(character)
+				local player = Players:GetPlayerFromCharacter(character)
+				if player and player ~= localPlayer and player.Character then
+					characterESP(player.Character, "player", color, espSelection)
+				end
+			end)
 		end
-	end
-end)()
 
-return ESPPlayer
+		function ESPPlayer.off()
+			ESP.Disable("player")
+			if connection then
+				connection:Disconnect()
+				connection = nil
+			end
+		end
+	end)()
 
+	return ESPPlayer
 end)
 __bundle_register("Menu/Character", function(require, _LOADED, __bundle_register, __bundle_modules)
-local walkSpeed = require("Features/Character/WalkSpeed")
-local infJump = require("Features/Character/Infjump")
-local noclip = require("Features/Character/Noclip")
-local noRagdoll = require("Features/Character/RagdollCancel")
-local fly = require("Features/Character/Fly")
-local hitFloat = require("Features/Character/hitFloat")
-local bringBackHitRotate = require("Features/Character/BringBackHitRotate")
-local noCooldown = require("Features/Character/noCooldown")
-local Character = {}
+	local walkSpeed = require("Features/Character/WalkSpeed")
+	local infJump = require("Features/Character/Infjump")
+	local noclip = require("Features/Character/Noclip")
+	local noRagdoll = require("Features/Character/RagdollCancel")
+	local fly = require("Features/Character/Fly")
+	local hitFloat = require("Features/Character/hitFloat")
+	local bringBackHitRotate = require("Features/Character/BringBackHitRotate")
+	local noCooldown = require("Features/Character/noCooldown")
+	local Character = {}
 
-function Character.init()
-	LPH_NO_VIRTUALIZE(function()
-		local Tab = window:AddTab({ Title = "Character", Icon = "" })
-		local flyToggle = Tab:AddToggle("Fly", { Title = "Fly", Default = false })
+	function Character.init()
+		LPH_NO_VIRTUALIZE(function()
+			local Tab = window:AddTab({ Title = "Character", Icon = "" })
+			local flyToggle = Tab:AddToggle("Fly", { Title = "Fly", Default = false })
 
-		flyToggle:OnChanged(function()
-			if Options.Fly.Value then
-				fly.on(Options.flySpeedSlider.Value)
-			else
-				fly.off()
-			end
-		end)
-
-		local flySpeedSlider = Tab:AddSlider("flySpeedSlider", {
-			Title = "Fly Speed",
-			Description = "Increase your fly speed",
-			Default = 1,
-			Min = 50,
-			Max = 200,
-			Rounding = 1,
-			Callback = function(Value)
-				fly.off()
+			flyToggle:OnChanged(function()
 				if Options.Fly.Value then
-					fly.on(Value)
+					fly.on(Options.flySpeedSlider.Value)
+				else
+					fly.off()
 				end
-			end,
-		})
+			end)
 
-		local WalkSpeedmultiplierToggle =
-			Tab:AddToggle("WalkSpeed", { Title = "WalkSpeed Multiplier", Default = false })
+			local flySpeedSlider = Tab:AddSlider("flySpeedSlider", {
+				Title = "Fly Speed",
+				Description = "Increase your fly speed",
+				Default = 1,
+				Min = 50,
+				Max = 200,
+				Rounding = 1,
+				Callback = function(Value)
+					fly.off()
+					if Options.Fly.Value then
+						fly.on(Value)
+					end
+				end,
+			})
 
-		WalkSpeedmultiplierToggle:OnChanged(function()
-			if Options.WalkSpeed.Value then
-				walkSpeed.on(Options.walkSpeedSlider.Value)
-			else
-				walkSpeed.off(1)
-			end
-		end)
+			local WalkSpeedmultiplierToggle =
+				Tab:AddToggle("WalkSpeed", { Title = "WalkSpeed Multiplier", Default = false })
 
-		local walkSpeedSlider = Tab:AddSlider("walkSpeedSlider", {
-			Title = "Walk Speed",
-			Description = "Increase your WalkSpeed",
-			Default = 1,
-			Min = 1,
-			Max = 50,
-			Rounding = 1,
-			Callback = function(Value)
-				walkSpeed.off()
+			WalkSpeedmultiplierToggle:OnChanged(function()
 				if Options.WalkSpeed.Value then
-					walkSpeed.on(Value)
+					walkSpeed.on(Options.walkSpeedSlider.Value)
+				else
+					walkSpeed.off(1)
 				end
-			end,
-		})
+			end)
 
-		local noClipToggle = Tab:AddToggle("Noclip", { Title = "Noclip", Default = false })
+			local walkSpeedSlider = Tab:AddSlider("walkSpeedSlider", {
+				Title = "Walk Speed",
+				Description = "Increase your WalkSpeed",
+				Default = 1,
+				Min = 1,
+				Max = 50,
+				Rounding = 1,
+				Callback = function(Value)
+					walkSpeed.off()
+					if Options.WalkSpeed.Value then
+						walkSpeed.on(Value)
+					end
+				end,
+			})
 
-		noClipToggle:OnChanged(function()
-			if Options.Noclip.Value then
-				noclip.on()
-			else
-				noclip.off()
-			end
-		end)
+			local noClipToggle = Tab:AddToggle("Noclip", { Title = "Noclip", Default = false })
 
-		local infJumpToggle = Tab:AddToggle("InfJump", { Title = "Infinite Jump", Default = false })
+			noClipToggle:OnChanged(function()
+				if Options.Noclip.Value then
+					noclip.on()
+				else
+					noclip.off()
+				end
+			end)
 
-		infJumpToggle:OnChanged(function()
-			if Options.InfJump.Value then
-				infJump.on()
-			else
-				infJump.off()
-			end
-		end)
+			local infJumpToggle = Tab:AddToggle("InfJump", { Title = "Infinite Jump", Default = false })
 
-		local ragDollToggle = Tab:AddToggle("ragdollCancel", { Title = "Auto Ragdoll Cancel", Default = false })
+			infJumpToggle:OnChanged(function()
+				if Options.InfJump.Value then
+					infJump.on()
+				else
+					infJump.off()
+				end
+			end)
 
-		ragDollToggle:OnChanged(function()
-			if Options.ragdollCancel.Value then
-				noRagdoll.on()
-			else
-				noRagdoll.off()
-			end
-		end)
+			local ragDollToggle = Tab:AddToggle("ragdollCancel", { Title = "Auto Ragdoll Cancel", Default = false })
 
-		local bringBackHitRotateToggle =
-			Tab:AddToggle("bringBackRotate", { Title = "Bring Back Hit Rotate", Default = false })
-		Options.bringBackRotate:SetValue(false)
+			ragDollToggle:OnChanged(function()
+				if Options.ragdollCancel.Value then
+					noRagdoll.on()
+				else
+					noRagdoll.off()
+				end
+			end)
 
-		bringBackHitRotateToggle:OnChanged(function()
-			if Options.bringBackRotate.Value then
-				bringBackHitRotate.on()
-			else
-				bringBackHitRotate.off()
-			end
-		end)
+			local bringBackHitRotateToggle =
+				Tab:AddToggle("bringBackRotate", { Title = "Bring Back Hit Rotate", Default = false })
+			Options.bringBackRotate:SetValue(false)
 
-		local hitWhenFloatToggle = Tab:AddToggle("airHit", { Title = "M1 On Air Spoof", Default = false })
+			bringBackHitRotateToggle:OnChanged(function()
+				if Options.bringBackRotate.Value then
+					bringBackHitRotate.on()
+				else
+					bringBackHitRotate.off()
+				end
+			end)
 
-		hitWhenFloatToggle:OnChanged(function()
-			if Options.airHit.Value then
-				hitFloat.on()
-			else
-				hitFloat.off()
-			end
-		end)
+			local hitWhenFloatToggle = Tab:AddToggle("airHit", { Title = "M1 On Air Spoof", Default = false })
 
-		local SkillCooldownSelection = Tab:AddDropdown("SkillCooldownSelection", {
-			Title = "Skill Cooldown Selection",
-			Values = {
-				"Half",
-				"Normal",
-				"None",
-			},
-			Multi = false,
-			Default = "Normal",
-		})
-		noCooldown.init()
-		Tab:AddButton({
-			Title = "Instant Log",
-			Description = "Instantly leave the game.",
-			Callback = function()
-				game.Players.LocalPlayer:Destroy()
-			end,
-		})
-	end)()
-end
+			hitWhenFloatToggle:OnChanged(function()
+				if Options.airHit.Value then
+					hitFloat.on()
+				else
+					hitFloat.off()
+				end
+			end)
 
-return Character
+			local SkillCooldownSelection = Tab:AddDropdown("SkillCooldownSelection", {
+				Title = "Skill Cooldown Selection",
+				Values = {
+					"Half",
+					"Normal",
+					"None",
+				},
+				Multi = false,
+				Default = "Normal",
+			})
+			noCooldown.init()
+			Tab:AddButton({
+				Title = "Instant Log",
+				Description = "Instantly leave the game.",
+				Callback = function()
+					game.Players.LocalPlayer:Destroy()
+				end,
+			})
+		end)()
+	end
 
+	return Character
 end)
 __bundle_register("Features/Character/noCooldown", function(require, _LOADED, __bundle_register, __bundle_modules)
-local noCooldown = {}
+	local noCooldown = {}
 
-function noCooldown.init()
-	if not Options.SkillCooldownSelection then
+	function noCooldown.init()
+		if not Options.SkillCooldownSelection then
+			repeat
+				task.wait()
+			until Options.SkillCooldownSelection
+		end
+
+		local oldCd
 		repeat
 			task.wait()
-		until Options.SkillCooldownSelection
-	end
+		until getrenv()._G.HandleCD
 
-	local oldCd
-	repeat
-		task.wait()
-	until getrenv()._G.HandleCD
-
-	oldCd = hookfunction(
-		getrenv()._G.HandleCD,
-		newcclosure(function(...)
-			local condition = {
-				["Normal"] = function(...)
-					return oldCd(...)
-				end,
-				["Half"] = function(...)
-					local args = { ... }
-					args[2] = args[2] / 2
-					return oldCd(table.unpack(args))
-				end,
-				["None"] = function(...)
-					local args = { ... }
-					args[2] = 0
-					return oldCd(table.unpack(args))
-				end,
-			}
-			if Options.SkillCooldownSelection.Value then
-				condition[Options.SkillCooldownSelection.Value](...)
-				return
-			else
-				return oldCd(...)
-			end
-		end)
-	)
-
-	for _, script in getloadedmodules() do
-		if script.Name == "CoolDownModule" then
-			local oldSkillCD
-			oldSkillCD = hookfunction(
-				require(script)["CD"],
-				newcclosure(function(character, tool, cooldown)
-					local condition = {
-						["Normal"] = function()
-							return oldSkillCD(character, tool, cooldown)
-						end,
-						["Half"] = function(...)
-							return oldSkillCD(character, tool, cooldown / 2)
-						end,
-						["None"] = function(...)
-							return oldSkillCD(character, tool, 0)
-						end,
-					}
-					if Options.SkillCooldownSelection.Value then
-						return condition[Options.SkillCooldownSelection.Value](character, tool, cooldown)
-					else
-						return oldSkillCD(character, tool, cooldown)
-					end
-				end)
-			)
-		end
-	end
-	for _, v in getconnections(game:GetService("CollectionService"):GetInstanceAddedSignal("OnCD")) do
-		local handler
-		handler = hookfunction(
-			v.Function,
+		oldCd = hookfunction(
+			getrenv()._G.HandleCD,
 			newcclosure(function(...)
 				local condition = {
 					["Normal"] = function(...)
-						return handler(...)
+						return oldCd(...)
 					end,
 					["Half"] = function(...)
 						local args = { ... }
 						args[2] = args[2] / 2
-						return handler(table.unpack(args))
+						return oldCd(table.unpack(args))
 					end,
 					["None"] = function(...)
 						local args = { ... }
 						args[2] = 0
-						return handler(table.unpack(args))
+						return oldCd(table.unpack(args))
 					end,
 				}
 				if Options.SkillCooldownSelection.Value then
-					return condition[Options.SkillCooldownSelection.Value](...)
+					condition[Options.SkillCooldownSelection.Value](...)
+					return
 				else
-					return handler(...)
+					return oldCd(...)
 				end
 			end)
 		)
-	end
 
-	local hookedLists = {}
-
-	local function hookCD(tool)
-		if table.find(hookedLists, tool) then
-			return
+		for _, script in getloadedmodules() do
+			if script.Name == "CoolDownModule" then
+				local oldSkillCD
+				oldSkillCD = hookfunction(
+					require(script)["CD"],
+					newcclosure(function(character, tool, cooldown)
+						local condition = {
+							["Normal"] = function()
+								return oldSkillCD(character, tool, cooldown)
+							end,
+							["Half"] = function(...)
+								return oldSkillCD(character, tool, cooldown / 2)
+							end,
+							["None"] = function(...)
+								return oldSkillCD(character, tool, 0)
+							end,
+						}
+						if Options.SkillCooldownSelection.Value then
+							return condition[Options.SkillCooldownSelection.Value](character, tool, cooldown)
+						else
+							return oldSkillCD(character, tool, cooldown)
+						end
+					end)
+				)
+			end
 		end
-		local targetRemote = tool:FindFirstChild("RemoteEvent")
-		if not targetRemote or not tool:GetAttribute("CD") then
-			return
-		end
-		table.insert(hookedLists, tool)
-
-		local oldFireServer
-		oldFireServer = hookfunction(
-			targetRemote.FireServer,
-			newcclosure(function(self, ...)
-				if self == targetRemote then
+		for _, v in getconnections(game:GetService("CollectionService"):GetInstanceAddedSignal("OnCD")) do
+			local handler
+			handler = hookfunction(
+				v.Function,
+				newcclosure(function(...)
 					local condition = {
-						["Normal"] = function(self, ...)
-							return oldFireServer(self, ...)
+						["Normal"] = function(...)
+							return handler(...)
 						end,
-						["Half"] = function(self, ...)
+						["Half"] = function(...)
 							local args = { ... }
 							args[2] = args[2] / 2
-							return oldFireServer(self, table.unpack(args))
+							return handler(table.unpack(args))
 						end,
-						["None"] = function(self, ...)
+						["None"] = function(...)
 							local args = { ... }
 							args[2] = 0
-							return oldFireServer(self, table.unpack(args))
+							return handler(table.unpack(args))
 						end,
 					}
 					if Options.SkillCooldownSelection.Value then
-						return condition[Options.SkillCooldownSelection.Value](self, ...)
+						return condition[Options.SkillCooldownSelection.Value](...)
+					else
+						return handler(...)
+					end
+				end)
+			)
+		end
+
+		local hookedLists = {}
+
+		local function hookCD(tool)
+			if table.find(hookedLists, tool) then
+				return
+			end
+			local targetRemote = tool:FindFirstChild("RemoteEvent")
+			if not targetRemote or not tool:GetAttribute("CD") then
+				return
+			end
+			table.insert(hookedLists, tool)
+
+			local oldFireServer
+			oldFireServer = hookfunction(
+				targetRemote.FireServer,
+				newcclosure(function(self, ...)
+					if self == targetRemote then
+						local condition = {
+							["Normal"] = function(self, ...)
+								return oldFireServer(self, ...)
+							end,
+							["Half"] = function(self, ...)
+								local args = { ... }
+								args[2] = args[2] / 2
+								return oldFireServer(self, table.unpack(args))
+							end,
+							["None"] = function(self, ...)
+								local args = { ... }
+								args[2] = 0
+								return oldFireServer(self, table.unpack(args))
+							end,
+						}
+						if Options.SkillCooldownSelection.Value then
+							return condition[Options.SkillCooldownSelection.Value](self, ...)
+						else
+							return oldFireServer(self, ...)
+						end
 					else
 						return oldFireServer(self, ...)
 					end
+				end)
+			)
+		end
+
+		for _, tool in game.Players.LocalPlayer.Backpack:GetChildren() do
+			hookCD(tool)
+		end
+
+		game.Players.LocalPlayer.Backpack.ChildAdded:Connect(function(tool)
+			hookCD(tool)
+		end)
+
+		local oldTaskDelay
+
+		makewritable(task)
+
+		oldTaskDelay = hookfunction(
+			task.delay,
+			newcclosure(function(t, f, ...)
+				local caller = getcallingscript()
+				if caller and caller.Parent and caller.Parent:IsA("Tool") and caller.Parent:GetAttribute("CD") then
+					local condition = {
+						["Normal"] = function(...)
+							return oldTaskDelay(t, f, ...)
+						end,
+						["Half"] = function(...)
+							return oldTaskDelay(t / 2, f, ...)
+						end,
+						["None"] = function(...)
+							return oldTaskDelay(0, f, ...)
+						end,
+					}
+					if Options.SkillCooldownSelection.Value then
+						return condition[Options.SkillCooldownSelection.Value](...)
+					else
+						return oldTaskDelay(t, f, ...)
+					end
 				else
-					return oldFireServer(self, ...)
+					return oldTaskDelay(t, f, ...)
 				end
 			end)
 		)
 	end
+	return noCooldown
+end)
+__bundle_register(
+	"Features/Character/BringBackHitRotate",
+	function(require, _LOADED, __bundle_register, __bundle_modules)
+		local Players = game:GetService("Players")
+		local RunService = game:GetService("RunService")
 
-	for _, tool in game.Players.LocalPlayer.Backpack:GetChildren() do
-		hookCD(tool)
-	end
+		local localPlayer = Players.LocalPlayer
+		local bringBackHitRotate = {}
+		local instance
 
-	game.Players.LocalPlayer.Backpack.ChildAdded:Connect(function(tool)
-		hookCD(tool)
-	end)
+		local connection
+		local resetDash
 
-	local oldTaskDelay
-
-	makewritable(task)
-
-	oldTaskDelay = hookfunction(
-		task.delay,
-		newcclosure(function(t, f, ...)
-			local caller = getcallingscript()
-			if caller and caller.Parent and caller.Parent:IsA("Tool") and caller.Parent:GetAttribute("CD") then
-				local condition = {
-					["Normal"] = function(...)
-						return oldTaskDelay(t, f, ...)
-					end,
-					["Half"] = function(...)
-						return oldTaskDelay(t / 2, f, ...)
-					end,
-					["None"] = function(...)
-						return oldTaskDelay(0, f, ...)
-					end,
-				}
-				if Options.SkillCooldownSelection.Value then
-					return condition[Options.SkillCooldownSelection.Value](...)
-				else
-					return oldTaskDelay(t, f, ...)
+		function bringBackHitRotate.on()
+			connection = RunService.RenderStepped:Connect(LPH_NO_VIRTUALIZE(function()
+				local SlowAutoRotate = game.Players.LocalPlayer.Character:FindFirstChild("SlowAutoRotate")
+				if SlowAutoRotate then
+					SlowAutoRotate:Destroy()
 				end
-			else
-				return oldTaskDelay(t, f, ...)
-			end
-		end)
-	)
-end
-return noCooldown
-
-end)
-__bundle_register("Features/Character/BringBackHitRotate", function(require, _LOADED, __bundle_register, __bundle_modules)
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-
-local localPlayer = Players.LocalPlayer
-local bringBackHitRotate = {}
-local instance
-
-local connection
-local resetDash
-
-function bringBackHitRotate.on()
-	connection = RunService.RenderStepped:Connect(LPH_NO_VIRTUALIZE(function()
-		local SlowAutoRotate = game.Players.LocalPlayer.Character:FindFirstChild("SlowAutoRotate")
-		if SlowAutoRotate then
-			SlowAutoRotate:Destroy()
+			end))
 		end
-	end))
-end
 
-function bringBackHitRotate.off()
-	if connection then
-		connection:Disconnect()
+		function bringBackHitRotate.off()
+			if connection then
+				connection:Disconnect()
+			end
+		end
+
+		return bringBackHitRotate
 	end
-end
-
-return bringBackHitRotate
-
-end)
+)
 __bundle_register("Features/Character/hitFloat", function(require, _LOADED, __bundle_register, __bundle_modules)
-local Players = game:GetService("Players")
-local localPlayer = Players.LocalPlayer
-local hitFloat = {}
-local instance
+	local Players = game:GetService("Players")
+	local localPlayer = Players.LocalPlayer
+	local hitFloat = {}
+	local instance
 
-function hitFloat.on()
-	if instance then
-		instance:Destroy()
+	function hitFloat.on()
+		if instance then
+			instance:Destroy()
+		end
+		local folder = Instance.new("Folder")
+		folder.Name = "AirTime"
+		folder.Parent = localPlayer.Character
+		instance = folder
 	end
-	local folder = Instance.new("Folder")
-	folder.Name = "AirTime"
-	folder.Parent = localPlayer.Character
-	instance = folder
-end
 
-function hitFloat.off()
-	if instance then
-		instance:Destroy()
+	function hitFloat.off()
+		if instance then
+			instance:Destroy()
+		end
 	end
-end
 
-return hitFloat
-
+	return hitFloat
 end)
 __bundle_register("Features/Character/Fly", function(require, _LOADED, __bundle_register, __bundle_modules)
-local RunService = game:GetService("RunService")
-local Players = game:GetService("Players")
-local UserInputService = game:GetService("UserInputService")
-local localPlayer = Players.LocalPlayer
+	local RunService = game:GetService("RunService")
+	local Players = game:GetService("Players")
+	local UserInputService = game:GetService("UserInputService")
+	local localPlayer = Players.LocalPlayer
 
-local fly = {}
+	local fly = {}
 
-local connection
+	local connection
 
-local keys = {
-	forward = Enum.KeyCode.W,
-	backward = Enum.KeyCode.S,
-	left = Enum.KeyCode.A,
-	right = Enum.KeyCode.D,
-	up = Enum.KeyCode.Space,
-	down = Enum.KeyCode.LeftShift,
-}
+	local keys = {
+		forward = Enum.KeyCode.W,
+		backward = Enum.KeyCode.S,
+		left = Enum.KeyCode.A,
+		right = Enum.KeyCode.D,
+		up = Enum.KeyCode.Space,
+		down = Enum.KeyCode.LeftShift,
+	}
 
-local function getDirection()
-	local direction = Vector3.zero
-	local camCFrame = workspace.CurrentCamera.CFrame
+	local function getDirection()
+		local direction = Vector3.zero
+		local camCFrame = workspace.CurrentCamera.CFrame
 
-	-- use full camera look vector including vertical tilt
-	local look = camCFrame.LookVector
-	local right = camCFrame.RightVector
+		-- use full camera look vector including vertical tilt
+		local look = camCFrame.LookVector
+		local right = camCFrame.RightVector
 
-	if UserInputService:IsKeyDown(keys.forward) then
-		direction = direction + look
-	end
-	if UserInputService:IsKeyDown(keys.backward) then
-		direction = direction - look
-	end
-	if UserInputService:IsKeyDown(keys.right) then
-		direction = direction + right
-	end
-	if UserInputService:IsKeyDown(keys.left) then
-		direction = direction - right
-	end
-	if UserInputService:IsKeyDown(keys.up) then
-		direction = direction + Vector3.new(0, 1, 0)
-	end
-	if UserInputService:IsKeyDown(keys.down) then
-		direction = direction - Vector3.new(0, 1, 0)
-	end
+		if UserInputService:IsKeyDown(keys.forward) then
+			direction = direction + look
+		end
+		if UserInputService:IsKeyDown(keys.backward) then
+			direction = direction - look
+		end
+		if UserInputService:IsKeyDown(keys.right) then
+			direction = direction + right
+		end
+		if UserInputService:IsKeyDown(keys.left) then
+			direction = direction - right
+		end
+		if UserInputService:IsKeyDown(keys.up) then
+			direction = direction + Vector3.new(0, 1, 0)
+		end
+		if UserInputService:IsKeyDown(keys.down) then
+			direction = direction - Vector3.new(0, 1, 0)
+		end
 
-	return direction
-end
-
-local function enableFly(SPEED)
-	local character = localPlayer.Character
-	if not character then
-		return
+		return direction
 	end
 
-	local humanoid = character:FindFirstChildWhichIsA("Humanoid")
-	local rootPart = character:FindFirstChild("HumanoidRootPart")
-	if not humanoid or not rootPart then
-		return
-	end
-
-	humanoid.PlatformStand = true
-
-	local hoverPosition = rootPart.Position -- track where to hover when idle
-
-	connection = RunService.Heartbeat:Connect(LPH_NO_VIRTUALIZE(function(delta)
-		character = localPlayer.Character
+	local function enableFly(SPEED)
+		local character = localPlayer.Character
 		if not character then
 			return
 		end
-		humanoid = character:FindFirstChildWhichIsA("Humanoid")
-		rootPart = character:FindFirstChild("HumanoidRootPart")
+
+		local humanoid = character:FindFirstChildWhichIsA("Humanoid")
+		local rootPart = character:FindFirstChild("HumanoidRootPart")
 		if not humanoid or not rootPart then
 			return
 		end
 
-		local direction = getDirection()
+		humanoid.PlatformStand = true
 
-		if direction.Magnitude > 0 then
-			-- Moving: update position and record it as the new hover point
-			rootPart.CFrame = rootPart.CFrame + (direction.Unit * SPEED * delta)
-			hoverPosition = rootPart.Position -- update hover anchor
-		else
-			-- Idle: lock to last position so gravity can't pull character down
-			rootPart.CFrame = CFrame.new(hoverPosition) * (rootPart.CFrame - rootPart.CFrame.Position)
+		local hoverPosition = rootPart.Position -- track where to hover when idle
+
+		connection = RunService.Heartbeat:Connect(LPH_NO_VIRTUALIZE(function(delta)
+			character = localPlayer.Character
+			if not character then
+				return
+			end
+			humanoid = character:FindFirstChildWhichIsA("Humanoid")
+			rootPart = character:FindFirstChild("HumanoidRootPart")
+			if not humanoid or not rootPart then
+				return
+			end
+
+			local direction = getDirection()
+
+			if direction.Magnitude > 0 then
+				-- Moving: update position and record it as the new hover point
+				rootPart.CFrame = rootPart.CFrame + (direction.Unit * SPEED * delta)
+				hoverPosition = rootPart.Position -- update hover anchor
+			else
+				-- Idle: lock to last position so gravity can't pull character down
+				rootPart.CFrame = CFrame.new(hoverPosition) * (rootPart.CFrame - rootPart.CFrame.Position)
+			end
+
+			-- Kill all physics-driven movement
+			rootPart.AssemblyLinearVelocity = Vector3.zero
+			rootPart.AssemblyAngularVelocity = Vector3.zero
+		end))
+	end
+
+	local function disableFly()
+		local character = localPlayer.Character
+		if character then
+			local humanoid = character:FindFirstChildWhichIsA("Humanoid")
+			if humanoid then
+				humanoid.PlatformStand = false
+			end
 		end
 
-		-- Kill all physics-driven movement
-		rootPart.AssemblyLinearVelocity = Vector3.zero
-		rootPart.AssemblyAngularVelocity = Vector3.zero
-	end))
-end
-
-local function disableFly()
-	local character = localPlayer.Character
-	if character then
-		local humanoid = character:FindFirstChildWhichIsA("Humanoid")
-		if humanoid then
-			humanoid.PlatformStand = false
+		if connection then
+			connection:Disconnect()
+			connection = nil
 		end
 	end
 
-	if connection then
-		connection:Disconnect()
-		connection = nil
+	function fly.on(speed)
+		disableFly()
+		enableFly(speed)
 	end
-end
 
-function fly.on(speed)
-	disableFly()
-	enableFly(speed)
-end
+	function fly.off()
+		disableFly()
+	end
 
-function fly.off()
-	disableFly()
-end
-
-return fly
-
+	return fly
 end)
 __bundle_register("Features/Character/RagdollCancel", function(require, _LOADED, __bundle_register, __bundle_modules)
-local Players = game:GetService("Players")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local Events = ReplicatedStorage:WaitForChild("Events")
-local RagdollCancelEvent = Events:WaitForChild("RagdollCancel")
+	local Players = game:GetService("Players")
+	local ReplicatedStorage = game:GetService("ReplicatedStorage")
+	local Events = ReplicatedStorage:WaitForChild("Events")
+	local RagdollCancelEvent = Events:WaitForChild("RagdollCancel")
 
-local localPlayer = Players.LocalPlayer
+	local localPlayer = Players.LocalPlayer
 
-local connection
+	local connection
 
-local autoRagdollCancel = {}
+	local autoRagdollCancel = {}
 
-function autoRagdollCancel.on()
-	connection = localPlayer.Character.ChildAdded:Connect(function(child)
-		if child:IsA("Folder") and child.Name == "Ragdolled" then
-			RagdollCancelEvent:FireServer(localPlayer.Character)
-		end
-	end)
-end
-
-function autoRagdollCancel.off()
-	if connection then
-		connection:Disconnect()
-		connection = nil
+	function autoRagdollCancel.on()
+		connection = localPlayer.Character.ChildAdded:Connect(function(child)
+			if child:IsA("Folder") and child.Name == "Ragdolled" then
+				RagdollCancelEvent:FireServer(localPlayer.Character)
+			end
+		end)
 	end
-end
 
-return autoRagdollCancel
+	function autoRagdollCancel.off()
+		if connection then
+			connection:Disconnect()
+			connection = nil
+		end
+	end
 
+	return autoRagdollCancel
 end)
 __bundle_register("Features/Character/Noclip", function(require, _LOADED, __bundle_register, __bundle_modules)
-local RunService = game:GetService("RunService")
-local Players = game:GetService("Players")
-local UserInputService = game:GetService("UserInputService")
-local localPlayer = Players.LocalPlayer
+	local RunService = game:GetService("RunService")
+	local Players = game:GetService("Players")
+	local UserInputService = game:GetService("UserInputService")
+	local localPlayer = Players.LocalPlayer
 
-local connection
+	local connection
 
-local Noclip = {}
+	local Noclip = {}
 
-function Noclip.on()
-	connection = RunService.Stepped:Connect(LPH_NO_VIRTUALIZE(function()
-		if localPlayer.Character ~= nil then
-			for _, child in pairs(localPlayer.Character:GetDescendants()) do
-				if child:IsA("BasePart") and child.CanCollide == true then
-					child.CanCollide = false
+	function Noclip.on()
+		connection = RunService.Stepped:Connect(LPH_NO_VIRTUALIZE(function()
+			if localPlayer.Character ~= nil then
+				for _, child in pairs(localPlayer.Character:GetDescendants()) do
+					if child:IsA("BasePart") and child.CanCollide == true then
+						child.CanCollide = false
+					end
 				end
 			end
-		end
-	end))
-end
-
-function Noclip.off()
-	if connection then
-		connection:Disconnect()
-		connection = nil
+		end))
 	end
-end
 
-return Noclip
+	function Noclip.off()
+		if connection then
+			connection:Disconnect()
+			connection = nil
+		end
+	end
 
+	return Noclip
 end)
 __bundle_register("Features/Character/Infjump", function(require, _LOADED, __bundle_register, __bundle_modules)
-local RunService = game:GetService("RunService")
-local Players = game:GetService("Players")
-local UserInputService = game:GetService("UserInputService")
-local localPlayer = Players.LocalPlayer
+	local RunService = game:GetService("RunService")
+	local Players = game:GetService("Players")
+	local UserInputService = game:GetService("UserInputService")
+	local localPlayer = Players.LocalPlayer
 
-local connection
+	local connection
 
-local infJump = {}
-local infJumpDebounce = false
+	local infJump = {}
+	local infJumpDebounce = false
 
-function infJump.on()
-	connection = UserInputService.JumpRequest:Connect(LPH_NO_VIRTUALIZE(function()
-		if not infJumpDebounce then
-			infJumpDebounce = true
-			localPlayer.Character:FindFirstChildWhichIsA("Humanoid"):ChangeState(Enum.HumanoidStateType.Jumping)
-			task.wait()
-			infJumpDebounce = false
-		end
-	end))
-end
-
-function infJump.off()
-	if connection then
-		connection:Disconnect()
-		connection = nil
+	function infJump.on()
+		connection = UserInputService.JumpRequest:Connect(LPH_NO_VIRTUALIZE(function()
+			if not infJumpDebounce then
+				infJumpDebounce = true
+				localPlayer.Character:FindFirstChildWhichIsA("Humanoid"):ChangeState(Enum.HumanoidStateType.Jumping)
+				task.wait()
+				infJumpDebounce = false
+			end
+		end))
 	end
-end
 
-return infJump
+	function infJump.off()
+		if connection then
+			connection:Disconnect()
+			connection = nil
+		end
+	end
 
+	return infJump
 end)
 __bundle_register("Features/Character/WalkSpeed", function(require, _LOADED, __bundle_register, __bundle_modules)
-local RunService = game:GetService("RunService")
-local Players = game:GetService("Players")
-local localPlayer = Players.LocalPlayer
+	local RunService = game:GetService("RunService")
+	local Players = game:GetService("Players")
+	local localPlayer = Players.LocalPlayer
 
-local walkSpeed = {}
+	local walkSpeed = {}
 
-local connection
+	local connection
 
-function walkSpeed.on(speed)
-	if connection then
-		connection:Disconnect()
-		connection = nil
-	end
-	local character = localPlayer.Character
-	local humanoid = character and character:FindFirstChildWhichIsA("Humanoid")
-
-	connection = RunService.Heartbeat:Connect(LPH_NO_VIRTUALIZE(function(delta)
-		if not (character and humanoid and humanoid.Parent) then
+	function walkSpeed.on(speed)
+		if connection then
 			connection:Disconnect()
-			return
+			connection = nil
 		end
+		local character = localPlayer.Character
+		local humanoid = character and character:FindFirstChildWhichIsA("Humanoid")
 
-		if humanoid.MoveDirection.Magnitude > 0 then
-			character:TranslateBy(humanoid.MoveDirection * speed * delta * 10)
-		end
-	end))
-end
+		connection = RunService.Heartbeat:Connect(LPH_NO_VIRTUALIZE(function(delta)
+			if not (character and humanoid and humanoid.Parent) then
+				connection:Disconnect()
+				return
+			end
 
-function walkSpeed.off()
-	if connection then
-		connection:Disconnect()
-		connection = nil
+			if humanoid.MoveDirection.Magnitude > 0 then
+				character:TranslateBy(humanoid.MoveDirection * speed * delta * 10)
+			end
+		end))
 	end
-end
 
-return walkSpeed
+	function walkSpeed.off()
+		if connection then
+			connection:Disconnect()
+			connection = nil
+		end
+	end
 
+	return walkSpeed
 end)
 __bundle_register("GUI/InterfaceManager", function(require, _LOADED, __bundle_register, __bundle_modules)
-local httpService = game:GetService("HttpService")
+	local httpService = game:GetService("HttpService")
 -- stylua: ignore
 local InterfaceManager = {}
-LPH_NO_VIRTUALIZE(function()
-	InterfaceManager.Folder = "FluentSettings"
-	InterfaceManager.Settings = {
-		Theme = "Dark",
-		Acrylic = true,
-		Transparency = true,
-		MenuKeybind = "LeftControl",
-	}
-
-	function InterfaceManager:SetFolder(folder)
-		self.Folder = folder
-		self:BuildFolderTree()
-	end
-
-	function InterfaceManager:SetLibrary(library)
-		self.Library = library
-	end
-
-	function InterfaceManager:BuildFolderTree()
-		local paths = {}
-
-		local parts = self.Folder:split("/")
-		for idx = 1, #parts do
-			paths[#paths + 1] = table.concat(parts, "/", 1, idx)
-		end
-
-		table.insert(paths, self.Folder)
-		table.insert(paths, self.Folder .. "/settings")
-
-		for i = 1, #paths do
-			local str = paths[i]
-			if not isfolder(str) then
-				makefolder(str)
-			end
-		end
-	end
-
-	function InterfaceManager:SaveSettings()
-		writefile(self.Folder .. "/options.json", httpService:JSONEncode(InterfaceManager.Settings))
-	end
-
-	function InterfaceManager:LoadSettings()
-		local path = self.Folder .. "/options.json"
-		if isfile(path) then
-			local data = readfile(path)
-			local success, decoded = pcall(httpService.JSONDecode, httpService, data)
-
-			if success then
-				for i, v in next, decoded do
-					InterfaceManager.Settings[i] = v
-				end
-			end
-		end
-	end
-
-	function InterfaceManager:BuildInterfaceSection(tab)
-		assert(self.Library, "Must set InterfaceManager.Library")
-		local Library = self.Library
-		local Settings = InterfaceManager.Settings
-
-		InterfaceManager:LoadSettings()
-
-		local section = tab:AddSection("Interface")
-
-		local InterfaceTheme = section:AddDropdown("InterfaceTheme", {
-			Title = "Theme",
-			Description = "Changes the interface theme.",
-			Values = Library.Themes,
-			Default = Settings.Theme,
-			Callback = function(Value)
-				Library:SetTheme(Value)
-				Settings.Theme = Value
-				InterfaceManager:SaveSettings()
-			end,
-		})
-
-		InterfaceTheme:SetValue(Settings.Theme)
-
-		if Library.UseAcrylic then
-			section:AddToggle("AcrylicToggle", {
-				Title = "Acrylic",
-				Description = "The blurred background requires graphic quality 8+",
-				Default = Settings.Acrylic,
-				Callback = function(Value)
-					Library:ToggleAcrylic(Value)
-					Settings.Acrylic = Value
-					InterfaceManager:SaveSettings()
-				end,
-			})
-		end
-
-		section:AddToggle("TransparentToggle", {
-			Title = "Transparency",
-			Description = "Makes the interface transparent.",
-			Default = Settings.Transparency,
-			Callback = function(Value)
-				Library:ToggleTransparency(Value)
-				Settings.Transparency = Value
-				InterfaceManager:SaveSettings()
-			end,
-		})
-
-		local MenuKeybind =
-			section:AddKeybind("MenuKeybind", { Title = "Minimize Bind", Default = Settings.MenuKeybind })
-		MenuKeybind:OnChanged(function()
-			Settings.MenuKeybind = MenuKeybind.Value
-			InterfaceManager:SaveSettings()
-		end)
-		Library.MinimizeKeybind = MenuKeybind
-	end
-end)()
-
-return InterfaceManager
-
-end)
-__bundle_register("GUI/SaveManager", function(require, _LOADED, __bundle_register, __bundle_modules)
-local httpService = game:GetService("HttpService")
--- stylua: ignore
-local SaveManager = {}
-LPH_NO_VIRTUALIZE(function()
-	SaveManager.Folder = "FluentSettings"
-	SaveManager.Ignore = {}
-	SaveManager.Parser = {
-		Toggle = {
-			Save = function(idx, object)
-				return { type = "Toggle", idx = idx, value = object.Value }
-			end,
-			Load = function(idx, data)
-				if SaveManager.Options[idx] then
-					SaveManager.Options[idx]:SetValue(data.value)
-				end
-			end,
-		},
-		Slider = {
-			Save = function(idx, object)
-				return { type = "Slider", idx = idx, value = tostring(object.Value) }
-			end,
-			Load = function(idx, data)
-				if SaveManager.Options[idx] then
-					SaveManager.Options[idx]:SetValue(data.value)
-				end
-			end,
-		},
-		Dropdown = {
-			Save = function(idx, object)
-				return { type = "Dropdown", idx = idx, value = object.Value, mutli = object.Multi }
-			end,
-			Load = function(idx, data)
-				if SaveManager.Options[idx] then
-					SaveManager.Options[idx]:SetValue(data.value)
-				end
-			end,
-		},
-		Colorpicker = {
-			Save = function(idx, object)
-				return {
-					type = "Colorpicker",
-					idx = idx,
-					value = object.Value:ToHex(),
-					transparency = object.Transparency,
-				}
-			end,
-			Load = function(idx, data)
-				if SaveManager.Options[idx] then
-					SaveManager.Options[idx]:SetValueRGB(Color3.fromHex(data.value), data.transparency)
-				end
-			end,
-		},
-		Keybind = {
-			Save = function(idx, object)
-				return { type = "Keybind", idx = idx, mode = object.Mode, key = object.Value }
-			end,
-			Load = function(idx, data)
-				if SaveManager.Options[idx] then
-					SaveManager.Options[idx]:SetValue(data.key, data.mode)
-				end
-			end,
-		},
-
-		Input = {
-			Save = function(idx, object)
-				return { type = "Input", idx = idx, text = object.Value }
-			end,
-			Load = function(idx, data)
-				if SaveManager.Options[idx] and type(data.text) == "string" then
-					SaveManager.Options[idx]:SetValue(data.text)
-				end
-			end,
-		},
-	}
-
-	function SaveManager:SetIgnoreIndexes(list)
-		for _, key in next, list do
-			self.Ignore[key] = true
-		end
-	end
-
-	function SaveManager:SetFolder(folder)
-		self.Folder = folder
-		self:BuildFolderTree()
-	end
-
-	function SaveManager:Save(name)
-		if not name then
-			return false, "no config file is selected"
-		end
-
-		local fullPath = self.Folder .. "/settings/" .. name .. ".json"
-
-		local data = {
-			objects = {},
+	LPH_NO_VIRTUALIZE(function()
+		InterfaceManager.Folder = "FluentSettings"
+		InterfaceManager.Settings = {
+			Theme = "Dark",
+			Acrylic = true,
+			Transparency = true,
+			MenuKeybind = "LeftControl",
 		}
 
-		for idx, option in next, SaveManager.Options do
-			if not self.Parser[option.Type] then
-				continue
+		function InterfaceManager:SetFolder(folder)
+			self.Folder = folder
+			self:BuildFolderTree()
+		end
+
+		function InterfaceManager:SetLibrary(library)
+			self.Library = library
+		end
+
+		function InterfaceManager:BuildFolderTree()
+			local paths = {}
+
+			local parts = self.Folder:split("/")
+			for idx = 1, #parts do
+				paths[#paths + 1] = table.concat(parts, "/", 1, idx)
 			end
-			if self.Ignore[idx] then
-				continue
-			end
 
-			table.insert(data.objects, self.Parser[option.Type].Save(idx, option))
-		end
+			table.insert(paths, self.Folder)
+			table.insert(paths, self.Folder .. "/settings")
 
-		local success, encoded = pcall(httpService.JSONEncode, httpService, data)
-		if not success then
-			return false, "failed to encode data"
-		end
-
-		writefile(fullPath, encoded)
-		return true
-	end
-
-	function SaveManager:Load(name)
-		if not name then
-			return false, "no config file is selected"
-		end
-
-		local file = self.Folder .. "/settings/" .. name .. ".json"
-		if not isfile(file) then
-			return false, "invalid file"
-		end
-
-		local success, decoded = pcall(httpService.JSONDecode, httpService, readfile(file))
-		if not success then
-			return false, "decode error"
-		end
-
-		for _, option in next, decoded.objects do
-			if self.Parser[option.type] then
-				task.spawn(function()
-					self.Parser[option.type].Load(option.idx, option)
-				end) -- task.spawn() so the config loading wont get stuck.
-			end
-		end
-
-		return true
-	end
-
-	function SaveManager:IgnoreThemeSettings()
-		self:SetIgnoreIndexes({
-			"InterfaceTheme",
-			"AcrylicToggle",
-			"TransparentToggle",
-			"MenuKeybind",
-		})
-	end
-
-	function SaveManager:BuildFolderTree()
-		local paths = {
-			self.Folder,
-			self.Folder .. "/settings",
-		}
-
-		for i = 1, #paths do
-			local str = paths[i]
-			if not isfolder(str) then
-				makefolder(str)
-			end
-		end
-	end
-
-	function SaveManager:RefreshConfigList()
-		local list = listfiles(self.Folder .. "/settings")
-
-		local out = {}
-		for i = 1, #list do
-			local file = list[i]
-			if file:sub(-5) == ".json" then
-				local pos = file:find(".json", 1, true)
-				local start = pos
-
-				local char = file:sub(pos, pos)
-				while char ~= "/" and char ~= "\\" and char ~= "" do
-					pos = pos - 1
-					char = file:sub(pos, pos)
+			for i = 1, #paths do
+				local str = paths[i]
+				if not isfolder(str) then
+					makefolder(str)
 				end
+			end
+		end
 
-				if char == "/" or char == "\\" then
-					local name = file:sub(pos + 1, start - 1)
-					if name ~= "options" then
-						table.insert(out, name)
+		function InterfaceManager:SaveSettings()
+			writefile(self.Folder .. "/options.json", httpService:JSONEncode(InterfaceManager.Settings))
+		end
+
+		function InterfaceManager:LoadSettings()
+			local path = self.Folder .. "/options.json"
+			if isfile(path) then
+				local data = readfile(path)
+				local success, decoded = pcall(httpService.JSONDecode, httpService, data)
+
+				if success then
+					for i, v in next, decoded do
+						InterfaceManager.Settings[i] = v
 					end
 				end
 			end
 		end
 
-		return out
-	end
+		function InterfaceManager:BuildInterfaceSection(tab)
+			assert(self.Library, "Must set InterfaceManager.Library")
+			local Library = self.Library
+			local Settings = InterfaceManager.Settings
 
-	function SaveManager:SetLibrary(library)
-		self.Library = library
-		self.Options = library.Options
-	end
+			InterfaceManager:LoadSettings()
 
-	function SaveManager:LoadAutoloadConfig()
-		if isfile(self.Folder .. "/settings/autoload.txt") then
-			local name = readfile(self.Folder .. "/settings/autoload.txt")
+			local section = tab:AddSection("Interface")
 
-			local success, err = self:Load(name)
-			if not success then
-				return self.Library:Notify({
-					Title = "Interface",
-					Content = "Config loader",
-					SubContent = "Failed to load autoload config: " .. err,
-					Duration = 7,
+			local InterfaceTheme = section:AddDropdown("InterfaceTheme", {
+				Title = "Theme",
+				Description = "Changes the interface theme.",
+				Values = Library.Themes,
+				Default = Settings.Theme,
+				Callback = function(Value)
+					Library:SetTheme(Value)
+					Settings.Theme = Value
+					InterfaceManager:SaveSettings()
+				end,
+			})
+
+			InterfaceTheme:SetValue(Settings.Theme)
+
+			if Library.UseAcrylic then
+				section:AddToggle("AcrylicToggle", {
+					Title = "Acrylic",
+					Description = "The blurred background requires graphic quality 8+",
+					Default = Settings.Acrylic,
+					Callback = function(Value)
+						Library:ToggleAcrylic(Value)
+						Settings.Acrylic = Value
+						InterfaceManager:SaveSettings()
+					end,
 				})
 			end
 
-			self.Library:Notify({
-				Title = "Interface",
-				Content = "Config loader",
-				SubContent = string.format("Auto loaded config %q", name),
-				Duration = 7,
+			section:AddToggle("TransparentToggle", {
+				Title = "Transparency",
+				Description = "Makes the interface transparent.",
+				Default = Settings.Transparency,
+				Callback = function(Value)
+					Library:ToggleTransparency(Value)
+					Settings.Transparency = Value
+					InterfaceManager:SaveSettings()
+				end,
+			})
+
+			local MenuKeybind =
+				section:AddKeybind("MenuKeybind", { Title = "Minimize Bind", Default = Settings.MenuKeybind })
+			MenuKeybind:OnChanged(function()
+				Settings.MenuKeybind = MenuKeybind.Value
+				InterfaceManager:SaveSettings()
+			end)
+			Library.MinimizeKeybind = MenuKeybind
+		end
+	end)()
+
+	return InterfaceManager
+end)
+__bundle_register("GUI/SaveManager", function(require, _LOADED, __bundle_register, __bundle_modules)
+	local httpService = game:GetService("HttpService")
+-- stylua: ignore
+local SaveManager = {}
+	LPH_NO_VIRTUALIZE(function()
+		SaveManager.Folder = "FluentSettings"
+		SaveManager.Ignore = {}
+		SaveManager.Parser = {
+			Toggle = {
+				Save = function(idx, object)
+					return { type = "Toggle", idx = idx, value = object.Value }
+				end,
+				Load = function(idx, data)
+					if SaveManager.Options[idx] then
+						SaveManager.Options[idx]:SetValue(data.value)
+					end
+				end,
+			},
+			Slider = {
+				Save = function(idx, object)
+					return { type = "Slider", idx = idx, value = tostring(object.Value) }
+				end,
+				Load = function(idx, data)
+					if SaveManager.Options[idx] then
+						SaveManager.Options[idx]:SetValue(data.value)
+					end
+				end,
+			},
+			Dropdown = {
+				Save = function(idx, object)
+					return { type = "Dropdown", idx = idx, value = object.Value, mutli = object.Multi }
+				end,
+				Load = function(idx, data)
+					if SaveManager.Options[idx] then
+						SaveManager.Options[idx]:SetValue(data.value)
+					end
+				end,
+			},
+			Colorpicker = {
+				Save = function(idx, object)
+					return {
+						type = "Colorpicker",
+						idx = idx,
+						value = object.Value:ToHex(),
+						transparency = object.Transparency,
+					}
+				end,
+				Load = function(idx, data)
+					if SaveManager.Options[idx] then
+						SaveManager.Options[idx]:SetValueRGB(Color3.fromHex(data.value), data.transparency)
+					end
+				end,
+			},
+			Keybind = {
+				Save = function(idx, object)
+					return { type = "Keybind", idx = idx, mode = object.Mode, key = object.Value }
+				end,
+				Load = function(idx, data)
+					if SaveManager.Options[idx] then
+						SaveManager.Options[idx]:SetValue(data.key, data.mode)
+					end
+				end,
+			},
+
+			Input = {
+				Save = function(idx, object)
+					return { type = "Input", idx = idx, text = object.Value }
+				end,
+				Load = function(idx, data)
+					if SaveManager.Options[idx] and type(data.text) == "string" then
+						SaveManager.Options[idx]:SetValue(data.text)
+					end
+				end,
+			},
+		}
+
+		function SaveManager:SetIgnoreIndexes(list)
+			for _, key in next, list do
+				self.Ignore[key] = true
+			end
+		end
+
+		function SaveManager:SetFolder(folder)
+			self.Folder = folder
+			self:BuildFolderTree()
+		end
+
+		function SaveManager:Save(name)
+			if not name then
+				return false, "no config file is selected"
+			end
+
+			local fullPath = self.Folder .. "/settings/" .. name .. ".json"
+
+			local data = {
+				objects = {},
+			}
+
+			for idx, option in next, SaveManager.Options do
+				if not self.Parser[option.Type] then
+					continue
+				end
+				if self.Ignore[idx] then
+					continue
+				end
+
+				table.insert(data.objects, self.Parser[option.Type].Save(idx, option))
+			end
+
+			local success, encoded = pcall(httpService.JSONEncode, httpService, data)
+			if not success then
+				return false, "failed to encode data"
+			end
+
+			writefile(fullPath, encoded)
+			return true
+		end
+
+		function SaveManager:Load(name)
+			if not name then
+				return false, "no config file is selected"
+			end
+
+			local file = self.Folder .. "/settings/" .. name .. ".json"
+			if not isfile(file) then
+				return false, "invalid file"
+			end
+
+			local success, decoded = pcall(httpService.JSONDecode, httpService, readfile(file))
+			if not success then
+				return false, "decode error"
+			end
+
+			for _, option in next, decoded.objects do
+				if self.Parser[option.type] then
+					task.spawn(function()
+						self.Parser[option.type].Load(option.idx, option)
+					end) -- task.spawn() so the config loading wont get stuck.
+				end
+			end
+
+			return true
+		end
+
+		function SaveManager:IgnoreThemeSettings()
+			self:SetIgnoreIndexes({
+				"InterfaceTheme",
+				"AcrylicToggle",
+				"TransparentToggle",
+				"MenuKeybind",
 			})
 		end
-	end
 
-	function SaveManager:BuildConfigSection(tab)
-		assert(self.Library, "Must set SaveManager.Library")
+		function SaveManager:BuildFolderTree()
+			local paths = {
+				self.Folder,
+				self.Folder .. "/settings",
+			}
 
-		local section = tab:AddSection("Configuration")
-
-		section:AddInput("SaveManager_ConfigName", { Title = "Config name" })
-		section:AddDropdown(
-			"SaveManager_ConfigList",
-			{ Title = "Config list", Values = self:RefreshConfigList(), AllowNull = true }
-		)
-
-		section:AddButton({
-			Title = "Create config",
-			Callback = function()
-				local name = SaveManager.Options.SaveManager_ConfigName.Value
-
-				if name:gsub(" ", "") == "" then
-					return self.Library:Notify({
-						Title = "Interface",
-						Content = "Config loader",
-						SubContent = "Invalid config name (empty)",
-						Duration = 7,
-					})
+			for i = 1, #paths do
+				local str = paths[i]
+				if not isfolder(str) then
+					makefolder(str)
 				end
+			end
+		end
 
-				local success, err = self:Save(name)
-				if not success then
-					return self.Library:Notify({
-						Title = "Interface",
-						Content = "Config loader",
-						SubContent = "Failed to save config: " .. err,
-						Duration = 7,
-					})
+		function SaveManager:RefreshConfigList()
+			local list = listfiles(self.Folder .. "/settings")
+
+			local out = {}
+			for i = 1, #list do
+				local file = list[i]
+				if file:sub(-5) == ".json" then
+					local pos = file:find(".json", 1, true)
+					local start = pos
+
+					local char = file:sub(pos, pos)
+					while char ~= "/" and char ~= "\\" and char ~= "" do
+						pos = pos - 1
+						char = file:sub(pos, pos)
+					end
+
+					if char == "/" or char == "\\" then
+						local name = file:sub(pos + 1, start - 1)
+						if name ~= "options" then
+							table.insert(out, name)
+						end
+					end
 				end
+			end
 
-				self.Library:Notify({
-					Title = "Interface",
-					Content = "Config loader",
-					SubContent = string.format("Created config %q", name),
-					Duration = 7,
-				})
+			return out
+		end
 
-				SaveManager.Options.SaveManager_ConfigList:SetValues(self:RefreshConfigList())
-				SaveManager.Options.SaveManager_ConfigList:SetValue(nil)
-			end,
-		})
+		function SaveManager:SetLibrary(library)
+			self.Library = library
+			self.Options = library.Options
+		end
 
-		section:AddButton({
-			Title = "Load config",
-			Callback = function()
-				local name = SaveManager.Options.SaveManager_ConfigList.Value
+		function SaveManager:LoadAutoloadConfig()
+			if isfile(self.Folder .. "/settings/autoload.txt") then
+				local name = readfile(self.Folder .. "/settings/autoload.txt")
 
 				local success, err = self:Load(name)
 				if not success then
 					return self.Library:Notify({
 						Title = "Interface",
 						Content = "Config loader",
-						SubContent = "Failed to load config: " .. err,
+						SubContent = "Failed to load autoload config: " .. err,
 						Duration = 7,
 					})
 				end
@@ -6152,74 +6099,144 @@ LPH_NO_VIRTUALIZE(function()
 				self.Library:Notify({
 					Title = "Interface",
 					Content = "Config loader",
-					SubContent = string.format("Loaded config %q", name),
+					SubContent = string.format("Auto loaded config %q", name),
 					Duration = 7,
 				})
-			end,
-		})
-
-		section:AddButton({
-			Title = "Overwrite config",
-			Callback = function()
-				local name = SaveManager.Options.SaveManager_ConfigList.Value
-
-				local success, err = self:Save(name)
-				if not success then
-					return self.Library:Notify({
-						Title = "Interface",
-						Content = "Config loader",
-						SubContent = "Failed to overwrite config: " .. err,
-						Duration = 7,
-					})
-				end
-
-				self.Library:Notify({
-					Title = "Interface",
-					Content = "Config loader",
-					SubContent = string.format("Overwrote config %q", name),
-					Duration = 7,
-				})
-			end,
-		})
-
-		section:AddButton({
-			Title = "Refresh list",
-			Callback = function()
-				SaveManager.Options.SaveManager_ConfigList:SetValues(self:RefreshConfigList())
-				SaveManager.Options.SaveManager_ConfigList:SetValue(nil)
-			end,
-		})
-
-		local AutoloadButton
-		AutoloadButton = section:AddButton({
-			Title = "Set as autoload",
-			Description = "Current autoload config: none",
-			Callback = function()
-				local name = SaveManager.Options.SaveManager_ConfigList.Value
-				writefile(self.Folder .. "/settings/autoload.txt", name)
-				AutoloadButton:SetDesc("Current autoload config: " .. name)
-				self.Library:Notify({
-					Title = "Interface",
-					Content = "Config loader",
-					SubContent = string.format("Set %q to auto load", name),
-					Duration = 7,
-				})
-			end,
-		})
-
-		if isfile(self.Folder .. "/settings/autoload.txt") then
-			local name = readfile(self.Folder .. "/settings/autoload.txt")
-			AutoloadButton:SetDesc("Current autoload config: " .. name)
+			end
 		end
 
-		SaveManager:SetIgnoreIndexes({ "SaveManager_ConfigList", "SaveManager_ConfigName" })
-	end
+		function SaveManager:BuildConfigSection(tab)
+			assert(self.Library, "Must set SaveManager.Library")
 
-	SaveManager:BuildFolderTree()
-end)()
+			local section = tab:AddSection("Configuration")
 
-return SaveManager
+			section:AddInput("SaveManager_ConfigName", { Title = "Config name" })
+			section:AddDropdown(
+				"SaveManager_ConfigList",
+				{ Title = "Config list", Values = self:RefreshConfigList(), AllowNull = true }
+			)
 
+			section:AddButton({
+				Title = "Create config",
+				Callback = function()
+					local name = SaveManager.Options.SaveManager_ConfigName.Value
+
+					if name:gsub(" ", "") == "" then
+						return self.Library:Notify({
+							Title = "Interface",
+							Content = "Config loader",
+							SubContent = "Invalid config name (empty)",
+							Duration = 7,
+						})
+					end
+
+					local success, err = self:Save(name)
+					if not success then
+						return self.Library:Notify({
+							Title = "Interface",
+							Content = "Config loader",
+							SubContent = "Failed to save config: " .. err,
+							Duration = 7,
+						})
+					end
+
+					self.Library:Notify({
+						Title = "Interface",
+						Content = "Config loader",
+						SubContent = string.format("Created config %q", name),
+						Duration = 7,
+					})
+
+					SaveManager.Options.SaveManager_ConfigList:SetValues(self:RefreshConfigList())
+					SaveManager.Options.SaveManager_ConfigList:SetValue(nil)
+				end,
+			})
+
+			section:AddButton({
+				Title = "Load config",
+				Callback = function()
+					local name = SaveManager.Options.SaveManager_ConfigList.Value
+
+					local success, err = self:Load(name)
+					if not success then
+						return self.Library:Notify({
+							Title = "Interface",
+							Content = "Config loader",
+							SubContent = "Failed to load config: " .. err,
+							Duration = 7,
+						})
+					end
+
+					self.Library:Notify({
+						Title = "Interface",
+						Content = "Config loader",
+						SubContent = string.format("Loaded config %q", name),
+						Duration = 7,
+					})
+				end,
+			})
+
+			section:AddButton({
+				Title = "Overwrite config",
+				Callback = function()
+					local name = SaveManager.Options.SaveManager_ConfigList.Value
+
+					local success, err = self:Save(name)
+					if not success then
+						return self.Library:Notify({
+							Title = "Interface",
+							Content = "Config loader",
+							SubContent = "Failed to overwrite config: " .. err,
+							Duration = 7,
+						})
+					end
+
+					self.Library:Notify({
+						Title = "Interface",
+						Content = "Config loader",
+						SubContent = string.format("Overwrote config %q", name),
+						Duration = 7,
+					})
+				end,
+			})
+
+			section:AddButton({
+				Title = "Refresh list",
+				Callback = function()
+					SaveManager.Options.SaveManager_ConfigList:SetValues(self:RefreshConfigList())
+					SaveManager.Options.SaveManager_ConfigList:SetValue(nil)
+				end,
+			})
+
+			local AutoloadButton
+			AutoloadButton = section:AddButton({
+				Title = "Set as autoload",
+				Description = "Current autoload config: none",
+				Callback = function()
+					local name = SaveManager.Options.SaveManager_ConfigList.Value
+					writefile(self.Folder .. "/settings/autoload.txt", name)
+					AutoloadButton:SetDesc("Current autoload config: " .. name)
+					self.Library:Notify({
+						Title = "Interface",
+						Content = "Config loader",
+						SubContent = string.format("Set %q to auto load", name),
+						Duration = 7,
+					})
+				end,
+			})
+
+			if isfile(self.Folder .. "/settings/autoload.txt") then
+				local name = readfile(self.Folder .. "/settings/autoload.txt")
+				AutoloadButton:SetDesc("Current autoload config: " .. name)
+			end
+
+			SaveManager:SetIgnoreIndexes({ "SaveManager_ConfigList", "SaveManager_ConfigName" })
+		end
+
+		SaveManager:BuildFolderTree()
+	end)()
+
+	return SaveManager
 end)
 __bundle_register("GUI/main", function(require, _LOADED, __bundle_register, __bundle_modules)
 --[[
@@ -6233,1233 +6250,1240 @@ __bundle_register("GUI/main", function(require, _LOADED, __bundle_register, __bu
 --]]
 -- stylua: ignore
 local a, b
-LPH_NO_VIRTUALIZE(function()
-	a = {
-		{
-			1,
-			"ModuleScript",
-			{ "MainModule" },
+	LPH_NO_VIRTUALIZE(function()
+		a = {
 			{
-				{ 18, "ModuleScript", { "Creator" } },
-				{ 28, "ModuleScript", { "Icons" } },
+				1,
+				"ModuleScript",
+				{ "MainModule" },
 				{
-					47,
-					"ModuleScript",
-					{ "Themes" },
+					{ 18, "ModuleScript", { "Creator" } },
+					{ 28, "ModuleScript", { "Icons" } },
 					{
-						{ 50, "ModuleScript", { "Dark" } },
-						{ 52, "ModuleScript", { "Light" } },
-						{ 51, "ModuleScript", { "Darker" } },
-						{ 53, "ModuleScript", { "Rose" } },
-						{ 49, "ModuleScript", { "Aqua" } },
-						{ 48, "ModuleScript", { "Amethyst" } },
-					},
-				},
-				{
-					19,
-					"ModuleScript",
-					{ "Elements" },
-					{
-						{ 21, "ModuleScript", { "Colorpicker" } },
-						{ 27, "ModuleScript", { "Toggle" } },
-						{ 23, "ModuleScript", { "Input" } },
-						{ 20, "ModuleScript", { "Button" } },
-						{ 25, "ModuleScript", { "Paragraph" } },
-						{ 22, "ModuleScript", { "Dropdown" } },
-						{ 26, "ModuleScript", { "Slider" } },
-						{ 24, "ModuleScript", { "Keybind" } },
-					},
-				},
-				{
-					29,
-					"Folder",
-					{ "Packages" },
-					{
+						47,
+						"ModuleScript",
+						{ "Themes" },
 						{
-							30,
-							"ModuleScript",
-							{ "Flipper" },
+							{ 50, "ModuleScript", { "Dark" } },
+							{ 52, "ModuleScript", { "Light" } },
+							{ 51, "ModuleScript", { "Darker" } },
+							{ 53, "ModuleScript", { "Rose" } },
+							{ 49, "ModuleScript", { "Aqua" } },
+							{ 48, "ModuleScript", { "Amethyst" } },
+						},
+					},
+					{
+						19,
+						"ModuleScript",
+						{ "Elements" },
+						{
+							{ 21, "ModuleScript", { "Colorpicker" } },
+							{ 27, "ModuleScript", { "Toggle" } },
+							{ 23, "ModuleScript", { "Input" } },
+							{ 20, "ModuleScript", { "Button" } },
+							{ 25, "ModuleScript", { "Paragraph" } },
+							{ 22, "ModuleScript", { "Dropdown" } },
+							{ 26, "ModuleScript", { "Slider" } },
+							{ 24, "ModuleScript", { "Keybind" } },
+						},
+					},
+					{
+						29,
+						"Folder",
+						{ "Packages" },
+						{
 							{
-								{ 33, "ModuleScript", { "GroupMotor" } },
-								{ 46, "ModuleScript", { "isMotor.spec" } },
-								{ 39, "ModuleScript", { "Signal" } },
-								{ 40, "ModuleScript", { "Signal.spec" } },
-								{ 45, "ModuleScript", { "isMotor" } },
-								{ 36, "ModuleScript", { "Instant.spec" } },
-								{ 44, "ModuleScript", { "Spring.spec" } },
-								{ 42, "ModuleScript", { "SingleMotor.spec" } },
-								{ 38, "ModuleScript", { "Linear.spec" } },
-								{ 31, "ModuleScript", { "BaseMotor" } },
-								{ 43, "ModuleScript", { "Spring" } },
-								{ 35, "ModuleScript", { "Instant" } },
-								{ 37, "ModuleScript", { "Linear" } },
-								{ 41, "ModuleScript", { "SingleMotor" } },
-								{ 34, "ModuleScript", { "GroupMotor.spec" } },
-								{ 32, "ModuleScript", { "BaseMotor.spec" } },
+								30,
+								"ModuleScript",
+								{ "Flipper" },
+								{
+									{ 33, "ModuleScript", { "GroupMotor" } },
+									{ 46, "ModuleScript", { "isMotor.spec" } },
+									{ 39, "ModuleScript", { "Signal" } },
+									{ 40, "ModuleScript", { "Signal.spec" } },
+									{ 45, "ModuleScript", { "isMotor" } },
+									{ 36, "ModuleScript", { "Instant.spec" } },
+									{ 44, "ModuleScript", { "Spring.spec" } },
+									{ 42, "ModuleScript", { "SingleMotor.spec" } },
+									{ 38, "ModuleScript", { "Linear.spec" } },
+									{ 31, "ModuleScript", { "BaseMotor" } },
+									{ 43, "ModuleScript", { "Spring" } },
+									{ 35, "ModuleScript", { "Instant" } },
+									{ 37, "ModuleScript", { "Linear" } },
+									{ 41, "ModuleScript", { "SingleMotor" } },
+									{ 34, "ModuleScript", { "GroupMotor.spec" } },
+									{ 32, "ModuleScript", { "BaseMotor.spec" } },
+								},
 							},
 						},
 					},
-				},
-				{
-					2,
-					"ModuleScript",
-					{ "Acrylic" },
 					{
-						{ 3, "ModuleScript", { "AcrylicBlur" } },
-						{ 5, "ModuleScript", { "CreateAcrylic" } },
-						{ 6, "ModuleScript", { "Utils" } },
-						{ 4, "ModuleScript", { "AcrylicPaint" } },
+						2,
+						"ModuleScript",
+						{ "Acrylic" },
+						{
+							{ 3, "ModuleScript", { "AcrylicBlur" } },
+							{ 5, "ModuleScript", { "CreateAcrylic" } },
+							{ 6, "ModuleScript", { "Utils" } },
+							{ 4, "ModuleScript", { "AcrylicPaint" } },
+						},
 					},
-				},
-				{
-					7,
-					"Folder",
-					{ "Components" },
 					{
-						{ 9, "ModuleScript", { "Button" } },
-						{ 12, "ModuleScript", { "Notification" } },
-						{ 13, "ModuleScript", { "Section" } },
-						{ 17, "ModuleScript", { "Window" } },
-						{ 14, "ModuleScript", { "Tab" } },
-						{ 10, "ModuleScript", { "Dialog" } },
-						{ 8, "ModuleScript", { "Assets" } },
-						{ 16, "ModuleScript", { "TitleBar" } },
-						{ 15, "ModuleScript", { "Textbox" } },
-						{ 11, "ModuleScript", { "Element" } },
+						7,
+						"Folder",
+						{ "Components" },
+						{
+							{ 9, "ModuleScript", { "Button" } },
+							{ 12, "ModuleScript", { "Notification" } },
+							{ 13, "ModuleScript", { "Section" } },
+							{ 17, "ModuleScript", { "Window" } },
+							{ 14, "ModuleScript", { "Tab" } },
+							{ 10, "ModuleScript", { "Dialog" } },
+							{ 8, "ModuleScript", { "Assets" } },
+							{ 16, "ModuleScript", { "TitleBar" } },
+							{ 15, "ModuleScript", { "Textbox" } },
+							{ 11, "ModuleScript", { "Element" } },
+						},
 					},
 				},
 			},
-		},
-	}
-end)()
-local aa = {
-	LPH_NO_VIRTUALIZE(function()
-		local c, d, e, f, g = b(1)
-		local h, i, j, k, l, m =
-			game:GetService("Lighting"),
-			game:GetService("RunService"),
-			game:GetService("Players").LocalPlayer,
-			game:GetService("UserInputService"),
-			game:GetService("TweenService"),
-			game:GetService("Workspace").CurrentCamera
-		local n, o = j:GetMouse(), d
-		local p, q, r, s = e(o.Creator), e(o.Elements), e(o.Acrylic), o.Components
-		local t, u, v = e(s.Notification), p.New, protectgui or (syn and syn.protect_gui) or function() end
-		local w = u("ScreenGui", { Parent = i:IsStudio() and j.PlayerGui or game:GetService("CoreGui") })
-		v(w)
-		t:Init(w)
-		local x = {
-			Version = "1.1.0",
-			OpenFrames = {},
-			Options = {},
-			Themes = e(o.Themes).Names,
-			Window = nil,
-			WindowFrame = nil,
-			Unloaded = false,
-			Theme = "Dark",
-			DialogOpen = false,
-			UseAcrylic = false,
-			Acrylic = false,
-			Transparency = true,
-			MinimizeKeybind = nil,
-			MinimizeKey = Enum.KeyCode.LeftControl,
-			GUI = w,
 		}
-		function x.SafeCallback(y, z, ...)
-			if not z then
-				return
-			end
-			local A, B = pcall(z, ...)
-			if not A then
-				local C, D = B:find(":%d+: ")
-				if not D then
-					return x:Notify({ Title = "Interface", Content = "Callback error", SubContent = B, Duration = 5 })
+	end)()
+	local aa = {
+		LPH_NO_VIRTUALIZE(function()
+			local c, d, e, f, g = b(1)
+			local h, i, j, k, l, m =
+				game:GetService("Lighting"),
+				game:GetService("RunService"),
+				game:GetService("Players").LocalPlayer,
+				game:GetService("UserInputService"),
+				game:GetService("TweenService"),
+				game:GetService("Workspace").CurrentCamera
+			local n, o = j:GetMouse(), d
+			local p, q, r, s = e(o.Creator), e(o.Elements), e(o.Acrylic), o.Components
+			local t, u, v = e(s.Notification), p.New, protectgui or (syn and syn.protect_gui) or function() end
+			local w = u("ScreenGui", { Parent = i:IsStudio() and j.PlayerGui or game:GetService("CoreGui") })
+			v(w)
+			t:Init(w)
+			local x = {
+				Version = "1.1.0",
+				OpenFrames = {},
+				Options = {},
+				Themes = e(o.Themes).Names,
+				Window = nil,
+				WindowFrame = nil,
+				Unloaded = false,
+				Theme = "Dark",
+				DialogOpen = false,
+				UseAcrylic = false,
+				Acrylic = false,
+				Transparency = true,
+				MinimizeKeybind = nil,
+				MinimizeKey = Enum.KeyCode.LeftControl,
+				GUI = w,
+			}
+			function x.SafeCallback(y, z, ...)
+				if not z then
+					return
 				end
-				return x:Notify({
-					Title = "Interface",
-					Content = "Callback error",
-					SubContent = B:sub(D + 1),
-					Duration = 5,
+				local A, B = pcall(z, ...)
+				if not A then
+					local C, D = B:find(":%d+: ")
+					if not D then
+						return x:Notify({
+							Title = "Interface",
+							Content = "Callback error",
+							SubContent = B,
+							Duration = 5,
+						})
+					end
+					return x:Notify({
+						Title = "Interface",
+						Content = "Callback error",
+						SubContent = B:sub(D + 1),
+						Duration = 5,
+					})
+				end
+			end
+			function x.Round(y, z, A)
+				if A == 0 then
+					return math.floor(z)
+				end
+				z = tostring(z)
+				return z:find("%.") and tonumber(z:sub(1, z:find("%.") + A)) or z
+			end
+			local y = e(o.Icons).assets
+			function x.GetIcon(z, A)
+				if A ~= nil and y["lucide-" .. A] then
+					return y["lucide-" .. A]
+				end
+				return nil
+			end
+			local z = {}
+			z.__index = z
+			z.__namecall = function(A, B, ...)
+				return z[B](...)
+			end
+			for A, B in ipairs(q) do
+				z["Add" .. B.__type] = function(C, D, E)
+					B.Container = C.Container
+					B.Type = C.Type
+					B.ScrollFrame = C.ScrollFrame
+					B.Library = x
+					return B:New(D, E)
+				end
+			end
+			x.Elements = z
+			function x.CreateWindow(C, D)
+				assert(D.Title, "Window - Missing Title")
+				if x.Window then
+					print("You cannot create more than one window.")
+					return
+				end
+				x.MinimizeKey = D.MinimizeKey
+				x.UseAcrylic = D.Acrylic
+				if D.Acrylic then
+					r.init()
+				end
+				local E = e(s.Window)({
+					Parent = w,
+					Size = D.Size,
+					Title = D.Title,
+					SubTitle = D.SubTitle,
+					TabWidth = D.TabWidth,
+				})
+				x.Window = E
+				x:SetTheme(D.Theme)
+				return E
+			end
+			function x.SetTheme(C, D)
+				if x.Window and table.find(x.Themes, D) then
+					x.Theme = D
+					p.UpdateTheme()
+				end
+			end
+			function x.Destroy(C)
+				if x.Window then
+					x.Unloaded = true
+					if x.UseAcrylic then
+						x.Window.AcrylicPaint.Model:Destroy()
+					end
+					p.Disconnect()
+					x.GUI:Destroy()
+				end
+			end
+			function x.ToggleAcrylic(C, D)
+				if x.Window then
+					if x.UseAcrylic then
+						x.Acrylic = D
+						x.Window.AcrylicPaint.Model.Transparency = D and 0.98 or 1
+						if D then
+							r.Enable()
+						else
+							r.Disable()
+						end
+					end
+				end
+			end
+			function x.ToggleTransparency(C, D)
+				if x.Window then
+					x.Window.AcrylicPaint.Frame.Background.BackgroundTransparency = D and 0.35 or 0
+				end
+			end
+			function x.Notify(C, D)
+				return t:New(D)
+			end
+			if getgenv then
+				getgenv().Fluent = x
+			end
+			return x
+		end),
+		LPH_NO_VIRTUALIZE(function()
+			local c, d, e, f, g = b(2)
+			local h =
+				{ AcrylicBlur = e(d.AcrylicBlur), CreateAcrylic = e(d.CreateAcrylic), AcrylicPaint = e(d.AcrylicPaint) }
+			function h.init()
+				local i = Instance.new("DepthOfFieldEffect")
+				i.FarIntensity = 0
+				i.InFocusRadius = 0.1
+				i.NearIntensity = 1
+				local j = {}
+				function h.Enable()
+					for k, l in pairs(j) do
+						l.Enabled = false
+					end
+					i.Parent = game:GetService("Lighting")
+				end
+				function h.Disable()
+					for k, l in pairs(j) do
+						l.Enabled = l.enabled
+					end
+					i.Parent = nil
+				end
+				local k = function()
+					local k = function(k)
+						if k:IsA("DepthOfFieldEffect") then
+							j[k] = { enabled = k.Enabled }
+						end
+					end
+					for l, m in pairs(game:GetService("Lighting"):GetChildren()) do
+						k(m)
+					end
+					if game:GetService("Workspace").CurrentCamera then
+						for n, o in pairs(game:GetService("Workspace").CurrentCamera:GetChildren()) do
+							k(o)
+						end
+					end
+				end
+				k()
+				h.Enable()
+			end
+			return h
+		end),
+		LPH_NO_VIRTUALIZE(function()
+			local c, d, e, f, g = b(3)
+			local h, i, j, k = e(d.Parent.Parent.Creator), e(d.Parent.CreateAcrylic), unpack(e(d.Parent.Utils))
+			local l = function(l)
+				local m = {}
+				l = l or 0.001
+				local n, o = { topLeft = Vector2.new(), topRight = Vector2.new(), bottomRight = Vector2.new() }, i()
+				o.Parent = workspace
+				local p, q =
+					function(p, q)
+						n.topLeft = q
+						n.topRight = q + Vector2.new(p.X, 0)
+						n.bottomRight = q + p
+					end, function()
+						local p = game:GetService("Workspace").CurrentCamera
+						if p then
+							p = p.CFrame
+						end
+						local q = p
+						if not q then
+							q = CFrame.new()
+						end
+						local r, s, t, u = q, n.topLeft, n.topRight, n.bottomRight
+						local v, w, x = j(s, l), j(t, l), j(u, l)
+						local y, z = (w - v).Magnitude, (w - x).Magnitude
+						o.CFrame = CFrame.fromMatrix((v + x) / 2, r.XVector, r.YVector, r.ZVector)
+						o.Mesh.Scale = Vector3.new(y, z, 0)
+					end
+				local r, s =
+					function(r)
+						local s = k()
+						local t, u = r.AbsoluteSize - Vector2.new(s, s), r.AbsolutePosition + Vector2.new(s / 2, s / 2)
+						p(t, u)
+						task.spawn(q)
+					end, function()
+						local r = game:GetService("Workspace").CurrentCamera
+						if not r then
+							return
+						end
+						table.insert(m, r:GetPropertyChangedSignal("CFrame"):Connect(q))
+						table.insert(m, r:GetPropertyChangedSignal("ViewportSize"):Connect(q))
+						table.insert(m, r:GetPropertyChangedSignal("FieldOfView"):Connect(q))
+						task.spawn(q)
+					end
+				o.Destroying:Connect(function()
+					for t, u in m do
+						pcall(function()
+							u:Disconnect()
+						end)
+					end
+				end)
+				s()
+				return r, o
+			end
+			return function(m)
+				local n, o, p = {}, l(m)
+				local q = h.New("Frame", { BackgroundTransparency = 1, Size = UDim2.fromScale(1, 1) })
+				h.AddSignal(q:GetPropertyChangedSignal("AbsolutePosition"), function()
+					o(q)
+				end)
+				h.AddSignal(q:GetPropertyChangedSignal("AbsoluteSize"), function()
+					o(q)
+				end)
+				n.AddParent = function(r)
+					h.AddSignal(r:GetPropertyChangedSignal("Visible"), function()
+						n.SetVisibility(r.Visible)
+					end)
+				end
+				n.SetVisibility = function(r)
+					p.Transparency = r and 0.98 or 1
+				end
+				n.Frame = q
+				n.Model = p
+				return n
+			end
+		end),
+		LPH_NO_VIRTUALIZE(function()
+			local c, d, e, f, g = b(4)
+			local h, i = e(d.Parent.Parent.Creator), e(d.Parent.AcrylicBlur)
+			local j = h.New
+			return function(k)
+				local l = {}
+				l.Frame = j("Frame", {
+					Size = UDim2.fromScale(1, 1),
+					BackgroundTransparency = 0.9,
+					BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+					BorderSizePixel = 0,
+				}, {
+					j("ImageLabel", {
+						Image = "rbxassetid://8992230677",
+						ScaleType = "Slice",
+						SliceCenter = Rect.new(Vector2.new(99, 99), Vector2.new(99, 99)),
+						AnchorPoint = Vector2.new(0.5, 0.5),
+						Size = UDim2.new(1, 120, 1, 116),
+						Position = UDim2.new(0.5, 0, 0.5, 0),
+						BackgroundTransparency = 1,
+						ImageColor3 = Color3.fromRGB(0, 0, 0),
+						ImageTransparency = 0.7,
+					}),
+					j("UICorner", { CornerRadius = UDim.new(0, 8) }),
+					j("Frame", {
+						BackgroundTransparency = 0.45,
+						Size = UDim2.fromScale(1, 1),
+						Name = "Background",
+						ThemeTag = { BackgroundColor3 = "AcrylicMain" },
+					}, { j("UICorner", { CornerRadius = UDim.new(0, 8) }) }),
+					j("Frame", {
+						BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+						BackgroundTransparency = 0.4,
+						Size = UDim2.fromScale(1, 1),
+					}, {
+						j("UICorner", { CornerRadius = UDim.new(0, 8) }),
+						j("UIGradient", { Rotation = 90, ThemeTag = { Color = "AcrylicGradient" } }),
+					}),
+					j("ImageLabel", {
+						Image = "rbxassetid://9968344105",
+						ImageTransparency = 0.98,
+						ScaleType = Enum.ScaleType.Tile,
+						TileSize = UDim2.new(0, 128, 0, 128),
+						Size = UDim2.fromScale(1, 1),
+						BackgroundTransparency = 1,
+					}, { j("UICorner", { CornerRadius = UDim.new(0, 8) }) }),
+					j("ImageLabel", {
+						Image = "rbxassetid://9968344227",
+						ImageTransparency = 0.9,
+						ScaleType = Enum.ScaleType.Tile,
+						TileSize = UDim2.new(0, 128, 0, 128),
+						Size = UDim2.fromScale(1, 1),
+						BackgroundTransparency = 1,
+						ThemeTag = { ImageTransparency = "AcrylicNoise" },
+					}, { j("UICorner", { CornerRadius = UDim.new(0, 8) }) }),
+					j("Frame", { BackgroundTransparency = 1, Size = UDim2.fromScale(1, 1), ZIndex = 2 }, {
+						j("UICorner", { CornerRadius = UDim.new(0, 8) }),
+						j("UIStroke", { Transparency = 0.5, Thickness = 1, ThemeTag = { Color = "AcrylicBorder" } }),
+					}),
+				})
+				local m
+				if e(d.Parent.Parent).UseAcrylic then
+					m = i()
+					m.Frame.Parent = l.Frame
+					l.Model = m.Model
+					l.AddParent = m.AddParent
+					l.SetVisibility = m.SetVisibility
+				end
+				return l
+			end
+		end),
+		LPH_NO_VIRTUALIZE(function()
+			local c, d, e, f, g = b(5)
+			local h = d.Parent.Parent
+			local i = e(h.Creator)
+			local j = function()
+				local j = i.New("Part", {
+					Name = "Body",
+					Color = Color3.new(0, 0, 0),
+					Material = Enum.Material.Glass,
+					Size = Vector3.new(1, 1, 0),
+					Anchored = true,
+					CanCollide = false,
+					Locked = true,
+					CastShadow = false,
+					Transparency = 0.98,
+				}, { i.New("SpecialMesh", { MeshType = Enum.MeshType.Brick, Offset = Vector3.new(0, 0, -1E-6) }) })
+				return j
+			end
+			return j
+		end),
+		LPH_NO_VIRTUALIZE(function()
+			local c, d, e, f, g = b(6)
+			local h, i =
+				function(h, i, j, k, l)
+					return (h - i) * (l - k) / (j - i) + k
+				end, function(h, i)
+					local j = game:GetService("Workspace").CurrentCamera:ScreenPointToRay(h.X, h.Y)
+					return j.Origin + j.Direction * i
+				end
+			local j = function()
+				local j = game:GetService("Workspace").CurrentCamera.ViewportSize.Y
+				return h(j, 0, 2560, 8, 56)
+			end
+			return { i, j }
+		end),
+		[8] = LPH_NO_VIRTUALIZE(function()
+			local c, d, e, f, g = b(8)
+			return {
+				Close = "rbxassetid://9886659671",
+				Min = "rbxassetid://9886659276",
+				Max = "rbxassetid://9886659406",
+				Restore = "rbxassetid://9886659001",
+			}
+		end),
+		[9] = LPH_NO_VIRTUALIZE(function()
+			local c, d, e, f, g = b(9)
+			local h = d.Parent.Parent
+			local i, j = e(h.Packages.Flipper), e(h.Creator)
+			local k, l = j.New, i.Spring.new
+			return function(m, n, o)
+				o = o or false
+				local p = {}
+				p.Title = k("TextLabel", {
+					FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json"),
+					TextColor3 = Color3.fromRGB(200, 200, 200),
+					TextSize = 14,
+					TextWrapped = true,
+					TextXAlignment = Enum.TextXAlignment.Center,
+					TextYAlignment = Enum.TextYAlignment.Center,
+					BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+					AutomaticSize = Enum.AutomaticSize.Y,
+					BackgroundTransparency = 1,
+					Size = UDim2.fromScale(1, 1),
+					ThemeTag = { TextColor3 = "Text" },
+				})
+				p.HoverFrame = k("Frame", {
+					Size = UDim2.fromScale(1, 1),
+					BackgroundTransparency = 1,
+					ThemeTag = { BackgroundColor3 = "Hover" },
+				}, { k("UICorner", { CornerRadius = UDim.new(0, 4) }) })
+				p.Frame = k(
+					"TextButton",
+					{ Size = UDim2.new(0, 0, 0, 32), Parent = n, ThemeTag = { BackgroundColor3 = "DialogButton" } },
+					{
+						k("UICorner", { CornerRadius = UDim.new(0, 4) }),
+						k("UIStroke", {
+							ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
+							Transparency = 0.65,
+							ThemeTag = { Color = "DialogButtonBorder" },
+						}),
+						p.HoverFrame,
+						p.Title,
+					}
+				)
+				local q, r = j.SpringMotor(1, p.HoverFrame, "BackgroundTransparency", o)
+				j.AddSignal(p.Frame.MouseEnter, function()
+					r(0.97)
+				end)
+				j.AddSignal(p.Frame.MouseLeave, function()
+					r(1)
+				end)
+				j.AddSignal(p.Frame.MouseButton1Down, function()
+					r(1)
+				end)
+				j.AddSignal(p.Frame.MouseButton1Up, function()
+					r(0.97)
+				end)
+				return p
+			end
+		end),
+		[10] = LPH_NO_VIRTUALIZE(function()
+			local c, d, e, f, g = b(10)
+			local h, i, j, k =
+				game:GetService("UserInputService"),
+				game:GetService("Players").LocalPlayer:GetMouse(),
+				game:GetService("Workspace").CurrentCamera,
+				d.Parent.Parent
+			local l, m = e(k.Packages.Flipper), e(k.Creator)
+			local n, o, p, q = l.Spring.new, l.Instant.new, m.New, { Window = nil }
+			function q.Init(r, s)
+				q.Window = s
+				return q
+			end
+			function q.Create(r)
+				local s = { Buttons = 0 }
+				s.TintFrame = p("TextButton", {
+					Text = "",
+					Size = UDim2.fromScale(1, 1),
+					BackgroundColor3 = Color3.fromRGB(0, 0, 0),
+					BackgroundTransparency = 1,
+					Parent = q.Window.Root,
+				}, { p("UICorner", { CornerRadius = UDim.new(0, 8) }) })
+				local t, u = m.SpringMotor(1, s.TintFrame, "BackgroundTransparency", true)
+				s.ButtonHolder = p("Frame", {
+					Size = UDim2.new(1, -40, 1, -40),
+					AnchorPoint = Vector2.new(0.5, 0.5),
+					Position = UDim2.fromScale(0.5, 0.5),
+					BackgroundTransparency = 1,
+				}, {
+					p("UIListLayout", {
+						Padding = UDim.new(0, 10),
+						FillDirection = Enum.FillDirection.Horizontal,
+						HorizontalAlignment = Enum.HorizontalAlignment.Center,
+						SortOrder = Enum.SortOrder.LayoutOrder,
+					}),
+				})
+				s.ButtonHolderFrame = p("Frame", {
+					Size = UDim2.new(1, 0, 0, 70),
+					Position = UDim2.new(0, 0, 1, -70),
+					ThemeTag = {
+						BackgroundColor3 = "DialogHolder",
+					},
+				}, {
+					p("Frame", { Size = UDim2.new(1, 0, 0, 1), ThemeTag = { BackgroundColor3 = "DialogHolderLine" } }),
+					s.ButtonHolder,
+				})
+				s.Title = p("TextLabel", {
+					FontFace = Font.new(
+						"rbxasset://fonts/families/GothamSSm.json",
+						Enum.FontWeight.SemiBold,
+						Enum.FontStyle.Normal
+					),
+					Text = "Dialog",
+					TextColor3 = Color3.fromRGB(240, 240, 240),
+					TextSize = 22,
+					TextXAlignment = Enum.TextXAlignment.Left,
+					Size = UDim2.new(1, 0, 0, 22),
+					Position = UDim2.fromOffset(20, 25),
+					BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+					BackgroundTransparency = 1,
+					ThemeTag = { TextColor3 = "Text" },
+				})
+				s.Scale = p("UIScale", { Scale = 1 })
+				local v, w = m.SpringMotor(1.1, s.Scale, "Scale")
+				s.Root = p("CanvasGroup", {
+					Size = UDim2.fromOffset(300, 165),
+					AnchorPoint = Vector2.new(0.5, 0.5),
+					Position = UDim2.fromScale(0.5, 0.5),
+					GroupTransparency = 1,
+					Parent = s.TintFrame,
+					ThemeTag = { BackgroundColor3 = "Dialog" },
+				}, {
+					p("UICorner", { CornerRadius = UDim.new(0, 8) }),
+					p("UIStroke", { Transparency = 0.5, ThemeTag = { Color = "DialogBorder" } }),
+					s.Scale,
+					s.Title,
+					s.ButtonHolderFrame,
+				})
+				local x, y = m.SpringMotor(1, s.Root, "GroupTransparency")
+				function s.Open(z)
+					e(k).DialogOpen = true
+					s.Scale.Scale = 1.1
+					u(0.75)
+					y(0)
+					w(1)
+				end
+				function s.Close(z)
+					e(k).DialogOpen = false
+					u(1)
+					y(1)
+					w(1.1)
+					s.Root.UIStroke:Destroy()
+					task.wait(0.15)
+					s.TintFrame:Destroy()
+				end
+				function s.Button(z, A, B)
+					s.Buttons = s.Buttons + 1
+					A = A or "Button"
+					B = B or function() end
+					local C = e(k.Components.Button)("", s.ButtonHolder, true)
+					C.Title.Text = A
+					for D, E in next, s.ButtonHolder:GetChildren() do
+						if E:IsA("TextButton") then
+							E.Size = UDim2.new(1 / s.Buttons, -(((s.Buttons - 1) * 10) / s.Buttons), 0, 32)
+						end
+					end
+					m.AddSignal(C.Frame.MouseButton1Click, function()
+						e(k):SafeCallback(B)
+						pcall(function()
+							s:Close()
+						end)
+					end)
+					return C
+				end
+				return s
+			end
+			return q
+		end),
+		[11] = LPH_NO_VIRTUALIZE(function()
+			local c, d, e, f, g = b(11)
+			local h = d.Parent.Parent
+			local i, j = e(h.Packages.Flipper), e(h.Creator)
+			local k, l = j.New, i.Spring.new
+			return function(m, n, o, p)
+				local q = {}
+				q.TitleLabel = k("TextLabel", {
+					FontFace = Font.new(
+						"rbxasset://fonts/families/GothamSSm.json",
+						Enum.FontWeight.Medium,
+						Enum.FontStyle.Normal
+					),
+					Text = m,
+					TextColor3 = Color3.fromRGB(240, 240, 240),
+					TextSize = 13,
+					TextXAlignment = Enum.TextXAlignment.Left,
+					Size = UDim2.new(1, 0, 0, 14),
+					BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+					BackgroundTransparency = 1,
+					ThemeTag = { TextColor3 = "Text" },
+				})
+				q.DescLabel = k("TextLabel", {
+					FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json"),
+					Text = n,
+					TextColor3 = Color3.fromRGB(200, 200, 200),
+					TextSize = 12,
+					TextWrapped = true,
+					TextXAlignment = Enum.TextXAlignment.Left,
+					BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+					AutomaticSize = Enum.AutomaticSize.Y,
+					BackgroundTransparency = 1,
+					Size = UDim2.new(1, 0, 0, 14),
+					ThemeTag = { TextColor3 = "SubText" },
+				})
+				q.LabelHolder = k("Frame", {
+					AutomaticSize = Enum.AutomaticSize.Y,
+					BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+					BackgroundTransparency = 1,
+					Position = UDim2.fromOffset(10, 0),
+					Size = UDim2.new(1, -28, 0, 0),
+				}, {
+					k(
+						"UIListLayout",
+						{ SortOrder = Enum.SortOrder.LayoutOrder, VerticalAlignment = Enum.VerticalAlignment.Center }
+					),
+					k("UIPadding", { PaddingBottom = UDim.new(0, 13), PaddingTop = UDim.new(0, 13) }),
+					q.TitleLabel,
+					q.DescLabel,
+				})
+				q.Border = k("UIStroke", {
+					Transparency = 0.5,
+					ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
+					Color = Color3.fromRGB(0, 0, 0),
+					ThemeTag = { Color = "ElementBorder" },
+				})
+				q.Frame = k("TextButton", {
+					Size = UDim2.new(1, 0, 0, 0),
+					BackgroundTransparency = 0.89,
+					BackgroundColor3 = Color3.fromRGB(130, 130, 130),
+					Parent = o,
+					AutomaticSize = Enum.AutomaticSize.Y,
+					Text = "",
+					LayoutOrder = 7,
+					ThemeTag = { BackgroundColor3 = "Element", BackgroundTransparency = "ElementTransparency" },
+				}, { k("UICorner", { CornerRadius = UDim.new(0, 4) }), q.Border, q.LabelHolder })
+				function q.SetTitle(r, s)
+					q.TitleLabel.Text = s
+				end
+				function q.SetDesc(r, s)
+					if s == nil then
+						s = ""
+					end
+					if s == "" then
+						q.DescLabel.Visible = false
+					else
+						q.DescLabel.Visible = true
+					end
+					q.DescLabel.Text = s
+				end
+				function q.Destroy(r)
+					q.Frame:Destroy()
+				end
+				q:SetTitle(m)
+				q:SetDesc(n)
+				if p then
+					local r, s, t =
+						h.Themes,
+						j.SpringMotor(
+							j.GetThemeProperty("ElementTransparency"),
+							q.Frame,
+							"BackgroundTransparency",
+							false,
+							true
+						)
+					j.AddSignal(q.Frame.MouseEnter, function()
+						t(j.GetThemeProperty("ElementTransparency") - j.GetThemeProperty("HoverChange"))
+					end)
+					j.AddSignal(q.Frame.MouseLeave, function()
+						t(j.GetThemeProperty("ElementTransparency"))
+					end)
+					j.AddSignal(q.Frame.MouseButton1Down, function()
+						t(j.GetThemeProperty("ElementTransparency") + j.GetThemeProperty("HoverChange"))
+					end)
+					j.AddSignal(q.Frame.MouseButton1Up, function()
+						t(j.GetThemeProperty("ElementTransparency") - j.GetThemeProperty("HoverChange"))
+					end)
+				end
+				return q
+			end
+		end),
+		[12] = LPH_NO_VIRTUALIZE(function()
+			local c, d, e, f, g = b(12)
+			local h = d.Parent.Parent
+			local i, j, k = e(h.Packages.Flipper), e(h.Creator), e(h.Acrylic)
+			local l, m, n, o = i.Spring.new, i.Instant.new, j.New, {}
+			function o.Init(p, q)
+				o.Holder = n("Frame", {
+					Position = UDim2.new(1, -30, 1, -30),
+					Size = UDim2.new(0, 310, 1, -30),
+					AnchorPoint = Vector2.new(1, 1),
+					BackgroundTransparency = 1,
+					Parent = q,
+				}, {
+					n("UIListLayout", {
+						HorizontalAlignment = Enum.HorizontalAlignment.Center,
+						SortOrder = Enum.SortOrder.LayoutOrder,
+						VerticalAlignment = Enum.VerticalAlignment.Bottom,
+						Padding = UDim.new(0, 20),
+					}),
 				})
 			end
-		end
-		function x.Round(y, z, A)
-			if A == 0 then
-				return math.floor(z)
-			end
-			z = tostring(z)
-			return z:find("%.") and tonumber(z:sub(1, z:find("%.") + A)) or z
-		end
-		local y = e(o.Icons).assets
-		function x.GetIcon(z, A)
-			if A ~= nil and y["lucide-" .. A] then
-				return y["lucide-" .. A]
-			end
-			return nil
-		end
-		local z = {}
-		z.__index = z
-		z.__namecall = function(A, B, ...)
-			return z[B](...)
-		end
-		for A, B in ipairs(q) do
-			z["Add" .. B.__type] = function(C, D, E)
-				B.Container = C.Container
-				B.Type = C.Type
-				B.ScrollFrame = C.ScrollFrame
-				B.Library = x
-				return B:New(D, E)
-			end
-		end
-		x.Elements = z
-		function x.CreateWindow(C, D)
-			assert(D.Title, "Window - Missing Title")
-			if x.Window then
-				print("You cannot create more than one window.")
-				return
-			end
-			x.MinimizeKey = D.MinimizeKey
-			x.UseAcrylic = D.Acrylic
-			if D.Acrylic then
-				r.init()
-			end
-			local E = e(s.Window)({
-				Parent = w,
-				Size = D.Size,
-				Title = D.Title,
-				SubTitle = D.SubTitle,
-				TabWidth = D.TabWidth,
-			})
-			x.Window = E
-			x:SetTheme(D.Theme)
-			return E
-		end
-		function x.SetTheme(C, D)
-			if x.Window and table.find(x.Themes, D) then
-				x.Theme = D
-				p.UpdateTheme()
-			end
-		end
-		function x.Destroy(C)
-			if x.Window then
-				x.Unloaded = true
-				if x.UseAcrylic then
-					x.Window.AcrylicPaint.Model:Destroy()
-				end
-				p.Disconnect()
-				x.GUI:Destroy()
-			end
-		end
-		function x.ToggleAcrylic(C, D)
-			if x.Window then
-				if x.UseAcrylic then
-					x.Acrylic = D
-					x.Window.AcrylicPaint.Model.Transparency = D and 0.98 or 1
-					if D then
-						r.Enable()
-					else
-						r.Disable()
-					end
-				end
-			end
-		end
-		function x.ToggleTransparency(C, D)
-			if x.Window then
-				x.Window.AcrylicPaint.Frame.Background.BackgroundTransparency = D and 0.35 or 0
-			end
-		end
-		function x.Notify(C, D)
-			return t:New(D)
-		end
-		if getgenv then
-			getgenv().Fluent = x
-		end
-		return x
-	end),
-	LPH_NO_VIRTUALIZE(function()
-		local c, d, e, f, g = b(2)
-		local h =
-			{ AcrylicBlur = e(d.AcrylicBlur), CreateAcrylic = e(d.CreateAcrylic), AcrylicPaint = e(d.AcrylicPaint) }
-		function h.init()
-			local i = Instance.new("DepthOfFieldEffect")
-			i.FarIntensity = 0
-			i.InFocusRadius = 0.1
-			i.NearIntensity = 1
-			local j = {}
-			function h.Enable()
-				for k, l in pairs(j) do
-					l.Enabled = false
-				end
-				i.Parent = game:GetService("Lighting")
-			end
-			function h.Disable()
-				for k, l in pairs(j) do
-					l.Enabled = l.enabled
-				end
-				i.Parent = nil
-			end
-			local k = function()
-				local k = function(k)
-					if k:IsA("DepthOfFieldEffect") then
-						j[k] = { enabled = k.Enabled }
-					end
-				end
-				for l, m in pairs(game:GetService("Lighting"):GetChildren()) do
-					k(m)
-				end
-				if game:GetService("Workspace").CurrentCamera then
-					for n, o in pairs(game:GetService("Workspace").CurrentCamera:GetChildren()) do
-						k(o)
-					end
-				end
-			end
-			k()
-			h.Enable()
-		end
-		return h
-	end),
-	LPH_NO_VIRTUALIZE(function()
-		local c, d, e, f, g = b(3)
-		local h, i, j, k = e(d.Parent.Parent.Creator), e(d.Parent.CreateAcrylic), unpack(e(d.Parent.Utils))
-		local l = function(l)
-			local m = {}
-			l = l or 0.001
-			local n, o = { topLeft = Vector2.new(), topRight = Vector2.new(), bottomRight = Vector2.new() }, i()
-			o.Parent = workspace
-			local p, q =
-				function(p, q)
-					n.topLeft = q
-					n.topRight = q + Vector2.new(p.X, 0)
-					n.bottomRight = q + p
-				end, function()
-					local p = game:GetService("Workspace").CurrentCamera
-					if p then
-						p = p.CFrame
-					end
-					local q = p
-					if not q then
-						q = CFrame.new()
-					end
-					local r, s, t, u = q, n.topLeft, n.topRight, n.bottomRight
-					local v, w, x = j(s, l), j(t, l), j(u, l)
-					local y, z = (w - v).Magnitude, (w - x).Magnitude
-					o.CFrame = CFrame.fromMatrix((v + x) / 2, r.XVector, r.YVector, r.ZVector)
-					o.Mesh.Scale = Vector3.new(y, z, 0)
-				end
-			local r, s =
-				function(r)
-					local s = k()
-					local t, u = r.AbsoluteSize - Vector2.new(s, s), r.AbsolutePosition + Vector2.new(s / 2, s / 2)
-					p(t, u)
-					task.spawn(q)
-				end, function()
-					local r = game:GetService("Workspace").CurrentCamera
-					if not r then
-						return
-					end
-					table.insert(m, r:GetPropertyChangedSignal("CFrame"):Connect(q))
-					table.insert(m, r:GetPropertyChangedSignal("ViewportSize"):Connect(q))
-					table.insert(m, r:GetPropertyChangedSignal("FieldOfView"):Connect(q))
-					task.spawn(q)
-				end
-			o.Destroying:Connect(function()
-				for t, u in m do
-					pcall(function()
-						u:Disconnect()
-					end)
-				end
-			end)
-			s()
-			return r, o
-		end
-		return function(m)
-			local n, o, p = {}, l(m)
-			local q = h.New("Frame", { BackgroundTransparency = 1, Size = UDim2.fromScale(1, 1) })
-			h.AddSignal(q:GetPropertyChangedSignal("AbsolutePosition"), function()
-				o(q)
-			end)
-			h.AddSignal(q:GetPropertyChangedSignal("AbsoluteSize"), function()
-				o(q)
-			end)
-			n.AddParent = function(r)
-				h.AddSignal(r:GetPropertyChangedSignal("Visible"), function()
-					n.SetVisibility(r.Visible)
-				end)
-			end
-			n.SetVisibility = function(r)
-				p.Transparency = r and 0.98 or 1
-			end
-			n.Frame = q
-			n.Model = p
-			return n
-		end
-	end),
-	LPH_NO_VIRTUALIZE(function()
-		local c, d, e, f, g = b(4)
-		local h, i = e(d.Parent.Parent.Creator), e(d.Parent.AcrylicBlur)
-		local j = h.New
-		return function(k)
-			local l = {}
-			l.Frame = j("Frame", {
-				Size = UDim2.fromScale(1, 1),
-				BackgroundTransparency = 0.9,
-				BackgroundColor3 = Color3.fromRGB(255, 255, 255),
-				BorderSizePixel = 0,
-			}, {
-				j("ImageLabel", {
-					Image = "rbxassetid://8992230677",
-					ScaleType = "Slice",
-					SliceCenter = Rect.new(Vector2.new(99, 99), Vector2.new(99, 99)),
-					AnchorPoint = Vector2.new(0.5, 0.5),
-					Size = UDim2.new(1, 120, 1, 116),
-					Position = UDim2.new(0.5, 0, 0.5, 0),
-					BackgroundTransparency = 1,
-					ImageColor3 = Color3.fromRGB(0, 0, 0),
-					ImageTransparency = 0.7,
-				}),
-				j("UICorner", { CornerRadius = UDim.new(0, 8) }),
-				j("Frame", {
-					BackgroundTransparency = 0.45,
-					Size = UDim2.fromScale(1, 1),
-					Name = "Background",
-					ThemeTag = { BackgroundColor3 = "AcrylicMain" },
-				}, { j("UICorner", { CornerRadius = UDim.new(0, 8) }) }),
-				j("Frame", {
-					BackgroundColor3 = Color3.fromRGB(255, 255, 255),
-					BackgroundTransparency = 0.4,
-					Size = UDim2.fromScale(1, 1),
-				}, {
-					j("UICorner", { CornerRadius = UDim.new(0, 8) }),
-					j("UIGradient", { Rotation = 90, ThemeTag = { Color = "AcrylicGradient" } }),
-				}),
-				j("ImageLabel", {
-					Image = "rbxassetid://9968344105",
-					ImageTransparency = 0.98,
-					ScaleType = Enum.ScaleType.Tile,
-					TileSize = UDim2.new(0, 128, 0, 128),
-					Size = UDim2.fromScale(1, 1),
-					BackgroundTransparency = 1,
-				}, { j("UICorner", { CornerRadius = UDim.new(0, 8) }) }),
-				j("ImageLabel", {
-					Image = "rbxassetid://9968344227",
-					ImageTransparency = 0.9,
-					ScaleType = Enum.ScaleType.Tile,
-					TileSize = UDim2.new(0, 128, 0, 128),
-					Size = UDim2.fromScale(1, 1),
-					BackgroundTransparency = 1,
-					ThemeTag = { ImageTransparency = "AcrylicNoise" },
-				}, { j("UICorner", { CornerRadius = UDim.new(0, 8) }) }),
-				j("Frame", { BackgroundTransparency = 1, Size = UDim2.fromScale(1, 1), ZIndex = 2 }, {
-					j("UICorner", { CornerRadius = UDim.new(0, 8) }),
-					j("UIStroke", { Transparency = 0.5, Thickness = 1, ThemeTag = { Color = "AcrylicBorder" } }),
-				}),
-			})
-			local m
-			if e(d.Parent.Parent).UseAcrylic then
-				m = i()
-				m.Frame.Parent = l.Frame
-				l.Model = m.Model
-				l.AddParent = m.AddParent
-				l.SetVisibility = m.SetVisibility
-			end
-			return l
-		end
-	end),
-	LPH_NO_VIRTUALIZE(function()
-		local c, d, e, f, g = b(5)
-		local h = d.Parent.Parent
-		local i = e(h.Creator)
-		local j = function()
-			local j = i.New("Part", {
-				Name = "Body",
-				Color = Color3.new(0, 0, 0),
-				Material = Enum.Material.Glass,
-				Size = Vector3.new(1, 1, 0),
-				Anchored = true,
-				CanCollide = false,
-				Locked = true,
-				CastShadow = false,
-				Transparency = 0.98,
-			}, { i.New("SpecialMesh", { MeshType = Enum.MeshType.Brick, Offset = Vector3.new(0, 0, -1E-6) }) })
-			return j
-		end
-		return j
-	end),
-	LPH_NO_VIRTUALIZE(function()
-		local c, d, e, f, g = b(6)
-		local h, i =
-			function(h, i, j, k, l)
-				return (h - i) * (l - k) / (j - i) + k
-			end, function(h, i)
-				local j = game:GetService("Workspace").CurrentCamera:ScreenPointToRay(h.X, h.Y)
-				return j.Origin + j.Direction * i
-			end
-		local j = function()
-			local j = game:GetService("Workspace").CurrentCamera.ViewportSize.Y
-			return h(j, 0, 2560, 8, 56)
-		end
-		return { i, j }
-	end),
-	[8] = LPH_NO_VIRTUALIZE(function()
-		local c, d, e, f, g = b(8)
-		return {
-			Close = "rbxassetid://9886659671",
-			Min = "rbxassetid://9886659276",
-			Max = "rbxassetid://9886659406",
-			Restore = "rbxassetid://9886659001",
-		}
-	end),
-	[9] = LPH_NO_VIRTUALIZE(function()
-		local c, d, e, f, g = b(9)
-		local h = d.Parent.Parent
-		local i, j = e(h.Packages.Flipper), e(h.Creator)
-		local k, l = j.New, i.Spring.new
-		return function(m, n, o)
-			o = o or false
-			local p = {}
-			p.Title = k("TextLabel", {
-				FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json"),
-				TextColor3 = Color3.fromRGB(200, 200, 200),
-				TextSize = 14,
-				TextWrapped = true,
-				TextXAlignment = Enum.TextXAlignment.Center,
-				TextYAlignment = Enum.TextYAlignment.Center,
-				BackgroundColor3 = Color3.fromRGB(255, 255, 255),
-				AutomaticSize = Enum.AutomaticSize.Y,
-				BackgroundTransparency = 1,
-				Size = UDim2.fromScale(1, 1),
-				ThemeTag = { TextColor3 = "Text" },
-			})
-			p.HoverFrame = k(
-				"Frame",
-				{ Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1, ThemeTag = { BackgroundColor3 = "Hover" } },
-				{ k("UICorner", { CornerRadius = UDim.new(0, 4) }) }
-			)
-			p.Frame = k(
-				"TextButton",
-				{ Size = UDim2.new(0, 0, 0, 32), Parent = n, ThemeTag = { BackgroundColor3 = "DialogButton" } },
-				{
-					k("UICorner", { CornerRadius = UDim.new(0, 4) }),
-					k("UIStroke", {
-						ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
-						Transparency = 0.65,
-						ThemeTag = { Color = "DialogButtonBorder" },
-					}),
-					p.HoverFrame,
-					p.Title,
-				}
-			)
-			local q, r = j.SpringMotor(1, p.HoverFrame, "BackgroundTransparency", o)
-			j.AddSignal(p.Frame.MouseEnter, function()
-				r(0.97)
-			end)
-			j.AddSignal(p.Frame.MouseLeave, function()
-				r(1)
-			end)
-			j.AddSignal(p.Frame.MouseButton1Down, function()
-				r(1)
-			end)
-			j.AddSignal(p.Frame.MouseButton1Up, function()
-				r(0.97)
-			end)
-			return p
-		end
-	end),
-	[10] = LPH_NO_VIRTUALIZE(function()
-		local c, d, e, f, g = b(10)
-		local h, i, j, k =
-			game:GetService("UserInputService"),
-			game:GetService("Players").LocalPlayer:GetMouse(),
-			game:GetService("Workspace").CurrentCamera,
-			d.Parent.Parent
-		local l, m = e(k.Packages.Flipper), e(k.Creator)
-		local n, o, p, q = l.Spring.new, l.Instant.new, m.New, { Window = nil }
-		function q.Init(r, s)
-			q.Window = s
-			return q
-		end
-		function q.Create(r)
-			local s = { Buttons = 0 }
-			s.TintFrame = p("TextButton", {
-				Text = "",
-				Size = UDim2.fromScale(1, 1),
-				BackgroundColor3 = Color3.fromRGB(0, 0, 0),
-				BackgroundTransparency = 1,
-				Parent = q.Window.Root,
-			}, { p("UICorner", { CornerRadius = UDim.new(0, 8) }) })
-			local t, u = m.SpringMotor(1, s.TintFrame, "BackgroundTransparency", true)
-			s.ButtonHolder = p("Frame", {
-				Size = UDim2.new(1, -40, 1, -40),
-				AnchorPoint = Vector2.new(0.5, 0.5),
-				Position = UDim2.fromScale(0.5, 0.5),
-				BackgroundTransparency = 1,
-			}, {
-				p("UIListLayout", {
-					Padding = UDim.new(0, 10),
-					FillDirection = Enum.FillDirection.Horizontal,
-					HorizontalAlignment = Enum.HorizontalAlignment.Center,
-					SortOrder = Enum.SortOrder.LayoutOrder,
-				}),
-			})
-			s.ButtonHolderFrame = p("Frame", {
-				Size = UDim2.new(1, 0, 0, 70),
-				Position = UDim2.new(0, 0, 1, -70),
-				ThemeTag = {
-					BackgroundColor3 = "DialogHolder",
-				},
-			}, {
-				p("Frame", { Size = UDim2.new(1, 0, 0, 1), ThemeTag = { BackgroundColor3 = "DialogHolderLine" } }),
-				s.ButtonHolder,
-			})
-			s.Title = p("TextLabel", {
-				FontFace = Font.new(
-					"rbxasset://fonts/families/GothamSSm.json",
-					Enum.FontWeight.SemiBold,
-					Enum.FontStyle.Normal
-				),
-				Text = "Dialog",
-				TextColor3 = Color3.fromRGB(240, 240, 240),
-				TextSize = 22,
-				TextXAlignment = Enum.TextXAlignment.Left,
-				Size = UDim2.new(1, 0, 0, 22),
-				Position = UDim2.fromOffset(20, 25),
-				BackgroundColor3 = Color3.fromRGB(255, 255, 255),
-				BackgroundTransparency = 1,
-				ThemeTag = { TextColor3 = "Text" },
-			})
-			s.Scale = p("UIScale", { Scale = 1 })
-			local v, w = m.SpringMotor(1.1, s.Scale, "Scale")
-			s.Root = p("CanvasGroup", {
-				Size = UDim2.fromOffset(300, 165),
-				AnchorPoint = Vector2.new(0.5, 0.5),
-				Position = UDim2.fromScale(0.5, 0.5),
-				GroupTransparency = 1,
-				Parent = s.TintFrame,
-				ThemeTag = { BackgroundColor3 = "Dialog" },
-			}, {
-				p("UICorner", { CornerRadius = UDim.new(0, 8) }),
-				p("UIStroke", { Transparency = 0.5, ThemeTag = { Color = "DialogBorder" } }),
-				s.Scale,
-				s.Title,
-				s.ButtonHolderFrame,
-			})
-			local x, y = m.SpringMotor(1, s.Root, "GroupTransparency")
-			function s.Open(z)
-				e(k).DialogOpen = true
-				s.Scale.Scale = 1.1
-				u(0.75)
-				y(0)
-				w(1)
-			end
-			function s.Close(z)
-				e(k).DialogOpen = false
-				u(1)
-				y(1)
-				w(1.1)
-				s.Root.UIStroke:Destroy()
-				task.wait(0.15)
-				s.TintFrame:Destroy()
-			end
-			function s.Button(z, A, B)
-				s.Buttons = s.Buttons + 1
-				A = A or "Button"
-				B = B or function() end
-				local C = e(k.Components.Button)("", s.ButtonHolder, true)
-				C.Title.Text = A
-				for D, E in next, s.ButtonHolder:GetChildren() do
-					if E:IsA("TextButton") then
-						E.Size = UDim2.new(1 / s.Buttons, -(((s.Buttons - 1) * 10) / s.Buttons), 0, 32)
-					end
-				end
-				m.AddSignal(C.Frame.MouseButton1Click, function()
-					e(k):SafeCallback(B)
-					pcall(function()
-						s:Close()
-					end)
-				end)
-				return C
-			end
-			return s
-		end
-		return q
-	end),
-	[11] = LPH_NO_VIRTUALIZE(function()
-		local c, d, e, f, g = b(11)
-		local h = d.Parent.Parent
-		local i, j = e(h.Packages.Flipper), e(h.Creator)
-		local k, l = j.New, i.Spring.new
-		return function(m, n, o, p)
-			local q = {}
-			q.TitleLabel = k("TextLabel", {
-				FontFace = Font.new(
-					"rbxasset://fonts/families/GothamSSm.json",
-					Enum.FontWeight.Medium,
-					Enum.FontStyle.Normal
-				),
-				Text = m,
-				TextColor3 = Color3.fromRGB(240, 240, 240),
-				TextSize = 13,
-				TextXAlignment = Enum.TextXAlignment.Left,
-				Size = UDim2.new(1, 0, 0, 14),
-				BackgroundColor3 = Color3.fromRGB(255, 255, 255),
-				BackgroundTransparency = 1,
-				ThemeTag = { TextColor3 = "Text" },
-			})
-			q.DescLabel = k("TextLabel", {
-				FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json"),
-				Text = n,
-				TextColor3 = Color3.fromRGB(200, 200, 200),
-				TextSize = 12,
-				TextWrapped = true,
-				TextXAlignment = Enum.TextXAlignment.Left,
-				BackgroundColor3 = Color3.fromRGB(255, 255, 255),
-				AutomaticSize = Enum.AutomaticSize.Y,
-				BackgroundTransparency = 1,
-				Size = UDim2.new(1, 0, 0, 14),
-				ThemeTag = { TextColor3 = "SubText" },
-			})
-			q.LabelHolder = k("Frame", {
-				AutomaticSize = Enum.AutomaticSize.Y,
-				BackgroundColor3 = Color3.fromRGB(255, 255, 255),
-				BackgroundTransparency = 1,
-				Position = UDim2.fromOffset(10, 0),
-				Size = UDim2.new(1, -28, 0, 0),
-			}, {
-				k(
-					"UIListLayout",
-					{ SortOrder = Enum.SortOrder.LayoutOrder, VerticalAlignment = Enum.VerticalAlignment.Center }
-				),
-				k("UIPadding", { PaddingBottom = UDim.new(0, 13), PaddingTop = UDim.new(0, 13) }),
-				q.TitleLabel,
-				q.DescLabel,
-			})
-			q.Border = k("UIStroke", {
-				Transparency = 0.5,
-				ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
-				Color = Color3.fromRGB(0, 0, 0),
-				ThemeTag = { Color = "ElementBorder" },
-			})
-			q.Frame = k("TextButton", {
-				Size = UDim2.new(1, 0, 0, 0),
-				BackgroundTransparency = 0.89,
-				BackgroundColor3 = Color3.fromRGB(130, 130, 130),
-				Parent = o,
-				AutomaticSize = Enum.AutomaticSize.Y,
-				Text = "",
-				LayoutOrder = 7,
-				ThemeTag = { BackgroundColor3 = "Element", BackgroundTransparency = "ElementTransparency" },
-			}, { k("UICorner", { CornerRadius = UDim.new(0, 4) }), q.Border, q.LabelHolder })
-			function q.SetTitle(r, s)
-				q.TitleLabel.Text = s
-			end
-			function q.SetDesc(r, s)
-				if s == nil then
-					s = ""
-				end
-				if s == "" then
-					q.DescLabel.Visible = false
-				else
-					q.DescLabel.Visible = true
-				end
-				q.DescLabel.Text = s
-			end
-			function q.Destroy(r)
-				q.Frame:Destroy()
-			end
-			q:SetTitle(m)
-			q:SetDesc(n)
-			if p then
-				local r, s, t =
-					h.Themes,
-					j.SpringMotor(
-						j.GetThemeProperty("ElementTransparency"),
-						q.Frame,
-						"BackgroundTransparency",
-						false,
-						true
-					)
-				j.AddSignal(q.Frame.MouseEnter, function()
-					t(j.GetThemeProperty("ElementTransparency") - j.GetThemeProperty("HoverChange"))
-				end)
-				j.AddSignal(q.Frame.MouseLeave, function()
-					t(j.GetThemeProperty("ElementTransparency"))
-				end)
-				j.AddSignal(q.Frame.MouseButton1Down, function()
-					t(j.GetThemeProperty("ElementTransparency") + j.GetThemeProperty("HoverChange"))
-				end)
-				j.AddSignal(q.Frame.MouseButton1Up, function()
-					t(j.GetThemeProperty("ElementTransparency") - j.GetThemeProperty("HoverChange"))
-				end)
-			end
-			return q
-		end
-	end),
-	[12] = LPH_NO_VIRTUALIZE(function()
-		local c, d, e, f, g = b(12)
-		local h = d.Parent.Parent
-		local i, j, k = e(h.Packages.Flipper), e(h.Creator), e(h.Acrylic)
-		local l, m, n, o = i.Spring.new, i.Instant.new, j.New, {}
-		function o.Init(p, q)
-			o.Holder = n("Frame", {
-				Position = UDim2.new(1, -30, 1, -30),
-				Size = UDim2.new(0, 310, 1, -30),
-				AnchorPoint = Vector2.new(1, 1),
-				BackgroundTransparency = 1,
-				Parent = q,
-			}, {
-				n("UIListLayout", {
-					HorizontalAlignment = Enum.HorizontalAlignment.Center,
-					SortOrder = Enum.SortOrder.LayoutOrder,
-					VerticalAlignment = Enum.VerticalAlignment.Bottom,
-					Padding = UDim.new(0, 20),
-				}),
-			})
-		end
-		function o.New(p, q)
-			q.Title = q.Title or "Title"
-			q.Content = q.Content or "Content"
-			q.SubContent = q.SubContent or ""
-			q.Duration = q.Duration or nil
-			q.Buttons = q.Buttons or {}
-			local r = { Closed = false }
-			r.AcrylicPaint = k.AcrylicPaint()
-			r.Title = n("TextLabel", {
-				Position = UDim2.new(0, 14, 0, 17),
-				Text = q.Title,
-				RichText = true,
-				TextColor3 = Color3.fromRGB(255, 255, 255),
-				TextTransparency = 0,
-				FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json"),
-				TextSize = 13,
-				TextXAlignment = "Left",
-				TextYAlignment = "Center",
-				Size = UDim2.new(1, -12, 0, 12),
-				TextWrapped = true,
-				BackgroundTransparency = 1,
-				ThemeTag = { TextColor3 = "Text" },
-			})
-			r.ContentLabel = n("TextLabel", {
-				FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json"),
-				Text = q.Content,
-				TextColor3 = Color3.fromRGB(240, 240, 240),
-				TextSize = 14,
-				TextXAlignment = Enum.TextXAlignment.Left,
-				AutomaticSize = Enum.AutomaticSize.Y,
-				Size = UDim2.new(1, 0, 0, 14),
-				BackgroundColor3 = Color3.fromRGB(255, 255, 255),
-				BackgroundTransparency = 1,
-				TextWrapped = true,
-				ThemeTag = { TextColor3 = "Text" },
-			})
-			r.SubContentLabel = n("TextLabel", {
-				FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json"),
-				Text = q.SubContent,
-				TextColor3 = Color3.fromRGB(240, 240, 240),
-				TextSize = 14,
-				TextXAlignment = Enum.TextXAlignment.Left,
-				AutomaticSize = Enum.AutomaticSize.Y,
-				Size = UDim2.new(1, 0, 0, 14),
-				BackgroundColor3 = Color3.fromRGB(255, 255, 255),
-				BackgroundTransparency = 1,
-				TextWrapped = true,
-				ThemeTag = { TextColor3 = "SubText" },
-			})
-			r.LabelHolder = n("Frame", {
-				AutomaticSize = Enum.AutomaticSize.Y,
-				BackgroundColor3 = Color3.fromRGB(255, 255, 255),
-				BackgroundTransparency = 1,
-				Position = UDim2.fromOffset(14, 40),
-				Size = UDim2.new(1, -28, 0, 0),
-			}, {
-				n("UIListLayout", {
-					SortOrder = Enum.SortOrder.LayoutOrder,
-					VerticalAlignment = Enum.VerticalAlignment.Center,
-					Padding = UDim.new(0, 3),
-				}),
-				r.ContentLabel,
-				r.SubContentLabel,
-			})
-			r.CloseButton = n("TextButton", {
-				Text = "",
-				Position = UDim2.new(1, -14, 0, 13),
-				Size = UDim2.fromOffset(20, 20),
-				AnchorPoint = Vector2.new(1, 0),
-				BackgroundTransparency = 1,
-			}, {
-				n("ImageLabel", {
-					Image = e(d.Parent.Assets).Close,
-					Size = UDim2.fromOffset(16, 16),
-					Position = UDim2.fromScale(0.5, 0.5),
-					AnchorPoint = Vector2.new(0.5, 0.5),
-					BackgroundTransparency = 1,
-					ThemeTag = { ImageColor3 = "Text" },
-				}),
-			})
-			r.Root = n(
-				"Frame",
-				{ BackgroundTransparency = 1, Size = UDim2.new(1, 0, 1, 0), Position = UDim2.fromScale(1, 0) },
-				{ r.AcrylicPaint.Frame, r.Title, r.CloseButton, r.LabelHolder }
-			)
-			if q.Content == "" then
-				r.ContentLabel.Visible = false
-			end
-			if q.SubContent == "" then
-				r.SubContentLabel.Visible = false
-			end
-			r.Holder = n(
-				"Frame",
-				{ BackgroundTransparency = 1, Size = UDim2.new(1, 0, 0, 200), Parent = o.Holder },
-				{ r.Root }
-			)
-			local s = i.GroupMotor.new({ Scale = 1, Offset = 60 })
-			s:onStep(function(t)
-				r.Root.Position = UDim2.new(t.Scale, t.Offset, 0, 0)
-			end)
-			j.AddSignal(r.CloseButton.MouseButton1Click, function()
-				r:Close()
-			end)
-			function r.Open(t)
-				local u = r.LabelHolder.AbsoluteSize.Y
-				r.Holder.Size = UDim2.new(1, 0, 0, 58 + u)
-				s:setGoal({ Scale = l(0, { frequency = 5 }), Offset = l(0, { frequency = 5 }) })
-			end
-			function r.Close(t)
-				if not r.Closed then
-					r.Closed = true
-					task.spawn(function()
-						s:setGoal({ Scale = l(1, { frequency = 5 }), Offset = l(60, { frequency = 5 }) })
-						task.wait(0.4)
-						if e(h).UseAcrylic then
-							r.AcrylicPaint.Model:Destroy()
-						end
-						r.Holder:Destroy()
-					end)
-				end
-			end
-			r:Open()
-			if q.Duration then
-				task.delay(q.Duration, function()
-					r:Close()
-				end)
-			end
-			return r
-		end
-		return o
-	end),
-	[13] = LPH_NO_VIRTUALIZE(function()
-		local c, d, e, f, g = b(13)
-		local h = d.Parent.Parent
-		local i = e(h.Creator)
-		local j = i.New
-		return function(k, l)
-			local m = {}
-			m.Layout = j("UIListLayout", { Padding = UDim.new(0, 5) })
-			m.Container = j(
-				"Frame",
-				{ Size = UDim2.new(1, 0, 0, 26), Position = UDim2.fromOffset(0, 24), BackgroundTransparency = 1 },
-				{ m.Layout }
-			)
-			m.Root = j(
-				"Frame",
-				{ BackgroundTransparency = 1, Size = UDim2.new(1, 0, 0, 26), LayoutOrder = 7, Parent = l },
-				{
-					j("TextLabel", {
-						RichText = true,
-						Text = k,
-						TextTransparency = 0,
-						FontFace = Font.new(
-							"rbxassetid://12187365364",
-							Enum.FontWeight.SemiBold,
-							Enum.FontStyle.Normal
-						),
-						TextSize = 18,
-						TextXAlignment = "Left",
-						TextYAlignment = "Center",
-						Size = UDim2.new(1, -16, 0, 18),
-						Position = UDim2.fromOffset(0, 2),
-						ThemeTag = { TextColor3 = "Text" },
-					}),
-					m.Container,
-				}
-			)
-			i.AddSignal(m.Layout:GetPropertyChangedSignal("AbsoluteContentSize"), function()
-				m.Container.Size = UDim2.new(1, 0, 0, m.Layout.AbsoluteContentSize.Y)
-				m.Root.Size = UDim2.new(1, 0, 0, m.Layout.AbsoluteContentSize.Y + 25)
-			end)
-			return m
-		end
-	end),
-	[14] = LPH_NO_VIRTUALIZE(function()
-		local c, d, e, f, g = b(14)
-		local h = d.Parent.Parent
-		local i, j = e(h.Packages.Flipper), e(h.Creator)
-		local k, l, m, n, o =
-			j.New,
-			i.Spring.new,
-			i.Instant.new,
-			h.Components,
-			{ Window = nil, Tabs = {}, Containers = {}, SelectedTab = 0, TabCount = 0 }
-		function o.Init(p, q)
-			o.Window = q
-			return o
-		end
-		function o.GetCurrentTabPos(p)
-			local q, r = o.Window.TabHolder.AbsolutePosition.Y, o.Tabs[o.SelectedTab].Frame.AbsolutePosition.Y
-			return r - q
-		end
-		function o.New(p, q, r, s)
-			local t, u = e(h), o.Window
-			local v = t.Elements
-			o.TabCount = o.TabCount + 1
-			local w, x = o.TabCount, { Selected = false, Name = q, Type = "Tab" }
-			if t:GetIcon(r) then
-				r = t:GetIcon(r)
-			end
-			if r == "" or nil then
-				r = nil
-			end
-			x.Frame = k("TextButton", {
-				Size = UDim2.new(1, 0, 0, 34),
-				BackgroundTransparency = 1,
-				Parent = s,
-				ThemeTag = {
-					BackgroundColor3 = "Tab",
-				},
-			}, {
-				k("UICorner", { CornerRadius = UDim.new(0, 6) }),
-				k("TextLabel", {
-					AnchorPoint = Vector2.new(0, 0.5),
-					Position = r and UDim2.new(0, 30, 0.5, 0) or UDim2.new(0, 12, 0.5, 0),
-					Text = q,
+			function o.New(p, q)
+				q.Title = q.Title or "Title"
+				q.Content = q.Content or "Content"
+				q.SubContent = q.SubContent or ""
+				q.Duration = q.Duration or nil
+				q.Buttons = q.Buttons or {}
+				local r = { Closed = false }
+				r.AcrylicPaint = k.AcrylicPaint()
+				r.Title = n("TextLabel", {
+					Position = UDim2.new(0, 14, 0, 17),
+					Text = q.Title,
 					RichText = true,
 					TextColor3 = Color3.fromRGB(255, 255, 255),
 					TextTransparency = 0,
-					FontFace = Font.new(
-						"rbxasset://fonts/families/GothamSSm.json",
-						Enum.FontWeight.Regular,
-						Enum.FontStyle.Normal
-					),
-					TextSize = 12,
+					FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json"),
+					TextSize = 13,
 					TextXAlignment = "Left",
 					TextYAlignment = "Center",
-					Size = UDim2.new(1, -12, 1, 0),
+					Size = UDim2.new(1, -12, 0, 12),
+					TextWrapped = true,
 					BackgroundTransparency = 1,
 					ThemeTag = { TextColor3 = "Text" },
-				}),
-				k("ImageLabel", {
-					AnchorPoint = Vector2.new(0, 0.5),
-					Size = UDim2.fromOffset(16, 16),
-					Position = UDim2.new(0, 8, 0.5, 0),
+				})
+				r.ContentLabel = n("TextLabel", {
+					FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json"),
+					Text = q.Content,
+					TextColor3 = Color3.fromRGB(240, 240, 240),
+					TextSize = 14,
+					TextXAlignment = Enum.TextXAlignment.Left,
+					AutomaticSize = Enum.AutomaticSize.Y,
+					Size = UDim2.new(1, 0, 0, 14),
+					BackgroundColor3 = Color3.fromRGB(255, 255, 255),
 					BackgroundTransparency = 1,
-					Image = r and r or nil,
-					ThemeTag = { ImageColor3 = "Text" },
-				}),
-			})
-			local y = k("UIListLayout", { Padding = UDim.new(0, 5), SortOrder = Enum.SortOrder.LayoutOrder })
-			x.ContainerFrame = k("ScrollingFrame", {
-				Size = UDim2.fromScale(1, 1),
-				BackgroundTransparency = 1,
-				Parent = u.ContainerHolder,
-				Visible = false,
-				BottomImage = "rbxassetid://6889812791",
-				MidImage = "rbxassetid://6889812721",
-				TopImage = "rbxassetid://6276641225",
-				ScrollBarImageColor3 = Color3.fromRGB(255, 255, 255),
-				ScrollBarImageTransparency = 0.95,
-				ScrollBarThickness = 3,
-				BorderSizePixel = 0,
-				CanvasSize = UDim2.fromScale(0, 0),
-				ScrollingDirection = Enum.ScrollingDirection.Y,
-			}, {
-				y,
-				k("UIPadding", {
-					PaddingRight = UDim.new(0, 10),
-					PaddingLeft = UDim.new(0, 1),
-					PaddingTop = UDim.new(0, 1),
-					PaddingBottom = UDim.new(0, 1),
-				}),
-			})
-			j.AddSignal(y:GetPropertyChangedSignal("AbsoluteContentSize"), function()
-				x.ContainerFrame.CanvasSize = UDim2.new(0, 0, 0, y.AbsoluteContentSize.Y + 2)
-			end)
-			x.Motor, x.SetTransparency = j.SpringMotor(1, x.Frame, "BackgroundTransparency")
-			j.AddSignal(x.Frame.MouseEnter, function()
-				x.SetTransparency(x.Selected and 0.85 or 0.89)
-			end)
-			j.AddSignal(x.Frame.MouseLeave, function()
-				x.SetTransparency(x.Selected and 0.89 or 1)
-			end)
-			j.AddSignal(x.Frame.MouseButton1Down, function()
-				x.SetTransparency(0.92)
-			end)
-			j.AddSignal(x.Frame.MouseButton1Up, function()
-				x.SetTransparency(x.Selected and 0.85 or 0.89)
-			end)
-			j.AddSignal(x.Frame.MouseButton1Click, function()
-				o:SelectTab(w)
-			end)
-			o.Containers[w] = x.ContainerFrame
-			o.Tabs[w] = x
-			x.Container = x.ContainerFrame
-			x.ScrollFrame = x.Container
-			function x.AddSection(z, A)
-				local B, C = { Type = "Section" }, e(n.Section)(A, x.Container)
-				B.Container = C.Container
-				B.ScrollFrame = x.Container
-				setmetatable(B, v)
-				return B
-			end
-			setmetatable(x, v)
-			return x
-		end
-		function o.SelectTab(p, q)
-			local r = o.Window
-			o.SelectedTab = q
-			for s, t in next, o.Tabs do
-				t.SetTransparency(1)
-				t.Selected = false
-			end
-			o.Tabs[q].SetTransparency(0.89)
-			o.Tabs[q].Selected = true
-			r.TabDisplay.Text = o.Tabs[q].Name
-			r.SelectorPosMotor:setGoal(l(o:GetCurrentTabPos(), { frequency = 6 }))
-			task.spawn(function()
-				r.ContainerPosMotor:setGoal(l(110, { frequency = 10 }))
-				r.ContainerBackMotor:setGoal(l(1, { frequency = 10 }))
-				task.wait(0.15)
-				for u, v in next, o.Containers do
-					v.Visible = false
+					TextWrapped = true,
+					ThemeTag = { TextColor3 = "Text" },
+				})
+				r.SubContentLabel = n("TextLabel", {
+					FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json"),
+					Text = q.SubContent,
+					TextColor3 = Color3.fromRGB(240, 240, 240),
+					TextSize = 14,
+					TextXAlignment = Enum.TextXAlignment.Left,
+					AutomaticSize = Enum.AutomaticSize.Y,
+					Size = UDim2.new(1, 0, 0, 14),
+					BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+					BackgroundTransparency = 1,
+					TextWrapped = true,
+					ThemeTag = { TextColor3 = "SubText" },
+				})
+				r.LabelHolder = n("Frame", {
+					AutomaticSize = Enum.AutomaticSize.Y,
+					BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+					BackgroundTransparency = 1,
+					Position = UDim2.fromOffset(14, 40),
+					Size = UDim2.new(1, -28, 0, 0),
+				}, {
+					n("UIListLayout", {
+						SortOrder = Enum.SortOrder.LayoutOrder,
+						VerticalAlignment = Enum.VerticalAlignment.Center,
+						Padding = UDim.new(0, 3),
+					}),
+					r.ContentLabel,
+					r.SubContentLabel,
+				})
+				r.CloseButton = n("TextButton", {
+					Text = "",
+					Position = UDim2.new(1, -14, 0, 13),
+					Size = UDim2.fromOffset(20, 20),
+					AnchorPoint = Vector2.new(1, 0),
+					BackgroundTransparency = 1,
+				}, {
+					n("ImageLabel", {
+						Image = e(d.Parent.Assets).Close,
+						Size = UDim2.fromOffset(16, 16),
+						Position = UDim2.fromScale(0.5, 0.5),
+						AnchorPoint = Vector2.new(0.5, 0.5),
+						BackgroundTransparency = 1,
+						ThemeTag = { ImageColor3 = "Text" },
+					}),
+				})
+				r.Root = n(
+					"Frame",
+					{ BackgroundTransparency = 1, Size = UDim2.new(1, 0, 1, 0), Position = UDim2.fromScale(1, 0) },
+					{ r.AcrylicPaint.Frame, r.Title, r.CloseButton, r.LabelHolder }
+				)
+				if q.Content == "" then
+					r.ContentLabel.Visible = false
 				end
-				o.Containers[q].Visible = true
-				r.ContainerPosMotor:setGoal(l(94, { frequency = 5 }))
-				r.ContainerBackMotor:setGoal(l(0, { frequency = 8 }))
-			end)
-		end
-		return o
-	end),
-	[15] = LPH_NO_VIRTUALIZE(function()
-		local c, d, e, f, g = b(15)
-		local h, i = game:GetService("TextService"), d.Parent.Parent
-		local j, k = e(i.Packages.Flipper), e(i.Creator)
-		local l = k.New
-		return function(m, n)
-			n = n or false
-			local o = {}
-			o.Input = l("TextBox", {
-				FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json"),
-				TextColor3 = Color3.fromRGB(200, 200, 200),
-				TextSize = 14,
-				TextXAlignment = Enum.TextXAlignment.Left,
-				TextYAlignment = Enum.TextYAlignment.Center,
-				BackgroundColor3 = Color3.fromRGB(255, 255, 255),
-				AutomaticSize = Enum.AutomaticSize.Y,
-				BackgroundTransparency = 1,
-				Size = UDim2.fromScale(1, 1),
-				Position = UDim2.fromOffset(10, 0),
-				ThemeTag = { TextColor3 = "Text", PlaceholderColor3 = "SubText" },
-			})
-			o.Container = l("Frame", {
-				BackgroundTransparency = 1,
-				ClipsDescendants = true,
-				Position = UDim2.new(0, 6, 0, 0),
-				Size = UDim2.new(1, -12, 1, 0),
-			}, { o.Input })
-			o.Indicator = l("Frame", {
-				Size = UDim2.new(1, -4, 0, 1),
-				Position = UDim2.new(0, 2, 1, 0),
-				AnchorPoint = Vector2.new(0, 1),
-				BackgroundTransparency = n and 0.5 or 0,
-				ThemeTag = { BackgroundColor3 = n and "InputIndicator" or "DialogInputLine" },
-			})
-			o.Frame = l("Frame", {
-				Size = UDim2.new(0, 0, 0, 30),
-				BackgroundTransparency = n and 0.9 or 0,
-				Parent = m,
-				ThemeTag = { BackgroundColor3 = n and "Input" or "DialogInput" },
-			}, {
-				l("UICorner", { CornerRadius = UDim.new(0, 4) }),
-				l("UIStroke", {
-					ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
-					Transparency = n and 0.5 or 0.65,
-					ThemeTag = { Color = n and "InElementBorder" or "DialogButtonBorder" },
-				}),
-				o.Indicator,
-				o.Container,
-			})
-			local p = function()
-				local p, q = 2, o.Container.AbsoluteSize.X
-				if not o.Input:IsFocused() or o.Input.TextBounds.X <= q - 2 * p then
-					o.Input.Position = UDim2.new(0, p, 0, 0)
-				else
-					local r = o.Input.CursorPosition
-					if r ~= -1 then
-						local s = string.sub(o.Input.Text, 1, r - 1)
-						local t = h:GetTextSize(s, o.Input.TextSize, o.Input.Font, Vector2.new(math.huge, math.huge)).X
-						local u = o.Input.Position.X.Offset + t
-						if u < p then
-							o.Input.Position = UDim2.fromOffset(p - t, 0)
-						elseif u > q - p - 1 then
-							o.Input.Position = UDim2.fromOffset(q - t - p - 1, 0)
+				if q.SubContent == "" then
+					r.SubContentLabel.Visible = false
+				end
+				r.Holder = n(
+					"Frame",
+					{ BackgroundTransparency = 1, Size = UDim2.new(1, 0, 0, 200), Parent = o.Holder },
+					{ r.Root }
+				)
+				local s = i.GroupMotor.new({ Scale = 1, Offset = 60 })
+				s:onStep(function(t)
+					r.Root.Position = UDim2.new(t.Scale, t.Offset, 0, 0)
+				end)
+				j.AddSignal(r.CloseButton.MouseButton1Click, function()
+					r:Close()
+				end)
+				function r.Open(t)
+					local u = r.LabelHolder.AbsoluteSize.Y
+					r.Holder.Size = UDim2.new(1, 0, 0, 58 + u)
+					s:setGoal({ Scale = l(0, { frequency = 5 }), Offset = l(0, { frequency = 5 }) })
+				end
+				function r.Close(t)
+					if not r.Closed then
+						r.Closed = true
+						task.spawn(function()
+							s:setGoal({ Scale = l(1, { frequency = 5 }), Offset = l(60, { frequency = 5 }) })
+							task.wait(0.4)
+							if e(h).UseAcrylic then
+								r.AcrylicPaint.Model:Destroy()
+							end
+							r.Holder:Destroy()
+						end)
+					end
+				end
+				r:Open()
+				if q.Duration then
+					task.delay(q.Duration, function()
+						r:Close()
+					end)
+				end
+				return r
+			end
+			return o
+		end),
+		[13] = LPH_NO_VIRTUALIZE(function()
+			local c, d, e, f, g = b(13)
+			local h = d.Parent.Parent
+			local i = e(h.Creator)
+			local j = i.New
+			return function(k, l)
+				local m = {}
+				m.Layout = j("UIListLayout", { Padding = UDim.new(0, 5) })
+				m.Container = j(
+					"Frame",
+					{ Size = UDim2.new(1, 0, 0, 26), Position = UDim2.fromOffset(0, 24), BackgroundTransparency = 1 },
+					{ m.Layout }
+				)
+				m.Root = j(
+					"Frame",
+					{ BackgroundTransparency = 1, Size = UDim2.new(1, 0, 0, 26), LayoutOrder = 7, Parent = l },
+					{
+						j("TextLabel", {
+							RichText = true,
+							Text = k,
+							TextTransparency = 0,
+							FontFace = Font.new(
+								"rbxassetid://12187365364",
+								Enum.FontWeight.SemiBold,
+								Enum.FontStyle.Normal
+							),
+							TextSize = 18,
+							TextXAlignment = "Left",
+							TextYAlignment = "Center",
+							Size = UDim2.new(1, -16, 0, 18),
+							Position = UDim2.fromOffset(0, 2),
+							ThemeTag = { TextColor3 = "Text" },
+						}),
+						m.Container,
+					}
+				)
+				i.AddSignal(m.Layout:GetPropertyChangedSignal("AbsoluteContentSize"), function()
+					m.Container.Size = UDim2.new(1, 0, 0, m.Layout.AbsoluteContentSize.Y)
+					m.Root.Size = UDim2.new(1, 0, 0, m.Layout.AbsoluteContentSize.Y + 25)
+				end)
+				return m
+			end
+		end),
+		[14] = LPH_NO_VIRTUALIZE(function()
+			local c, d, e, f, g = b(14)
+			local h = d.Parent.Parent
+			local i, j = e(h.Packages.Flipper), e(h.Creator)
+			local k, l, m, n, o =
+				j.New,
+				i.Spring.new,
+				i.Instant.new,
+				h.Components,
+				{ Window = nil, Tabs = {}, Containers = {}, SelectedTab = 0, TabCount = 0 }
+			function o.Init(p, q)
+				o.Window = q
+				return o
+			end
+			function o.GetCurrentTabPos(p)
+				local q, r = o.Window.TabHolder.AbsolutePosition.Y, o.Tabs[o.SelectedTab].Frame.AbsolutePosition.Y
+				return r - q
+			end
+			function o.New(p, q, r, s)
+				local t, u = e(h), o.Window
+				local v = t.Elements
+				o.TabCount = o.TabCount + 1
+				local w, x = o.TabCount, { Selected = false, Name = q, Type = "Tab" }
+				if t:GetIcon(r) then
+					r = t:GetIcon(r)
+				end
+				if r == "" or nil then
+					r = nil
+				end
+				x.Frame = k("TextButton", {
+					Size = UDim2.new(1, 0, 0, 34),
+					BackgroundTransparency = 1,
+					Parent = s,
+					ThemeTag = {
+						BackgroundColor3 = "Tab",
+					},
+				}, {
+					k("UICorner", { CornerRadius = UDim.new(0, 6) }),
+					k("TextLabel", {
+						AnchorPoint = Vector2.new(0, 0.5),
+						Position = r and UDim2.new(0, 30, 0.5, 0) or UDim2.new(0, 12, 0.5, 0),
+						Text = q,
+						RichText = true,
+						TextColor3 = Color3.fromRGB(255, 255, 255),
+						TextTransparency = 0,
+						FontFace = Font.new(
+							"rbxasset://fonts/families/GothamSSm.json",
+							Enum.FontWeight.Regular,
+							Enum.FontStyle.Normal
+						),
+						TextSize = 12,
+						TextXAlignment = "Left",
+						TextYAlignment = "Center",
+						Size = UDim2.new(1, -12, 1, 0),
+						BackgroundTransparency = 1,
+						ThemeTag = { TextColor3 = "Text" },
+					}),
+					k("ImageLabel", {
+						AnchorPoint = Vector2.new(0, 0.5),
+						Size = UDim2.fromOffset(16, 16),
+						Position = UDim2.new(0, 8, 0.5, 0),
+						BackgroundTransparency = 1,
+						Image = r and r or nil,
+						ThemeTag = { ImageColor3 = "Text" },
+					}),
+				})
+				local y = k("UIListLayout", { Padding = UDim.new(0, 5), SortOrder = Enum.SortOrder.LayoutOrder })
+				x.ContainerFrame = k("ScrollingFrame", {
+					Size = UDim2.fromScale(1, 1),
+					BackgroundTransparency = 1,
+					Parent = u.ContainerHolder,
+					Visible = false,
+					BottomImage = "rbxassetid://6889812791",
+					MidImage = "rbxassetid://6889812721",
+					TopImage = "rbxassetid://6276641225",
+					ScrollBarImageColor3 = Color3.fromRGB(255, 255, 255),
+					ScrollBarImageTransparency = 0.95,
+					ScrollBarThickness = 3,
+					BorderSizePixel = 0,
+					CanvasSize = UDim2.fromScale(0, 0),
+					ScrollingDirection = Enum.ScrollingDirection.Y,
+				}, {
+					y,
+					k("UIPadding", {
+						PaddingRight = UDim.new(0, 10),
+						PaddingLeft = UDim.new(0, 1),
+						PaddingTop = UDim.new(0, 1),
+						PaddingBottom = UDim.new(0, 1),
+					}),
+				})
+				j.AddSignal(y:GetPropertyChangedSignal("AbsoluteContentSize"), function()
+					x.ContainerFrame.CanvasSize = UDim2.new(0, 0, 0, y.AbsoluteContentSize.Y + 2)
+				end)
+				x.Motor, x.SetTransparency = j.SpringMotor(1, x.Frame, "BackgroundTransparency")
+				j.AddSignal(x.Frame.MouseEnter, function()
+					x.SetTransparency(x.Selected and 0.85 or 0.89)
+				end)
+				j.AddSignal(x.Frame.MouseLeave, function()
+					x.SetTransparency(x.Selected and 0.89 or 1)
+				end)
+				j.AddSignal(x.Frame.MouseButton1Down, function()
+					x.SetTransparency(0.92)
+				end)
+				j.AddSignal(x.Frame.MouseButton1Up, function()
+					x.SetTransparency(x.Selected and 0.85 or 0.89)
+				end)
+				j.AddSignal(x.Frame.MouseButton1Click, function()
+					o:SelectTab(w)
+				end)
+				o.Containers[w] = x.ContainerFrame
+				o.Tabs[w] = x
+				x.Container = x.ContainerFrame
+				x.ScrollFrame = x.Container
+				function x.AddSection(z, A)
+					local B, C = { Type = "Section" }, e(n.Section)(A, x.Container)
+					B.Container = C.Container
+					B.ScrollFrame = x.Container
+					setmetatable(B, v)
+					return B
+				end
+				setmetatable(x, v)
+				return x
+			end
+			function o.SelectTab(p, q)
+				local r = o.Window
+				o.SelectedTab = q
+				for s, t in next, o.Tabs do
+					t.SetTransparency(1)
+					t.Selected = false
+				end
+				o.Tabs[q].SetTransparency(0.89)
+				o.Tabs[q].Selected = true
+				r.TabDisplay.Text = o.Tabs[q].Name
+				r.SelectorPosMotor:setGoal(l(o:GetCurrentTabPos(), { frequency = 6 }))
+				task.spawn(function()
+					r.ContainerPosMotor:setGoal(l(110, { frequency = 10 }))
+					r.ContainerBackMotor:setGoal(l(1, { frequency = 10 }))
+					task.wait(0.15)
+					for u, v in next, o.Containers do
+						v.Visible = false
+					end
+					o.Containers[q].Visible = true
+					r.ContainerPosMotor:setGoal(l(94, { frequency = 5 }))
+					r.ContainerBackMotor:setGoal(l(0, { frequency = 8 }))
+				end)
+			end
+			return o
+		end),
+		[15] = LPH_NO_VIRTUALIZE(function()
+			local c, d, e, f, g = b(15)
+			local h, i = game:GetService("TextService"), d.Parent.Parent
+			local j, k = e(i.Packages.Flipper), e(i.Creator)
+			local l = k.New
+			return function(m, n)
+				n = n or false
+				local o = {}
+				o.Input = l("TextBox", {
+					FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json"),
+					TextColor3 = Color3.fromRGB(200, 200, 200),
+					TextSize = 14,
+					TextXAlignment = Enum.TextXAlignment.Left,
+					TextYAlignment = Enum.TextYAlignment.Center,
+					BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+					AutomaticSize = Enum.AutomaticSize.Y,
+					BackgroundTransparency = 1,
+					Size = UDim2.fromScale(1, 1),
+					Position = UDim2.fromOffset(10, 0),
+					ThemeTag = { TextColor3 = "Text", PlaceholderColor3 = "SubText" },
+				})
+				o.Container = l("Frame", {
+					BackgroundTransparency = 1,
+					ClipsDescendants = true,
+					Position = UDim2.new(0, 6, 0, 0),
+					Size = UDim2.new(1, -12, 1, 0),
+				}, { o.Input })
+				o.Indicator = l("Frame", {
+					Size = UDim2.new(1, -4, 0, 1),
+					Position = UDim2.new(0, 2, 1, 0),
+					AnchorPoint = Vector2.new(0, 1),
+					BackgroundTransparency = n and 0.5 or 0,
+					ThemeTag = { BackgroundColor3 = n and "InputIndicator" or "DialogInputLine" },
+				})
+				o.Frame = l("Frame", {
+					Size = UDim2.new(0, 0, 0, 30),
+					BackgroundTransparency = n and 0.9 or 0,
+					Parent = m,
+					ThemeTag = { BackgroundColor3 = n and "Input" or "DialogInput" },
+				}, {
+					l("UICorner", { CornerRadius = UDim.new(0, 4) }),
+					l("UIStroke", {
+						ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
+						Transparency = n and 0.5 or 0.65,
+						ThemeTag = { Color = n and "InElementBorder" or "DialogButtonBorder" },
+					}),
+					o.Indicator,
+					o.Container,
+				})
+				local p = function()
+					local p, q = 2, o.Container.AbsoluteSize.X
+					if not o.Input:IsFocused() or o.Input.TextBounds.X <= q - 2 * p then
+						o.Input.Position = UDim2.new(0, p, 0, 0)
+					else
+						local r = o.Input.CursorPosition
+						if r ~= -1 then
+							local s = string.sub(o.Input.Text, 1, r - 1)
+							local t =
+								h:GetTextSize(s, o.Input.TextSize, o.Input.Font, Vector2.new(math.huge, math.huge)).X
+							local u = o.Input.Position.X.Offset + t
+							if u < p then
+								o.Input.Position = UDim2.fromOffset(p - t, 0)
+							elseif u > q - p - 1 then
+								o.Input.Position = UDim2.fromOffset(q - t - p - 1, 0)
+							end
 						end
 					end
 				end
+				task.spawn(p)
+				k.AddSignal(o.Input:GetPropertyChangedSignal("Text"), p)
+				k.AddSignal(o.Input:GetPropertyChangedSignal("CursorPosition"), p)
+				k.AddSignal(o.Input.Focused, function()
+					p()
+					o.Indicator.Size = UDim2.new(1, -2, 0, 2)
+					o.Indicator.Position = UDim2.new(0, 1, 1, 0)
+					o.Indicator.BackgroundTransparency = 0
+					k.OverrideTag(o.Frame, { BackgroundColor3 = n and "InputFocused" or "DialogHolder" })
+					k.OverrideTag(o.Indicator, { BackgroundColor3 = "Accent" })
+				end)
+				k.AddSignal(o.Input.FocusLost, function()
+					p()
+					o.Indicator.Size = UDim2.new(1, -4, 0, 1)
+					o.Indicator.Position = UDim2.new(0, 2, 1, 0)
+					o.Indicator.BackgroundTransparency = 0.5
+					k.OverrideTag(o.Frame, { BackgroundColor3 = n and "Input" or "DialogInput" })
+					k.OverrideTag(o.Indicator, { BackgroundColor3 = n and "InputIndicator" or "DialogInputLine" })
+				end)
+				return o
 			end
-			task.spawn(p)
-			k.AddSignal(o.Input:GetPropertyChangedSignal("Text"), p)
-			k.AddSignal(o.Input:GetPropertyChangedSignal("CursorPosition"), p)
-			k.AddSignal(o.Input.Focused, function()
-				p()
-				o.Indicator.Size = UDim2.new(1, -2, 0, 2)
-				o.Indicator.Position = UDim2.new(0, 1, 1, 0)
-				o.Indicator.BackgroundTransparency = 0
-				k.OverrideTag(o.Frame, { BackgroundColor3 = n and "InputFocused" or "DialogHolder" })
-				k.OverrideTag(o.Indicator, { BackgroundColor3 = "Accent" })
-			end)
-			k.AddSignal(o.Input.FocusLost, function()
-				p()
-				o.Indicator.Size = UDim2.new(1, -4, 0, 1)
-				o.Indicator.Position = UDim2.new(0, 2, 1, 0)
-				o.Indicator.BackgroundTransparency = 0.5
-				k.OverrideTag(o.Frame, { BackgroundColor3 = n and "Input" or "DialogInput" })
-				k.OverrideTag(o.Indicator, { BackgroundColor3 = n and "InputIndicator" or "DialogInputLine" })
-			end)
-			return o
-		end
-	end),
-	[16] = LPH_NO_VIRTUALIZE(function()
-		local c, d, e, f, g = b(16)
-		local h, i = d.Parent.Parent, e(d.Parent.Assets)
-		local j, k = e(h.Creator), e(h.Packages.Flipper)
-		local l, m = j.New, j.AddSignal
-		return function(n)
-			local o, p, q =
-				{}, e(h), function(o, p, q, r)
-					local s = { Callback = r or function() end }
-					s.Frame = l("TextButton", { Size = UDim2.new(0, 34, 1, -8), AnchorPoint = Vector2.new(1, 0), BackgroundTransparency = 1, Parent = q, Position = p, Text = "", ThemeTag = { BackgroundColor3 = "Text" } }, { l("UICorner", { CornerRadius = UDim.new(0, 7) }), l("ImageLabel", { Image = o, Size = UDim2.fromOffset(16, 16), Position = UDim2.fromScale(0.5, 0.5), AnchorPoint = Vector2.new(0.5, 0.5), BackgroundTransparency = 1, Name = "Icon", ThemeTag = { ImageColor3 = "Text" } }) })
-					local t, u = j.SpringMotor(1, s.Frame, "BackgroundTransparency")
-					m(s.Frame.MouseEnter, function()
-						u(0.94)
-					end)
-					m(s.Frame.MouseLeave, function()
-						u(1, true)
-					end)
-					m(s.Frame.MouseButton1Down, function()
-						u(0.96)
-					end)
-					m(s.Frame.MouseButton1Up, function()
-						u(0.94)
-					end)
-					m(s.Frame.MouseButton1Click, s.Callback)
-					s.SetCallback = function(v)
-						s.Callback = v
+		end),
+		[16] = LPH_NO_VIRTUALIZE(function()
+			local c, d, e, f, g = b(16)
+			local h, i = d.Parent.Parent, e(d.Parent.Assets)
+			local j, k = e(h.Creator), e(h.Packages.Flipper)
+			local l, m = j.New, j.AddSignal
+			return function(n)
+				local o, p, q =
+					{}, e(h), function(o, p, q, r)
+						local s = { Callback = r or function() end }
+						s.Frame = l("TextButton", { Size = UDim2.new(0, 34, 1, -8), AnchorPoint = Vector2.new(1, 0), BackgroundTransparency = 1, Parent = q, Position = p, Text = "", ThemeTag = { BackgroundColor3 = "Text" } }, { l("UICorner", { CornerRadius = UDim.new(0, 7) }), l("ImageLabel", { Image = o, Size = UDim2.fromOffset(16, 16), Position = UDim2.fromScale(0.5, 0.5), AnchorPoint = Vector2.new(0.5, 0.5), BackgroundTransparency = 1, Name = "Icon", ThemeTag = { ImageColor3 = "Text" } }) })
+						local t, u = j.SpringMotor(1, s.Frame, "BackgroundTransparency")
+						m(s.Frame.MouseEnter, function()
+							u(0.94)
+						end)
+						m(s.Frame.MouseLeave, function()
+							u(1, true)
+						end)
+						m(s.Frame.MouseButton1Down, function()
+							u(0.96)
+						end)
+						m(s.Frame.MouseButton1Up, function()
+							u(0.94)
+						end)
+						m(s.Frame.MouseButton1Click, s.Callback)
+						s.SetCallback = function(v)
+							s.Callback = v
+						end
+						return s
 					end
-					return s
-				end
-			o.Frame = l("Frame", { Size = UDim2.new(1, 0, 0, 42), BackgroundTransparency = 1, Parent = n.Parent }, {
-				l(
-					"Frame",
-					{ Size = UDim2.new(1, -16, 1, 0), Position = UDim2.new(0, 16, 0, 0), BackgroundTransparency = 1 },
-					{
+				o.Frame = l("Frame", { Size = UDim2.new(1, 0, 0, 42), BackgroundTransparency = 1, Parent = n.Parent }, {
+					l("Frame", {
+						Size = UDim2.new(1, -16, 1, 0),
+						Position = UDim2.new(0, 16, 0, 0),
+						BackgroundTransparency = 1,
+					}, {
 						l("UIListLayout", {
 							Padding = UDim.new(0, 5),
 							FillDirection = Enum.FillDirection.Horizontal,
@@ -7498,3525 +7522,3521 @@ local aa = {
 							BackgroundTransparency = 1,
 							ThemeTag = { TextColor3 = "Text" },
 						}),
-					}
-				),
-				l("Frame", {
-					BackgroundTransparency = 0.5,
-					Size = UDim2.new(1, 0, 0, 1),
-					Position = UDim2.new(0, 0, 1, 0),
-					ThemeTag = { BackgroundColor3 = "TitleBarLine" },
-				}),
-			})
-			o.CloseButton = q(i.Close, UDim2.new(1, -4, 0, 4), o.Frame, function()
-				p.Window:Dialog({
-					Title = "Close",
-					Content = "Are you sure you want to unload the interface?",
-					Buttons = {
-						{
-							Title = "Yes",
-							Callback = function()
-								p:Destroy()
-							end,
-						},
-						{
-							Title = "No",
-						},
-					},
+					}),
+					l("Frame", {
+						BackgroundTransparency = 0.5,
+						Size = UDim2.new(1, 0, 0, 1),
+						Position = UDim2.new(0, 0, 1, 0),
+						ThemeTag = { BackgroundColor3 = "TitleBarLine" },
+					}),
 				})
-			end)
-			o.MaxButton = q(i.Max, UDim2.new(1, -40, 0, 4), o.Frame, function()
-				n.Window.Maximize(not n.Window.Maximized)
-			end)
-			o.MinButton = q(i.Min, UDim2.new(1, -80, 0, 4), o.Frame, function()
-				p.Window:Minimize()
-			end)
-			return o
-		end
-	end),
-	[17] = LPH_NO_VIRTUALIZE(function()
-		local c, d, e, f, g = b(17)
-		local h, i, j, k =
-			game:GetService("UserInputService"),
-			game:GetService("Players").LocalPlayer:GetMouse(),
-			game:GetService("Workspace").CurrentCamera,
-			d.Parent.Parent
-		local l, m, n, o, p = e(k.Packages.Flipper), e(k.Creator), e(k.Acrylic), e(d.Parent.Assets), d.Parent
-		local q, r, s = l.Spring.new, l.Instant.new, m.New
-		return function(t)
-			local u, v, w, x, y, z =
-				e(k), {
-					Minimized = false,
-					Maximized = false,
-					Size = t.Size,
-					CurrentPos = 0,
-					Position = UDim2.fromOffset(j.ViewportSize.X / 2 - t.Size.X.Offset / 2, j.ViewportSize.Y / 2 - t.Size.Y.Offset / 2),
-				}, false
-			local A, B = false
-			local C = false
-			v.AcrylicPaint = n.AcrylicPaint()
-			local D, E =
-				s("Frame", {
-					Size = UDim2.fromOffset(4, 0),
-					BackgroundColor3 = Color3.fromRGB(76, 194, 255),
-					Position = UDim2.fromOffset(0, 17),
-					AnchorPoint = Vector2.new(0, 0.5),
-					ThemeTag = { BackgroundColor3 = "Accent" },
-				}, { s("UICorner", { CornerRadius = UDim.new(0, 2) }) }), s("Frame", { Size = UDim2.fromOffset(20, 20), BackgroundTransparency = 1, Position = UDim2.new(1, -20, 1, -20) })
-			v.TabHolder = s("ScrollingFrame", {
-				Size = UDim2.fromScale(1, 1),
-				BackgroundTransparency = 1,
-				ScrollBarImageTransparency = 1,
-				ScrollBarThickness = 0,
-				BorderSizePixel = 0,
-				CanvasSize = UDim2.fromScale(0, 0),
-				ScrollingDirection = Enum.ScrollingDirection.Y,
-			}, { s("UIListLayout", { Padding = UDim.new(0, 4) }) })
-			local F = s("Frame", {
-				Size = UDim2.new(0, t.TabWidth, 1, -66),
-				Position = UDim2.new(0, 12, 0, 54),
-				BackgroundTransparency = 1,
-				ClipsDescendants = true,
-			}, { v.TabHolder, D })
-			v.TabDisplay = s("TextLabel", {
-				RichText = true,
-				Text = "Tab",
-				TextTransparency = 0,
-				FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.SemiBold, Enum.FontStyle.Normal),
-				TextSize = 28,
-				TextXAlignment = "Left",
-				TextYAlignment = "Center",
-				Size = UDim2.new(1, -16, 0, 28),
-				Position = UDim2.fromOffset(t.TabWidth + 26, 56),
-				BackgroundTransparency = 1,
-				ThemeTag = { TextColor3 = "Text" },
-			})
-			v.ContainerHolder = s("CanvasGroup", {
-				Size = UDim2.new(1, -t.TabWidth - 32, 1, -102),
-				Position = UDim2.fromOffset(t.TabWidth + 26, 90),
-				BackgroundTransparency = 1,
-			})
-			v.Root = s(
-				"Frame",
-				{ BackgroundTransparency = 1, Size = v.Size, Position = v.Position, Parent = t.Parent },
-				{ v.AcrylicPaint.Frame, v.TabDisplay, v.ContainerHolder, F, E }
-			)
-			v.TitleBar = e(d.Parent.TitleBar)({ Title = t.Title, SubTitle = t.SubTitle, Parent = v.Root, Window = v })
-			if e(k).UseAcrylic then
-				v.AcrylicPaint.AddParent(v.Root)
-			end
-			local G, H =
-				l.GroupMotor.new({ X = v.Size.X.Offset, Y = v.Size.Y.Offset }),
-				l.GroupMotor.new({ X = v.Position.X.Offset, Y = v.Position.Y.Offset })
-			v.SelectorPosMotor = l.SingleMotor.new(17)
-			v.SelectorSizeMotor = l.SingleMotor.new(0)
-			v.ContainerBackMotor = l.SingleMotor.new(0)
-			v.ContainerPosMotor = l.SingleMotor.new(94)
-			G:onStep(function(I)
-				v.Root.Size = UDim2.new(0, I.X, 0, I.Y)
-			end)
-			H:onStep(function(I)
-				v.Root.Position = UDim2.new(0, I.X, 0, I.Y)
-			end)
-			local I, J = 0, 0
-			v.SelectorPosMotor:onStep(function(K)
-				D.Position = UDim2.new(0, 0, 0, K + 17)
-				local L = tick()
-				local M = L - J
-				if I ~= nil then
-					v.SelectorSizeMotor:setGoal(q((math.abs(K - I) / (M * 60)) + 16))
-					I = K
-				end
-				J = L
-			end)
-			v.SelectorSizeMotor:onStep(function(K)
-				D.Size = UDim2.new(0, 4, 0, K)
-			end)
-			v.ContainerBackMotor:onStep(function(K)
-				v.ContainerHolder.GroupTransparency = K
-			end)
-			v.ContainerPosMotor:onStep(function(K)
-				v.ContainerHolder.Position = UDim2.fromOffset(t.TabWidth + 26, K)
-			end)
-			local K, L
-			v.Maximize = function(M, N, O)
-				v.Maximized = M
-				v.TitleBar.MaxButton.Frame.Icon.Image = M and o.Restore or o.Max
-				if M then
-					K = v.Size.X.Offset
-					L = v.Size.Y.Offset
-				end
-				local P, Q = M and j.ViewportSize.X or K, M and j.ViewportSize.Y or L
-				G:setGoal({
-					X = l[O and "Instant" or "Spring"].new(P, { frequency = 6 }),
-					Y = l[O and "Instant" or "Spring"].new(Q, { frequency = 6 }),
-				})
-				v.Size = UDim2.fromOffset(P, Q)
-				if not N then
-					H:setGoal({
-						X = q(M and 0 or v.Position.X.Offset, { frequency = 6 }),
-						Y = q(M and 0 or v.Position.Y.Offset, { frequency = 6 }),
+				o.CloseButton = q(i.Close, UDim2.new(1, -4, 0, 4), o.Frame, function()
+					p.Window:Dialog({
+						Title = "Close",
+						Content = "Are you sure you want to unload the interface?",
+						Buttons = {
+							{
+								Title = "Yes",
+								Callback = function()
+									p:Destroy()
+								end,
+							},
+							{
+								Title = "No",
+							},
+						},
 					})
-				end
+				end)
+				o.MaxButton = q(i.Max, UDim2.new(1, -40, 0, 4), o.Frame, function()
+					n.Window.Maximize(not n.Window.Maximized)
+				end)
+				o.MinButton = q(i.Min, UDim2.new(1, -80, 0, 4), o.Frame, function()
+					p.Window:Minimize()
+				end)
+				return o
 			end
-			m.AddSignal(v.TitleBar.Frame.InputBegan, function(M)
-				if
-					M.UserInputType == Enum.UserInputType.MouseButton1
-					or M.UserInputType == Enum.UserInputType.Touch
-				then
-					w = true
-					y = M.Position
-					z = v.Root.Position
-					if v.Maximized then
-						z = UDim2.fromOffset(
-							i.X - (i.X * ((K - 100) / v.Root.AbsoluteSize.X)),
-							i.Y - (i.Y * (L / v.Root.AbsoluteSize.Y))
-						)
-					end
-					M.Changed:Connect(function()
-						if M.UserInputState == Enum.UserInputState.End then
-							w = false
-						end
-					end)
-				end
-			end)
-			m.AddSignal(v.TitleBar.Frame.InputChanged, function(M)
-				if
-					M.UserInputType == Enum.UserInputType.MouseMovement
-					or M.UserInputType == Enum.UserInputType.Touch
-				then
-					x = M
-				end
-			end)
-			m.AddSignal(E.InputBegan, function(M)
-				if
-					M.UserInputType == Enum.UserInputType.MouseButton1
-					or M.UserInputType == Enum.UserInputType.Touch
-				then
-					A = true
-					B = M.Position
-				end
-			end)
-			m.AddSignal(h.InputChanged, function(M)
-				if M == x and w then
-					local N = M.Position - y
-					v.Position = UDim2.fromOffset(z.X.Offset + N.X, z.Y.Offset + N.Y)
-					H:setGoal({ X = r(v.Position.X.Offset), Y = r(v.Position.Y.Offset) })
-					if v.Maximized then
-						v.Maximize(false, true, true)
-					end
-				end
-				if
-					(M.UserInputType == Enum.UserInputType.MouseMovement or M.UserInputType == Enum.UserInputType.Touch)
-					and A
-				then
-					local N, O = M.Position - B, v.Size
-					local P = Vector3.new(O.X.Offset, O.Y.Offset, 0) + Vector3.new(1, 1, 0) * N
-					local Q = Vector2.new(math.clamp(P.X, 470, 2048), math.clamp(P.Y, 380, 2048))
-					G:setGoal({ X = l.Instant.new(Q.X), Y = l.Instant.new(Q.Y) })
-				end
-			end)
-			m.AddSignal(h.InputEnded, function(M)
-				if A == true or M.UserInputType == Enum.UserInputType.Touch then
-					A = false
-					v.Size = UDim2.fromOffset(G:getValue().X, G:getValue().Y)
-				end
-			end)
-			m.AddSignal(v.TabHolder.UIListLayout:GetPropertyChangedSignal("AbsoluteContentSize"), function()
-				v.TabHolder.CanvasSize = UDim2.new(0, 0, 0, v.TabHolder.UIListLayout.AbsoluteContentSize.Y)
-			end)
-			m.AddSignal(h.InputBegan, function(M)
-				if
-					type(u.MinimizeKeybind) == "table"
-					and u.MinimizeKeybind.Type == "Keybind"
-					and not h:GetFocusedTextBox()
-				then
-					if M.KeyCode.Name == u.MinimizeKeybind.Value then
-						v:Minimize()
-					end
-				elseif M.KeyCode == u.MinimizeKey and not h:GetFocusedTextBox() then
-					v:Minimize()
-				end
-			end)
-			function v.Minimize(M)
-				v.Minimized = not v.Minimized
-				v.Root.Visible = not v.Minimized
-				if not C then
-					C = true
-					local N = u.MinimizeKeybind and u.MinimizeKeybind.Value or u.MinimizeKey.Name
-					u:Notify({
-						Title = "Interface",
-						Content = "Press " .. N .. " to toggle the inteface.",
-						Duration = 6,
-					})
-				end
-			end
-			function v.Destroy(M)
-				if e(k).UseAcrylic then
-					v.AcrylicPaint.Model:Destroy()
-				end
-				v.Root:Destroy()
-			end
-			local M = e(p.Dialog):Init(v)
-			function v.Dialog(N, O)
-				local P = M:Create()
-				P.Title.Text = O.Title
-				local Q = s("TextLabel", {
-					FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json"),
-					Text = O.Content,
-					TextColor3 = Color3.fromRGB(240, 240, 240),
-					TextSize = 14,
-					TextXAlignment = Enum.TextXAlignment.Left,
-					TextYAlignment = Enum.TextYAlignment.Top,
-					Size = UDim2.new(1, -40, 1, 0),
-					Position = UDim2.fromOffset(20, 60),
+		end),
+		[17] = LPH_NO_VIRTUALIZE(function()
+			local c, d, e, f, g = b(17)
+			local h, i, j, k =
+				game:GetService("UserInputService"),
+				game:GetService("Players").LocalPlayer:GetMouse(),
+				game:GetService("Workspace").CurrentCamera,
+				d.Parent.Parent
+			local l, m, n, o, p = e(k.Packages.Flipper), e(k.Creator), e(k.Acrylic), e(d.Parent.Assets), d.Parent
+			local q, r, s = l.Spring.new, l.Instant.new, m.New
+			return function(t)
+				local u, v, w, x, y, z =
+					e(k), {
+						Minimized = false,
+						Maximized = false,
+						Size = t.Size,
+						CurrentPos = 0,
+						Position = UDim2.fromOffset(j.ViewportSize.X / 2 - t.Size.X.Offset / 2, j.ViewportSize.Y / 2 - t.Size.Y.Offset / 2),
+					}, false
+				local A, B = false
+				local C = false
+				v.AcrylicPaint = n.AcrylicPaint()
+				local D, E =
+					s("Frame", {
+						Size = UDim2.fromOffset(4, 0),
+						BackgroundColor3 = Color3.fromRGB(76, 194, 255),
+						Position = UDim2.fromOffset(0, 17),
+						AnchorPoint = Vector2.new(0, 0.5),
+						ThemeTag = { BackgroundColor3 = "Accent" },
+					}, { s("UICorner", { CornerRadius = UDim.new(0, 2) }) }), s("Frame", { Size = UDim2.fromOffset(20, 20), BackgroundTransparency = 1, Position = UDim2.new(1, -20, 1, -20) })
+				v.TabHolder = s("ScrollingFrame", {
+					Size = UDim2.fromScale(1, 1),
 					BackgroundTransparency = 1,
-					Parent = P.Root,
-					ClipsDescendants = false,
+					ScrollBarImageTransparency = 1,
+					ScrollBarThickness = 0,
+					BorderSizePixel = 0,
+					CanvasSize = UDim2.fromScale(0, 0),
+					ScrollingDirection = Enum.ScrollingDirection.Y,
+				}, { s("UIListLayout", { Padding = UDim.new(0, 4) }) })
+				local F = s("Frame", {
+					Size = UDim2.new(0, t.TabWidth, 1, -66),
+					Position = UDim2.new(0, 12, 0, 54),
+					BackgroundTransparency = 1,
+					ClipsDescendants = true,
+				}, { v.TabHolder, D })
+				v.TabDisplay = s("TextLabel", {
+					RichText = true,
+					Text = "Tab",
+					TextTransparency = 0,
+					FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.SemiBold, Enum.FontStyle.Normal),
+					TextSize = 28,
+					TextXAlignment = "Left",
+					TextYAlignment = "Center",
+					Size = UDim2.new(1, -16, 0, 28),
+					Position = UDim2.fromOffset(t.TabWidth + 26, 56),
+					BackgroundTransparency = 1,
 					ThemeTag = { TextColor3 = "Text" },
 				})
-				s(
-					"UISizeConstraint",
-					{ MinSize = Vector2.new(300, 165), MaxSize = Vector2.new(620, math.huge), Parent = P.Root }
+				v.ContainerHolder = s("CanvasGroup", {
+					Size = UDim2.new(1, -t.TabWidth - 32, 1, -102),
+					Position = UDim2.fromOffset(t.TabWidth + 26, 90),
+					BackgroundTransparency = 1,
+				})
+				v.Root = s(
+					"Frame",
+					{ BackgroundTransparency = 1, Size = v.Size, Position = v.Position, Parent = t.Parent },
+					{ v.AcrylicPaint.Frame, v.TabDisplay, v.ContainerHolder, F, E }
 				)
-				P.Root.Size = UDim2.fromOffset(Q.TextBounds.X + 40, 165)
-				if Q.TextBounds.X + 40 > v.Size.X.Offset - 120 then
-					P.Root.Size = UDim2.fromOffset(v.Size.X.Offset - 120, 165)
-					Q.TextWrapped = true
-					P.Root.Size = UDim2.fromOffset(v.Size.X.Offset - 120, Q.TextBounds.Y + 150)
+				v.TitleBar =
+					e(d.Parent.TitleBar)({ Title = t.Title, SubTitle = t.SubTitle, Parent = v.Root, Window = v })
+				if e(k).UseAcrylic then
+					v.AcrylicPaint.AddParent(v.Root)
 				end
-				for R, S in next, O.Buttons do
-					P:Button(S.Title, S.Callback)
+				local G, H =
+					l.GroupMotor.new({ X = v.Size.X.Offset, Y = v.Size.Y.Offset }),
+					l.GroupMotor.new({ X = v.Position.X.Offset, Y = v.Position.Y.Offset })
+				v.SelectorPosMotor = l.SingleMotor.new(17)
+				v.SelectorSizeMotor = l.SingleMotor.new(0)
+				v.ContainerBackMotor = l.SingleMotor.new(0)
+				v.ContainerPosMotor = l.SingleMotor.new(94)
+				G:onStep(function(I)
+					v.Root.Size = UDim2.new(0, I.X, 0, I.Y)
+				end)
+				H:onStep(function(I)
+					v.Root.Position = UDim2.new(0, I.X, 0, I.Y)
+				end)
+				local I, J = 0, 0
+				v.SelectorPosMotor:onStep(function(K)
+					D.Position = UDim2.new(0, 0, 0, K + 17)
+					local L = tick()
+					local M = L - J
+					if I ~= nil then
+						v.SelectorSizeMotor:setGoal(q((math.abs(K - I) / (M * 60)) + 16))
+						I = K
+					end
+					J = L
+				end)
+				v.SelectorSizeMotor:onStep(function(K)
+					D.Size = UDim2.new(0, 4, 0, K)
+				end)
+				v.ContainerBackMotor:onStep(function(K)
+					v.ContainerHolder.GroupTransparency = K
+				end)
+				v.ContainerPosMotor:onStep(function(K)
+					v.ContainerHolder.Position = UDim2.fromOffset(t.TabWidth + 26, K)
+				end)
+				local K, L
+				v.Maximize = function(M, N, O)
+					v.Maximized = M
+					v.TitleBar.MaxButton.Frame.Icon.Image = M and o.Restore or o.Max
+					if M then
+						K = v.Size.X.Offset
+						L = v.Size.Y.Offset
+					end
+					local P, Q = M and j.ViewportSize.X or K, M and j.ViewportSize.Y or L
+					G:setGoal({
+						X = l[O and "Instant" or "Spring"].new(P, { frequency = 6 }),
+						Y = l[O and "Instant" or "Spring"].new(Q, { frequency = 6 }),
+					})
+					v.Size = UDim2.fromOffset(P, Q)
+					if not N then
+						H:setGoal({
+							X = q(M and 0 or v.Position.X.Offset, { frequency = 6 }),
+							Y = q(M and 0 or v.Position.Y.Offset, { frequency = 6 }),
+						})
+					end
 				end
-				P:Open()
-			end
-			local N = e(p.Tab):Init(v)
-			function v.AddTab(O, P)
-				return N:New(P.Title, P.Icon, v.TabHolder)
-			end
-			function v.SelectTab(O, P)
-				N:SelectTab(1)
-			end
-			m.AddSignal(v.TabHolder:GetPropertyChangedSignal("CanvasPosition"), function()
-				I = N:GetCurrentTabPos() + 16
-				J = 0
-				v.SelectorPosMotor:setGoal(r(N:GetCurrentTabPos()))
-			end)
-			return v
-		end
-	end),
-	[18] = LPH_NO_VIRTUALIZE(function()
-		local c, d, e, f, g = b(18)
-		local h = d.Parent
-		local i, j, k =
-			e(h.Themes), e(h.Packages.Flipper), {
-				Registry = {},
-				Signals = {},
-				TransparencyMotors = {},
-				DefaultProperties = {
-					ScreenGui = { ResetOnSpawn = false, ZIndexBehavior = Enum.ZIndexBehavior.Sibling },
-					Frame = { BackgroundColor3 = Color3.new(1, 1, 1), BorderColor3 = Color3.new(0, 0, 0), BorderSizePixel = 0 },
-					ScrollingFrame = {
-						BackgroundColor3 = Color3.new(1, 1, 1),
-						BorderColor3 = Color3.new(0, 0, 0),
-						ScrollBarImageColor3 = Color3.new(0, 0, 0),
-					},
-					TextLabel = {
-						BackgroundColor3 = Color3.new(1, 1, 1),
-						BorderColor3 = Color3.new(0, 0, 0),
-						Font = Enum.Font.SourceSans,
-						Text = "",
-						TextColor3 = Color3.new(0, 0, 0),
-						BackgroundTransparency = 1,
-						TextSize = 14,
-					},
-					TextButton = {
-						BackgroundColor3 = Color3.new(1, 1, 1),
-						BorderColor3 = Color3.new(0, 0, 0),
-						AutoButtonColor = false,
-						Font = Enum.Font.SourceSans,
-						Text = "",
-						TextColor3 = Color3.new(0, 0, 0),
-						TextSize = 14,
-					},
-					TextBox = {
-						BackgroundColor3 = Color3.new(1, 1, 1),
-						BorderColor3 = Color3.new(0, 0, 0),
-						ClearTextOnFocus = false,
-						Font = Enum.Font.SourceSans,
-						Text = "",
-						TextColor3 = Color3.new(0, 0, 0),
-						TextSize = 14,
-					},
-					ImageLabel = {
-						BackgroundTransparency = 1,
-						BackgroundColor3 = Color3.new(1, 1, 1),
-						BorderColor3 = Color3.new(0, 0, 0),
-						BorderSizePixel = 0,
-					},
-					ImageButton = {
-						BackgroundColor3 = Color3.new(1, 1, 1),
-						BorderColor3 = Color3.new(0, 0, 0),
-						AutoButtonColor = false,
-					},
-					CanvasGroup = {
-						BackgroundColor3 = Color3.new(1, 1, 1),
-						BorderColor3 = Color3.new(0, 0, 0),
-						BorderSizePixel = 0,
-					},
-				},
-			}
-		local l = function(l, m)
-			if m.ThemeTag then
-				k.AddThemeObject(l, m.ThemeTag)
-			end
-		end
-		function k.AddSignal(m, n)
-			table.insert(k.Signals, m:Connect(n))
-		end
-		function k.Disconnect()
-			for m = #k.Signals, 1, -1 do
-				local n = table.remove(k.Signals, m)
-				n:Disconnect()
-			end
-		end
-		function k.GetThemeProperty(m)
-			if i[e(h).Theme][m] then
-				return i[e(h).Theme][m]
-			end
-			return i.Dark[m]
-		end
-		function k.UpdateTheme()
-			for m, n in next, k.Registry do
-				for o, p in next, n.Properties do
-					m[o] = k.GetThemeProperty(p)
-				end
-			end
-			for o, p in next, k.TransparencyMotors do
-				p:setGoal(j.Instant.new(k.GetThemeProperty("ElementTransparency")))
-			end
-		end
-		function k.AddThemeObject(m, n)
-			local o = #k.Registry + 1
-			local p = { Object = m, Properties = n, Idx = o }
-			k.Registry[m] = p
-			k.UpdateTheme()
-			return m
-		end
-		function k.OverrideTag(m, n)
-			k.Registry[m].Properties = n
-			k.UpdateTheme()
-		end
-		function k.New(m, n, o)
-			local p = Instance.new(m)
-			for q, r in next, k.DefaultProperties[m] or {} do
-				p[q] = r
-			end
-			for s, t in next, n or {} do
-				if s ~= "ThemeTag" then
-					p[s] = t
-				end
-			end
-			for u, v in next, o or {} do
-				v.Parent = p
-			end
-			l(p, n)
-			return p
-		end
-		function k.SpringMotor(m, n, o, p, s)
-			p = p or false
-			s = s or false
-			local t = j.SingleMotor.new(m)
-			t:onStep(function(u)
-				n[o] = u
-			end)
-			if s then
-				table.insert(k.TransparencyMotors, t)
-			end
-			local u = function(u, v)
-				v = v or false
-				if not p then
-					if not v then
-						if o == "BackgroundTransparency" and e(h).DialogOpen then
-							return
+				m.AddSignal(v.TitleBar.Frame.InputBegan, function(M)
+					if
+						M.UserInputType == Enum.UserInputType.MouseButton1
+						or M.UserInputType == Enum.UserInputType.Touch
+					then
+						w = true
+						y = M.Position
+						z = v.Root.Position
+						if v.Maximized then
+							z = UDim2.fromOffset(
+								i.X - (i.X * ((K - 100) / v.Root.AbsoluteSize.X)),
+								i.Y - (i.Y * (L / v.Root.AbsoluteSize.Y))
+							)
+						end
+						M.Changed:Connect(function()
+							if M.UserInputState == Enum.UserInputState.End then
+								w = false
+							end
+						end)
+					end
+				end)
+				m.AddSignal(v.TitleBar.Frame.InputChanged, function(M)
+					if
+						M.UserInputType == Enum.UserInputType.MouseMovement
+						or M.UserInputType == Enum.UserInputType.Touch
+					then
+						x = M
+					end
+				end)
+				m.AddSignal(E.InputBegan, function(M)
+					if
+						M.UserInputType == Enum.UserInputType.MouseButton1
+						or M.UserInputType == Enum.UserInputType.Touch
+					then
+						A = true
+						B = M.Position
+					end
+				end)
+				m.AddSignal(h.InputChanged, function(M)
+					if M == x and w then
+						local N = M.Position - y
+						v.Position = UDim2.fromOffset(z.X.Offset + N.X, z.Y.Offset + N.Y)
+						H:setGoal({ X = r(v.Position.X.Offset), Y = r(v.Position.Y.Offset) })
+						if v.Maximized then
+							v.Maximize(false, true, true)
 						end
 					end
+					if
+						(
+							M.UserInputType == Enum.UserInputType.MouseMovement
+							or M.UserInputType == Enum.UserInputType.Touch
+						) and A
+					then
+						local N, O = M.Position - B, v.Size
+						local P = Vector3.new(O.X.Offset, O.Y.Offset, 0) + Vector3.new(1, 1, 0) * N
+						local Q = Vector2.new(math.clamp(P.X, 470, 2048), math.clamp(P.Y, 380, 2048))
+						G:setGoal({ X = l.Instant.new(Q.X), Y = l.Instant.new(Q.Y) })
+					end
+				end)
+				m.AddSignal(h.InputEnded, function(M)
+					if A == true or M.UserInputType == Enum.UserInputType.Touch then
+						A = false
+						v.Size = UDim2.fromOffset(G:getValue().X, G:getValue().Y)
+					end
+				end)
+				m.AddSignal(v.TabHolder.UIListLayout:GetPropertyChangedSignal("AbsoluteContentSize"), function()
+					v.TabHolder.CanvasSize = UDim2.new(0, 0, 0, v.TabHolder.UIListLayout.AbsoluteContentSize.Y)
+				end)
+				m.AddSignal(h.InputBegan, function(M)
+					if
+						type(u.MinimizeKeybind) == "table"
+						and u.MinimizeKeybind.Type == "Keybind"
+						and not h:GetFocusedTextBox()
+					then
+						if M.KeyCode.Name == u.MinimizeKeybind.Value then
+							v:Minimize()
+						end
+					elseif M.KeyCode == u.MinimizeKey and not h:GetFocusedTextBox() then
+						v:Minimize()
+					end
+				end)
+				function v.Minimize(M)
+					v.Minimized = not v.Minimized
+					v.Root.Visible = not v.Minimized
+					if not C then
+						C = true
+						local N = u.MinimizeKeybind and u.MinimizeKeybind.Value or u.MinimizeKey.Name
+						u:Notify({
+							Title = "Interface",
+							Content = "Press " .. N .. " to toggle the inteface.",
+							Duration = 6,
+						})
+					end
 				end
-				t:setGoal(j.Spring.new(u, { frequency = 8 }))
+				function v.Destroy(M)
+					if e(k).UseAcrylic then
+						v.AcrylicPaint.Model:Destroy()
+					end
+					v.Root:Destroy()
+				end
+				local M = e(p.Dialog):Init(v)
+				function v.Dialog(N, O)
+					local P = M:Create()
+					P.Title.Text = O.Title
+					local Q = s("TextLabel", {
+						FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json"),
+						Text = O.Content,
+						TextColor3 = Color3.fromRGB(240, 240, 240),
+						TextSize = 14,
+						TextXAlignment = Enum.TextXAlignment.Left,
+						TextYAlignment = Enum.TextYAlignment.Top,
+						Size = UDim2.new(1, -40, 1, 0),
+						Position = UDim2.fromOffset(20, 60),
+						BackgroundTransparency = 1,
+						Parent = P.Root,
+						ClipsDescendants = false,
+						ThemeTag = { TextColor3 = "Text" },
+					})
+					s(
+						"UISizeConstraint",
+						{ MinSize = Vector2.new(300, 165), MaxSize = Vector2.new(620, math.huge), Parent = P.Root }
+					)
+					P.Root.Size = UDim2.fromOffset(Q.TextBounds.X + 40, 165)
+					if Q.TextBounds.X + 40 > v.Size.X.Offset - 120 then
+						P.Root.Size = UDim2.fromOffset(v.Size.X.Offset - 120, 165)
+						Q.TextWrapped = true
+						P.Root.Size = UDim2.fromOffset(v.Size.X.Offset - 120, Q.TextBounds.Y + 150)
+					end
+					for R, S in next, O.Buttons do
+						P:Button(S.Title, S.Callback)
+					end
+					P:Open()
+				end
+				local N = e(p.Tab):Init(v)
+				function v.AddTab(O, P)
+					return N:New(P.Title, P.Icon, v.TabHolder)
+				end
+				function v.SelectTab(O, P)
+					N:SelectTab(1)
+				end
+				m.AddSignal(v.TabHolder:GetPropertyChangedSignal("CanvasPosition"), function()
+					I = N:GetCurrentTabPos() + 16
+					J = 0
+					v.SelectorPosMotor:setGoal(r(N:GetCurrentTabPos()))
+				end)
+				return v
 			end
-			return t, u
-		end
-		return k
-	end),
-	[19] = LPH_NO_VIRTUALIZE(function()
-		local c, d, e, f, g = b(19)
-		local h = {}
-		for i, j in next, d:GetChildren() do
-			table.insert(h, e(j))
-		end
-		return h
-	end),
-	[20] = LPH_NO_VIRTUALIZE(function()
-		local c, d, e, f, g = b(20)
-		local h = d.Parent.Parent
-		local i = e(h.Creator)
-		local j, k, l = i.New, h.Components, {}
-		l.__index = l
-		l.__type = "Button"
-		function l.New(m, n)
-			assert(n.Title, "Button - Missing Title")
-			n.Callback = n.Callback or function() end
-			local o = e(k.Element)(n.Title, n.Description, m.Container, true)
-			local p = j("ImageLabel", {
-				Image = "rbxassetid://10709791437",
-				Size = UDim2.fromOffset(16, 16),
-				AnchorPoint = Vector2.new(1, 0.5),
-				Position = UDim2.new(1, -10, 0.5, 0),
-				BackgroundTransparency = 1,
-				Parent = o.Frame,
-				ThemeTag = { ImageColor3 = "Text" },
-			})
-			i.AddSignal(o.Frame.MouseButton1Click, function()
-				m.Library:SafeCallback(n.Callback)
-			end)
-			return o
-		end
-		return l
-	end),
-	[21] = LPH_NO_VIRTUALIZE(function()
-		local c, d, e, f, g = b(21)
-		local h, i, j, k =
-			game:GetService("UserInputService"),
-			game:GetService("TouchInputService"),
-			game:GetService("RunService"),
-			game:GetService("Players")
-		local l, m = j.RenderStepped, k.LocalPlayer
-		local n, o = m:GetMouse(), d.Parent.Parent
-		local p = e(o.Creator)
-		local s, t, u = p.New, o.Components, {}
-		u.__index = u
-		u.__type = "Colorpicker"
-		function u.New(v, w, x)
-			local y = v.Library
-			assert(x.Title, "Colorpicker - Missing Title")
-			assert(x.Default, "AddColorPicker: Missing default value.")
-			local z = {
-				Value = x.Default,
-				Transparency = x.Transparency or 0,
-				Type = "Colorpicker",
-				Title = type(x.Title) == "string" and x.Title or "Colorpicker",
-				Callback = x.Callback or function(z) end,
-			}
-			function z.SetHSVFromRGB(A, B)
-				local C, D, E = Color3.toHSV(B)
-				z.Hue = C
-				z.Sat = D
-				z.Vib = E
+		end),
+		[18] = LPH_NO_VIRTUALIZE(function()
+			local c, d, e, f, g = b(18)
+			local h = d.Parent
+			local i, j, k =
+				e(h.Themes), e(h.Packages.Flipper), {
+					Registry = {},
+					Signals = {},
+					TransparencyMotors = {},
+					DefaultProperties = {
+						ScreenGui = { ResetOnSpawn = false, ZIndexBehavior = Enum.ZIndexBehavior.Sibling },
+						Frame = { BackgroundColor3 = Color3.new(1, 1, 1), BorderColor3 = Color3.new(0, 0, 0), BorderSizePixel = 0 },
+						ScrollingFrame = {
+							BackgroundColor3 = Color3.new(1, 1, 1),
+							BorderColor3 = Color3.new(0, 0, 0),
+							ScrollBarImageColor3 = Color3.new(0, 0, 0),
+						},
+						TextLabel = {
+							BackgroundColor3 = Color3.new(1, 1, 1),
+							BorderColor3 = Color3.new(0, 0, 0),
+							Font = Enum.Font.SourceSans,
+							Text = "",
+							TextColor3 = Color3.new(0, 0, 0),
+							BackgroundTransparency = 1,
+							TextSize = 14,
+						},
+						TextButton = {
+							BackgroundColor3 = Color3.new(1, 1, 1),
+							BorderColor3 = Color3.new(0, 0, 0),
+							AutoButtonColor = false,
+							Font = Enum.Font.SourceSans,
+							Text = "",
+							TextColor3 = Color3.new(0, 0, 0),
+							TextSize = 14,
+						},
+						TextBox = {
+							BackgroundColor3 = Color3.new(1, 1, 1),
+							BorderColor3 = Color3.new(0, 0, 0),
+							ClearTextOnFocus = false,
+							Font = Enum.Font.SourceSans,
+							Text = "",
+							TextColor3 = Color3.new(0, 0, 0),
+							TextSize = 14,
+						},
+						ImageLabel = {
+							BackgroundTransparency = 1,
+							BackgroundColor3 = Color3.new(1, 1, 1),
+							BorderColor3 = Color3.new(0, 0, 0),
+							BorderSizePixel = 0,
+						},
+						ImageButton = {
+							BackgroundColor3 = Color3.new(1, 1, 1),
+							BorderColor3 = Color3.new(0, 0, 0),
+							AutoButtonColor = false,
+						},
+						CanvasGroup = {
+							BackgroundColor3 = Color3.new(1, 1, 1),
+							BorderColor3 = Color3.new(0, 0, 0),
+							BorderSizePixel = 0,
+						},
+					},
+				}
+			local l = function(l, m)
+				if m.ThemeTag then
+					k.AddThemeObject(l, m.ThemeTag)
+				end
 			end
-			z:SetHSVFromRGB(z.Value)
-			local A = e(t.Element)(x.Title, x.Description, v.Container, true)
-			z.SetTitle = A.SetTitle
-			z.SetDesc = A.SetDesc
-			local B = s(
-				"Frame",
-				{ Size = UDim2.fromScale(1, 1), BackgroundColor3 = z.Value, Parent = A.Frame },
-				{ s("UICorner", { CornerRadius = UDim.new(0, 4) }) }
-			)
-			local aa, ab =
-				s("ImageLabel", {
-					Size = UDim2.fromOffset(26, 26),
-					Position = UDim2.new(1, -10, 0.5, 0),
+			function k.AddSignal(m, n)
+				table.insert(k.Signals, m:Connect(n))
+			end
+			function k.Disconnect()
+				for m = #k.Signals, 1, -1 do
+					local n = table.remove(k.Signals, m)
+					n:Disconnect()
+				end
+			end
+			function k.GetThemeProperty(m)
+				if i[e(h).Theme][m] then
+					return i[e(h).Theme][m]
+				end
+				return i.Dark[m]
+			end
+			function k.UpdateTheme()
+				for m, n in next, k.Registry do
+					for o, p in next, n.Properties do
+						m[o] = k.GetThemeProperty(p)
+					end
+				end
+				for o, p in next, k.TransparencyMotors do
+					p:setGoal(j.Instant.new(k.GetThemeProperty("ElementTransparency")))
+				end
+			end
+			function k.AddThemeObject(m, n)
+				local o = #k.Registry + 1
+				local p = { Object = m, Properties = n, Idx = o }
+				k.Registry[m] = p
+				k.UpdateTheme()
+				return m
+			end
+			function k.OverrideTag(m, n)
+				k.Registry[m].Properties = n
+				k.UpdateTheme()
+			end
+			function k.New(m, n, o)
+				local p = Instance.new(m)
+				for q, r in next, k.DefaultProperties[m] or {} do
+					p[q] = r
+				end
+				for s, t in next, n or {} do
+					if s ~= "ThemeTag" then
+						p[s] = t
+					end
+				end
+				for u, v in next, o or {} do
+					v.Parent = p
+				end
+				l(p, n)
+				return p
+			end
+			function k.SpringMotor(m, n, o, p, s)
+				p = p or false
+				s = s or false
+				local t = j.SingleMotor.new(m)
+				t:onStep(function(u)
+					n[o] = u
+				end)
+				if s then
+					table.insert(k.TransparencyMotors, t)
+				end
+				local u = function(u, v)
+					v = v or false
+					if not p then
+						if not v then
+							if o == "BackgroundTransparency" and e(h).DialogOpen then
+								return
+							end
+						end
+					end
+					t:setGoal(j.Spring.new(u, { frequency = 8 }))
+				end
+				return t, u
+			end
+			return k
+		end),
+		[19] = LPH_NO_VIRTUALIZE(function()
+			local c, d, e, f, g = b(19)
+			local h = {}
+			for i, j in next, d:GetChildren() do
+				table.insert(h, e(j))
+			end
+			return h
+		end),
+		[20] = LPH_NO_VIRTUALIZE(function()
+			local c, d, e, f, g = b(20)
+			local h = d.Parent.Parent
+			local i = e(h.Creator)
+			local j, k, l = i.New, h.Components, {}
+			l.__index = l
+			l.__type = "Button"
+			function l.New(m, n)
+				assert(n.Title, "Button - Missing Title")
+				n.Callback = n.Callback or function() end
+				local o = e(k.Element)(n.Title, n.Description, m.Container, true)
+				local p = j("ImageLabel", {
+					Image = "rbxassetid://10709791437",
+					Size = UDim2.fromOffset(16, 16),
 					AnchorPoint = Vector2.new(1, 0.5),
-					Parent = A.Frame,
-					Image = "http://www.roblox.com/asset/?id=14204231522",
-					ImageTransparency = 0.45,
-					ScaleType = Enum.ScaleType.Tile,
-					TileSize = UDim2.fromOffset(40, 40),
-				}, { s("UICorner", { CornerRadius = UDim.new(0, 4) }), B }), function()
-					local C = e(t.Dialog):Create()
-					C.Title.Text = z.Title
-					C.Root.Size = UDim2.fromOffset(430, 330)
-					local D, E, F, G, H, I = z.Hue, z.Sat, z.Vib, z.Transparency, function()
-						local D = e(t.Textbox)()
-						D.Frame.Parent = C.Root
-						D.Frame.Size = UDim2.new(0, 90, 0, 32)
-						return D
-					end, function(D, E)
-						return s("TextLabel", { FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", Enum.FontWeight.Medium, Enum.FontStyle.Normal), Text = D, TextColor3 = Color3.fromRGB(240, 240, 240), TextSize = 13, TextXAlignment = Enum.TextXAlignment.Left, Size = UDim2.new(1, 0, 0, 32), Position = E, BackgroundTransparency = 1, Parent = C.Root, ThemeTag = { TextColor3 = "Text" } })
-					end
-					local J, K = function()
-						local J = Color3.fromHSV(D, E, F)
-						return { R = math.floor(J.r * 255), G = math.floor(J.g * 255), B = math.floor(J.b * 255) }
-					end, s("ImageLabel", { Size = UDim2.new(0, 18, 0, 18), ScaleType = Enum.ScaleType.Fit, AnchorPoint = Vector2.new(0.5, 0.5), BackgroundTransparency = 1, Image = "http://www.roblox.com/asset/?id=4805639000" })
-					local L, M = s("ImageLabel", {
-						Size = UDim2.fromOffset(180, 160),
-						Position = UDim2.fromOffset(20, 55),
-						Image = "rbxassetid://4155801252",
-						BackgroundColor3 = z.Value,
-						BackgroundTransparency = 0,
-						Parent = C.Root,
-					}, { s("UICorner", { CornerRadius = UDim.new(0, 4) }), K }), s("Frame", { BackgroundColor3 = z.Value, Size = UDim2.fromScale(1, 1), BackgroundTransparency = z.Transparency }, { s("UICorner", { CornerRadius = UDim.new(0, 4) }) })
-					local N, O = s("ImageLabel", {
+					Position = UDim2.new(1, -10, 0.5, 0),
+					BackgroundTransparency = 1,
+					Parent = o.Frame,
+					ThemeTag = { ImageColor3 = "Text" },
+				})
+				i.AddSignal(o.Frame.MouseButton1Click, function()
+					m.Library:SafeCallback(n.Callback)
+				end)
+				return o
+			end
+			return l
+		end),
+		[21] = LPH_NO_VIRTUALIZE(function()
+			local c, d, e, f, g = b(21)
+			local h, i, j, k =
+				game:GetService("UserInputService"),
+				game:GetService("TouchInputService"),
+				game:GetService("RunService"),
+				game:GetService("Players")
+			local l, m = j.RenderStepped, k.LocalPlayer
+			local n, o = m:GetMouse(), d.Parent.Parent
+			local p = e(o.Creator)
+			local s, t, u = p.New, o.Components, {}
+			u.__index = u
+			u.__type = "Colorpicker"
+			function u.New(v, w, x)
+				local y = v.Library
+				assert(x.Title, "Colorpicker - Missing Title")
+				assert(x.Default, "AddColorPicker: Missing default value.")
+				local z = {
+					Value = x.Default,
+					Transparency = x.Transparency or 0,
+					Type = "Colorpicker",
+					Title = type(x.Title) == "string" and x.Title or "Colorpicker",
+					Callback = x.Callback or function(z) end,
+				}
+				function z.SetHSVFromRGB(A, B)
+					local C, D, E = Color3.toHSV(B)
+					z.Hue = C
+					z.Sat = D
+					z.Vib = E
+				end
+				z:SetHSVFromRGB(z.Value)
+				local A = e(t.Element)(x.Title, x.Description, v.Container, true)
+				z.SetTitle = A.SetTitle
+				z.SetDesc = A.SetDesc
+				local B = s(
+					"Frame",
+					{ Size = UDim2.fromScale(1, 1), BackgroundColor3 = z.Value, Parent = A.Frame },
+					{ s("UICorner", { CornerRadius = UDim.new(0, 4) }) }
+				)
+				local aa, ab =
+					s("ImageLabel", {
+						Size = UDim2.fromOffset(26, 26),
+						Position = UDim2.new(1, -10, 0.5, 0),
+						AnchorPoint = Vector2.new(1, 0.5),
+						Parent = A.Frame,
 						Image = "http://www.roblox.com/asset/?id=14204231522",
 						ImageTransparency = 0.45,
 						ScaleType = Enum.ScaleType.Tile,
 						TileSize = UDim2.fromOffset(40, 40),
-						BackgroundTransparency = 1,
-						Position = UDim2.fromOffset(112, 220),
-						Size = UDim2.fromOffset(88, 24),
-						Parent = C.Root,
-					}, {
-						s("UICorner", { CornerRadius = UDim.new(0, 4) }),
-						s("UIStroke", { Thickness = 2, Transparency = 0.75 }),
-						M,
-					}), s("Frame", { BackgroundColor3 = z.Value, Size = UDim2.fromScale(1, 1), BackgroundTransparency = 0 }, { s("UICorner", { CornerRadius = UDim.new(0, 4) }) })
-					local P, Q = s("ImageLabel", {
-						Image = "http://www.roblox.com/asset/?id=14204231522",
-						ImageTransparency = 0.45,
-						ScaleType = Enum.ScaleType.Tile,
-						TileSize = UDim2.fromOffset(40, 40),
-						BackgroundTransparency = 1,
-						Position = UDim2.fromOffset(20, 220),
-						Size = UDim2.fromOffset(88, 24),
-						Parent = C.Root,
-					}, {
-						s("UICorner", { CornerRadius = UDim.new(0, 4) }),
-						s("UIStroke", { Thickness = 2, Transparency = 0.75 }),
-						O,
-					}), {}
-					for R = 0, 1, 0.1 do
-						table.insert(Q, ColorSequenceKeypoint.new(R, Color3.fromHSV(R, 1, 1)))
-					end
-					local R, S = s("UIGradient", { Color = ColorSequence.new(Q), Rotation = 90 }), s("Frame", { Size = UDim2.new(1, 0, 1, -10), Position = UDim2.fromOffset(0, 5), BackgroundTransparency = 1 })
-					local T, U, V = s("ImageLabel", {
-						Size = UDim2.fromOffset(14, 14),
-						Image = "http://www.roblox.com/asset/?id=12266946128",
-						Parent = S,
-						ThemeTag = { ImageColor3 = "DialogInput" },
-					}), s("Frame", { Size = UDim2.fromOffset(12, 190), Position = UDim2.fromOffset(210, 55), Parent = C.Root }, { s("UICorner", { CornerRadius = UDim.new(1, 0) }), R, S }), H()
-					V.Frame.Position = UDim2.fromOffset(x.Transparency and 260 or 240, 55)
-					I("Hex", UDim2.fromOffset(x.Transparency and 360 or 340, 55))
-					local W = H()
-					W.Frame.Position = UDim2.fromOffset(x.Transparency and 260 or 240, 95)
-					I("Red", UDim2.fromOffset(x.Transparency and 360 or 340, 95))
-					local X = H()
-					X.Frame.Position = UDim2.fromOffset(x.Transparency and 260 or 240, 135)
-					I("Green", UDim2.fromOffset(x.Transparency and 360 or 340, 135))
-					local Y = H()
-					Y.Frame.Position = UDim2.fromOffset(x.Transparency and 260 or 240, 175)
-					I("Blue", UDim2.fromOffset(x.Transparency and 360 or 340, 175))
-					local Z
-					if x.Transparency then
-						Z = H()
-						Z.Frame.Position = UDim2.fromOffset(260, 215)
-						I("Alpha", UDim2.fromOffset(360, 215))
-					end
-					local _, aa, ab
-					if x.Transparency then
-						local ac = s("Frame", { Size = UDim2.new(1, 0, 1, -10), Position = UDim2.fromOffset(0, 5), BackgroundTransparency = 1 })
-						aa = s("ImageLabel", {
+					}, { s("UICorner", { CornerRadius = UDim.new(0, 4) }), B }), function()
+						local C = e(t.Dialog):Create()
+						C.Title.Text = z.Title
+						C.Root.Size = UDim2.fromOffset(430, 330)
+						local D, E, F, G, H, I = z.Hue, z.Sat, z.Vib, z.Transparency, function()
+							local D = e(t.Textbox)()
+							D.Frame.Parent = C.Root
+							D.Frame.Size = UDim2.new(0, 90, 0, 32)
+							return D
+						end, function(D, E)
+							return s("TextLabel", { FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", Enum.FontWeight.Medium, Enum.FontStyle.Normal), Text = D, TextColor3 = Color3.fromRGB(240, 240, 240), TextSize = 13, TextXAlignment = Enum.TextXAlignment.Left, Size = UDim2.new(1, 0, 0, 32), Position = E, BackgroundTransparency = 1, Parent = C.Root, ThemeTag = { TextColor3 = "Text" } })
+						end
+						local J, K = function()
+							local J = Color3.fromHSV(D, E, F)
+							return { R = math.floor(J.r * 255), G = math.floor(J.g * 255), B = math.floor(J.b * 255) }
+						end, s("ImageLabel", { Size = UDim2.new(0, 18, 0, 18), ScaleType = Enum.ScaleType.Fit, AnchorPoint = Vector2.new(0.5, 0.5), BackgroundTransparency = 1, Image = "http://www.roblox.com/asset/?id=4805639000" })
+						local L, M = s("ImageLabel", {
+							Size = UDim2.fromOffset(180, 160),
+							Position = UDim2.fromOffset(20, 55),
+							Image = "rbxassetid://4155801252",
+							BackgroundColor3 = z.Value,
+							BackgroundTransparency = 0,
+							Parent = C.Root,
+						}, { s("UICorner", { CornerRadius = UDim.new(0, 4) }), K }), s("Frame", { BackgroundColor3 = z.Value, Size = UDim2.fromScale(1, 1), BackgroundTransparency = z.Transparency }, { s("UICorner", { CornerRadius = UDim.new(0, 4) }) })
+						local N, O = s("ImageLabel", {
+							Image = "http://www.roblox.com/asset/?id=14204231522",
+							ImageTransparency = 0.45,
+							ScaleType = Enum.ScaleType.Tile,
+							TileSize = UDim2.fromOffset(40, 40),
+							BackgroundTransparency = 1,
+							Position = UDim2.fromOffset(112, 220),
+							Size = UDim2.fromOffset(88, 24),
+							Parent = C.Root,
+						}, {
+							s("UICorner", { CornerRadius = UDim.new(0, 4) }),
+							s("UIStroke", { Thickness = 2, Transparency = 0.75 }),
+							M,
+						}), s("Frame", { BackgroundColor3 = z.Value, Size = UDim2.fromScale(1, 1), BackgroundTransparency = 0 }, { s("UICorner", { CornerRadius = UDim.new(0, 4) }) })
+						local P, Q = s("ImageLabel", {
+							Image = "http://www.roblox.com/asset/?id=14204231522",
+							ImageTransparency = 0.45,
+							ScaleType = Enum.ScaleType.Tile,
+							TileSize = UDim2.fromOffset(40, 40),
+							BackgroundTransparency = 1,
+							Position = UDim2.fromOffset(20, 220),
+							Size = UDim2.fromOffset(88, 24),
+							Parent = C.Root,
+						}, {
+							s("UICorner", { CornerRadius = UDim.new(0, 4) }),
+							s("UIStroke", { Thickness = 2, Transparency = 0.75 }),
+							O,
+						}), {}
+						for R = 0, 1, 0.1 do
+							table.insert(Q, ColorSequenceKeypoint.new(R, Color3.fromHSV(R, 1, 1)))
+						end
+						local R, S = s("UIGradient", { Color = ColorSequence.new(Q), Rotation = 90 }), s("Frame", { Size = UDim2.new(1, 0, 1, -10), Position = UDim2.fromOffset(0, 5), BackgroundTransparency = 1 })
+						local T, U, V = s("ImageLabel", {
 							Size = UDim2.fromOffset(14, 14),
 							Image = "http://www.roblox.com/asset/?id=12266946128",
-							Parent = ac,
+							Parent = S,
 							ThemeTag = { ImageColor3 = "DialogInput" },
-						})
-						ab = s("Frame", { Size = UDim2.fromScale(1, 1) }, {
-							s("UIGradient", {
-								Transparency = NumberSequence.new({
-									NumberSequenceKeypoint.new(0, 0),
-									NumberSequenceKeypoint.new(1, 1),
-								}),
-								Rotation = 270,
-							}),
-							s("UICorner", { CornerRadius = UDim.new(1, 0) }),
-						})
-						_ = s("Frame", {
-							Size = UDim2.fromOffset(12, 190),
-							Position = UDim2.fromOffset(230, 55),
-							Parent = C.Root,
-							BackgroundTransparency = 1,
-						}, {
-							s("UICorner", { CornerRadius = UDim.new(1, 0) }),
-							s("ImageLabel", {
-								Image = "http://www.roblox.com/asset/?id=14204231522",
-								ImageTransparency = 0.45,
-								ScaleType = Enum.ScaleType.Tile,
-								TileSize = UDim2.fromOffset(40, 40),
-								BackgroundTransparency = 1,
-								Size = UDim2.fromScale(1, 1),
-								Parent = C.Root,
-							}, { s("UICorner", { CornerRadius = UDim.new(1, 0) }) }),
-							ab,
-							ac,
-						})
-					end
-					local ac = function()
-						L.BackgroundColor3 = Color3.fromHSV(D, 1, 1)
-						T.Position = UDim2.new(0, -1, D, -6)
-						K.Position = UDim2.new(E, 0, 1 - F, 0)
-						O.BackgroundColor3 = Color3.fromHSV(D, E, F)
-						V.Input.Text = "#" .. Color3.fromHSV(D, E, F):ToHex()
-						W.Input.Text = J().R
-						X.Input.Text = J().G
-						Y.Input.Text = J().B
+						}), s("Frame", { Size = UDim2.fromOffset(12, 190), Position = UDim2.fromOffset(210, 55), Parent = C.Root }, { s("UICorner", { CornerRadius = UDim.new(1, 0) }), R, S }), H()
+						V.Frame.Position = UDim2.fromOffset(x.Transparency and 260 or 240, 55)
+						I("Hex", UDim2.fromOffset(x.Transparency and 360 or 340, 55))
+						local W = H()
+						W.Frame.Position = UDim2.fromOffset(x.Transparency and 260 or 240, 95)
+						I("Red", UDim2.fromOffset(x.Transparency and 360 or 340, 95))
+						local X = H()
+						X.Frame.Position = UDim2.fromOffset(x.Transparency and 260 or 240, 135)
+						I("Green", UDim2.fromOffset(x.Transparency and 360 or 340, 135))
+						local Y = H()
+						Y.Frame.Position = UDim2.fromOffset(x.Transparency and 260 or 240, 175)
+						I("Blue", UDim2.fromOffset(x.Transparency and 360 or 340, 175))
+						local Z
 						if x.Transparency then
-							ab.BackgroundColor3 = Color3.fromHSV(D, E, F)
-							O.BackgroundTransparency = G
-							aa.Position = UDim2.new(0, -1, 1 - G, -6)
-							Z.Input.Text = e(o):Round((1 - G) * 100, 0) .. "%"
+							Z = H()
+							Z.Frame.Position = UDim2.fromOffset(260, 215)
+							I("Alpha", UDim2.fromOffset(360, 215))
 						end
-					end
-					p.AddSignal(V.Input.FocusLost, function(ad)
-						if ad then
-							local ae, af = pcall(Color3.fromHex, V.Input.Text)
-							if ae and typeof(af) == "Color3" then
-								D, E, F = Color3.toHSV(af)
+						local _, aa, ab
+						if x.Transparency then
+							local ac = s("Frame", { Size = UDim2.new(1, 0, 1, -10), Position = UDim2.fromOffset(0, 5), BackgroundTransparency = 1 })
+							aa = s("ImageLabel", {
+								Size = UDim2.fromOffset(14, 14),
+								Image = "http://www.roblox.com/asset/?id=12266946128",
+								Parent = ac,
+								ThemeTag = { ImageColor3 = "DialogInput" },
+							})
+							ab = s("Frame", { Size = UDim2.fromScale(1, 1) }, {
+								s("UIGradient", {
+									Transparency = NumberSequence.new({
+										NumberSequenceKeypoint.new(0, 0),
+										NumberSequenceKeypoint.new(1, 1),
+									}),
+									Rotation = 270,
+								}),
+								s("UICorner", { CornerRadius = UDim.new(1, 0) }),
+							})
+							_ = s("Frame", {
+								Size = UDim2.fromOffset(12, 190),
+								Position = UDim2.fromOffset(230, 55),
+								Parent = C.Root,
+								BackgroundTransparency = 1,
+							}, {
+								s("UICorner", { CornerRadius = UDim.new(1, 0) }),
+								s("ImageLabel", {
+									Image = "http://www.roblox.com/asset/?id=14204231522",
+									ImageTransparency = 0.45,
+									ScaleType = Enum.ScaleType.Tile,
+									TileSize = UDim2.fromOffset(40, 40),
+									BackgroundTransparency = 1,
+									Size = UDim2.fromScale(1, 1),
+									Parent = C.Root,
+								}, { s("UICorner", { CornerRadius = UDim.new(1, 0) }) }),
+								ab,
+								ac,
+							})
+						end
+						local ac = function()
+							L.BackgroundColor3 = Color3.fromHSV(D, 1, 1)
+							T.Position = UDim2.new(0, -1, D, -6)
+							K.Position = UDim2.new(E, 0, 1 - F, 0)
+							O.BackgroundColor3 = Color3.fromHSV(D, E, F)
+							V.Input.Text = "#" .. Color3.fromHSV(D, E, F):ToHex()
+							W.Input.Text = J().R
+							X.Input.Text = J().G
+							Y.Input.Text = J().B
+							if x.Transparency then
+								ab.BackgroundColor3 = Color3.fromHSV(D, E, F)
+								O.BackgroundTransparency = G
+								aa.Position = UDim2.new(0, -1, 1 - G, -6)
+								Z.Input.Text = e(o):Round((1 - G) * 100, 0) .. "%"
 							end
 						end
-						ac()
-					end)
-					p.AddSignal(W.Input.FocusLost, function(ad)
-						if ad then
-							local ae = J()
-							local af, ag = pcall(Color3.fromRGB, W.Input.Text, ae.G, ae.B)
-							if af and typeof(ag) == "Color3" then
-								if tonumber(W.Input.Text) <= 255 then
-									D, E, F = Color3.toHSV(ag)
-								end
-							end
-						end
-						ac()
-					end)
-					p.AddSignal(X.Input.FocusLost, function(ad)
-						if ad then
-							local ae = J()
-							local af, ag = pcall(Color3.fromRGB, ae.R, X.Input.Text, ae.B)
-							if af and typeof(ag) == "Color3" then
-								if tonumber(X.Input.Text) <= 255 then
-									D, E, F = Color3.toHSV(ag)
-								end
-							end
-						end
-						ac()
-					end)
-					p.AddSignal(Y.Input.FocusLost, function(ad)
-						if ad then
-							local ae = J()
-							local af, ag = pcall(Color3.fromRGB, ae.R, ae.G, Y.Input.Text)
-							if af and typeof(ag) == "Color3" then
-								if tonumber(Y.Input.Text) <= 255 then
-									D, E, F = Color3.toHSV(ag)
-								end
-							end
-						end
-						ac()
-					end)
-					if x.Transparency then
-						p.AddSignal(Z.Input.FocusLost, function(ad)
+						p.AddSignal(V.Input.FocusLost, function(ad)
 							if ad then
-								pcall(function()
-									local ae = tonumber(Z.Input.Text)
-									if ae >= 0 and ae <= 100 then
-										G = 1 - ae * 0.01
-									end
-								end)
+								local ae, af = pcall(Color3.fromHex, V.Input.Text)
+								if ae and typeof(af) == "Color3" then
+									D, E, F = Color3.toHSV(af)
+								end
 							end
 							ac()
 						end)
-					end
-					p.AddSignal(L.InputBegan, function(ad)
-						if ad.UserInputType == Enum.UserInputType.MouseButton1 or ad.UserInputType == Enum.UserInputType.Touch then
-							while h:IsMouseButtonPressed(Enum.UserInputType.MouseButton1) do
-								local ae = L.AbsolutePosition.X
-								local af = ae + L.AbsoluteSize.X
-								local ag, ah = math.clamp(n.X, ae, af), L.AbsolutePosition.Y
-								local ai = ah + L.AbsoluteSize.Y
-								local aj = math.clamp(n.Y, ah, ai)
-								E = (ag - ae) / (af - ae)
-								F = 1 - ((aj - ah) / (ai - ah))
-								ac()
-								l:Wait()
+						p.AddSignal(W.Input.FocusLost, function(ad)
+							if ad then
+								local ae = J()
+								local af, ag = pcall(Color3.fromRGB, W.Input.Text, ae.G, ae.B)
+								if af and typeof(ag) == "Color3" then
+									if tonumber(W.Input.Text) <= 255 then
+										D, E, F = Color3.toHSV(ag)
+									end
+								end
 							end
-						end
-					end)
-					p.AddSignal(U.InputBegan, function(ad)
-						if ad.UserInputType == Enum.UserInputType.MouseButton1 or ad.UserInputType == Enum.UserInputType.Touch then
-							while h:IsMouseButtonPressed(Enum.UserInputType.MouseButton1) do
-								local ae = U.AbsolutePosition.Y
-								local af = ae + U.AbsoluteSize.Y
-								local ag = math.clamp(n.Y, ae, af)
-								D = ((ag - ae) / (af - ae))
-								ac()
-								l:Wait()
+							ac()
+						end)
+						p.AddSignal(X.Input.FocusLost, function(ad)
+							if ad then
+								local ae = J()
+								local af, ag = pcall(Color3.fromRGB, ae.R, X.Input.Text, ae.B)
+								if af and typeof(ag) == "Color3" then
+									if tonumber(X.Input.Text) <= 255 then
+										D, E, F = Color3.toHSV(ag)
+									end
+								end
 							end
+							ac()
+						end)
+						p.AddSignal(Y.Input.FocusLost, function(ad)
+							if ad then
+								local ae = J()
+								local af, ag = pcall(Color3.fromRGB, ae.R, ae.G, Y.Input.Text)
+								if af and typeof(ag) == "Color3" then
+									if tonumber(Y.Input.Text) <= 255 then
+										D, E, F = Color3.toHSV(ag)
+									end
+								end
+							end
+							ac()
+						end)
+						if x.Transparency then
+							p.AddSignal(Z.Input.FocusLost, function(ad)
+								if ad then
+									pcall(function()
+										local ae = tonumber(Z.Input.Text)
+										if ae >= 0 and ae <= 100 then
+											G = 1 - ae * 0.01
+										end
+									end)
+								end
+								ac()
+							end)
 						end
-					end)
-					if x.Transparency then
-						p.AddSignal(_.InputBegan, function(ad)
-							if ad.UserInputType == Enum.UserInputType.MouseButton1 then
+						p.AddSignal(L.InputBegan, function(ad)
+							if ad.UserInputType == Enum.UserInputType.MouseButton1 or ad.UserInputType == Enum.UserInputType.Touch then
 								while h:IsMouseButtonPressed(Enum.UserInputType.MouseButton1) do
-									local ae = _.AbsolutePosition.Y
-									local af = ae + _.AbsoluteSize.Y
-									local ag = math.clamp(n.Y, ae, af)
-									G = 1 - ((ag - ae) / (af - ae))
+									local ae = L.AbsolutePosition.X
+									local af = ae + L.AbsoluteSize.X
+									local ag, ah = math.clamp(n.X, ae, af), L.AbsolutePosition.Y
+									local ai = ah + L.AbsoluteSize.Y
+									local aj = math.clamp(n.Y, ah, ai)
+									E = (ag - ae) / (af - ae)
+									F = 1 - ((aj - ah) / (ai - ah))
 									ac()
 									l:Wait()
 								end
 							end
 						end)
+						p.AddSignal(U.InputBegan, function(ad)
+							if ad.UserInputType == Enum.UserInputType.MouseButton1 or ad.UserInputType == Enum.UserInputType.Touch then
+								while h:IsMouseButtonPressed(Enum.UserInputType.MouseButton1) do
+									local ae = U.AbsolutePosition.Y
+									local af = ae + U.AbsoluteSize.Y
+									local ag = math.clamp(n.Y, ae, af)
+									D = ((ag - ae) / (af - ae))
+									ac()
+									l:Wait()
+								end
+							end
+						end)
+						if x.Transparency then
+							p.AddSignal(_.InputBegan, function(ad)
+								if ad.UserInputType == Enum.UserInputType.MouseButton1 then
+									while h:IsMouseButtonPressed(Enum.UserInputType.MouseButton1) do
+										local ae = _.AbsolutePosition.Y
+										local af = ae + _.AbsoluteSize.Y
+										local ag = math.clamp(n.Y, ae, af)
+										G = 1 - ((ag - ae) / (af - ae))
+										ac()
+										l:Wait()
+									end
+								end
+							end)
+						end
+						ac()
+						C:Button("Done", function()
+							z:SetValue({ D, E, F }, G)
+						end)
+						C:Button("Cancel")
+						C:Open()
 					end
-					ac()
-					C:Button("Done", function()
-						z:SetValue({ D, E, F }, G)
-					end)
-					C:Button("Cancel")
-					C:Open()
+				function z.Display(ac)
+					z.Value = Color3.fromHSV(z.Hue, z.Sat, z.Vib)
+					B.BackgroundColor3 = z.Value
+					B.BackgroundTransparency = z.Transparency
+					u.Library:SafeCallback(z.Callback, z.Value)
+					u.Library:SafeCallback(z.Changed, z.Value)
 				end
-			function z.Display(ac)
-				z.Value = Color3.fromHSV(z.Hue, z.Sat, z.Vib)
-				B.BackgroundColor3 = z.Value
-				B.BackgroundTransparency = z.Transparency
-				u.Library:SafeCallback(z.Callback, z.Value)
-				u.Library:SafeCallback(z.Changed, z.Value)
-			end
-			function z.SetValue(ac, ad, ae)
-				local af = Color3.fromHSV(ad[1], ad[2], ad[3])
-				z.Transparency = ae or 0
-				z:SetHSVFromRGB(af)
+				function z.SetValue(ac, ad, ae)
+					local af = Color3.fromHSV(ad[1], ad[2], ad[3])
+					z.Transparency = ae or 0
+					z:SetHSVFromRGB(af)
+					z:Display()
+				end
+				function z.SetValueRGB(ac, ad, ae)
+					z.Transparency = ae or 0
+					z:SetHSVFromRGB(ad)
+					z:Display()
+				end
+				function z.OnChanged(ac, ad)
+					z.Changed = ad
+					ad(z.Value)
+				end
+				function z.Destroy(ac)
+					A:Destroy()
+					y.Options[w] = nil
+				end
+				p.AddSignal(A.Frame.MouseButton1Click, function()
+					ab()
+				end)
 				z:Display()
+				y.Options[w] = z
+				return z
 			end
-			function z.SetValueRGB(ac, ad, ae)
-				z.Transparency = ae or 0
-				z:SetHSVFromRGB(ad)
-				z:Display()
+			return u
+		end),
+		[22] = LPH_NO_VIRTUALIZE(function()
+			local aa, ab, ac, ad, ae = b(22)
+			local af, ag, ah, ai, aj =
+				game:GetService("TweenService"),
+				game:GetService("UserInputService"),
+				game:GetService("Players").LocalPlayer:GetMouse(),
+				game:GetService("Workspace").CurrentCamera,
+				ab.Parent.Parent
+			local c, d = ac(aj.Creator), ac(aj.Packages.Flipper)
+			local e, f, g = c.New, aj.Components, {}
+			g.__index = g
+			g.__type = "Dropdown"
+			function g.New(h, i, j)
+				local k, l, m =
+					h.Library, {
+						Values = j.Values,
+						Value = j.Default,
+						Multi = j.Multi,
+						Buttons = {},
+						Opened = false,
+						Type = "Dropdown",
+						Callback = j.Callback or function() end,
+					}, ac(f.Element)(j.Title, j.Description, h.Container, false)
+				m.DescLabel.Size = UDim2.new(1, -170, 0, 14)
+				l.SetTitle = m.SetTitle
+				l.SetDesc = m.SetDesc
+				local n, o =
+					e("TextLabel", {
+						FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal),
+						Text = "Value",
+						TextColor3 = Color3.fromRGB(240, 240, 240),
+						TextSize = 13,
+						TextXAlignment = Enum.TextXAlignment.Left,
+						Size = UDim2.new(1, -30, 0, 14),
+						Position = UDim2.new(0, 8, 0.5, 0),
+						AnchorPoint = Vector2.new(0, 0.5),
+						BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+						BackgroundTransparency = 1,
+						TextTruncate = Enum.TextTruncate.AtEnd,
+						ThemeTag = { TextColor3 = "Text" },
+					}), e("ImageLabel", {
+						Image = "rbxassetid://10709790948",
+						Size = UDim2.fromOffset(16, 16),
+						AnchorPoint = Vector2.new(1, 0.5),
+						Position = UDim2.new(1, -8, 0.5, 0),
+						BackgroundTransparency = 1,
+						ThemeTag = { ImageColor3 = "SubText" },
+					})
+				local p, s =
+					e("TextButton", {
+						Size = UDim2.fromOffset(160, 30),
+						Position = UDim2.new(1, -10, 0.5, 0),
+						AnchorPoint = Vector2.new(1, 0.5),
+						BackgroundTransparency = 0.9,
+						Parent = m.Frame,
+						ThemeTag = { BackgroundColor3 = "DropdownFrame" },
+					}, {
+						e("UICorner", { CornerRadius = UDim.new(0, 5) }),
+						e("UIStroke", {
+							Transparency = 0.5,
+							ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
+							ThemeTag = { Color = "InElementBorder" },
+						}),
+						o,
+						n,
+					}), e("UIListLayout", { Padding = UDim.new(0, 3) })
+				local t = e("ScrollingFrame", {
+					Size = UDim2.new(1, -5, 1, -10),
+					Position = UDim2.fromOffset(5, 5),
+					BackgroundTransparency = 1,
+					BottomImage = "rbxassetid://6889812791",
+					MidImage = "rbxassetid://6889812721",
+					TopImage = "rbxassetid://6276641225",
+					ScrollBarImageColor3 = Color3.fromRGB(255, 255, 255),
+					ScrollBarImageTransparency = 0.95,
+					ScrollBarThickness = 4,
+					BorderSizePixel = 0,
+					CanvasSize = UDim2.fromScale(0, 0),
+				}, { s })
+				local u = e(
+					"Frame",
+					{ Size = UDim2.fromScale(1, 0.6), ThemeTag = { BackgroundColor3 = "DropdownHolder" } },
+					{
+						t,
+						e("UICorner", { CornerRadius = UDim.new(0, 7) }),
+						e(
+							"UIStroke",
+							{ ApplyStrokeMode = Enum.ApplyStrokeMode.Border, ThemeTag = { Color = "DropdownBorder" } }
+						),
+						e("ImageLabel", {
+							BackgroundTransparency = 1,
+							Image = "http://www.roblox.com/asset/?id=5554236805",
+							ScaleType = Enum.ScaleType.Slice,
+							SliceCenter = Rect.new(23, 23, 277, 277),
+							Size = UDim2.fromScale(1, 1) + UDim2.fromOffset(30, 30),
+							Position = UDim2.fromOffset(-15, -15),
+							ImageColor3 = Color3.fromRGB(0, 0, 0),
+							ImageTransparency = 0.1,
+						}),
+					}
+				)
+				local v = e("Frame", {
+					BackgroundTransparency = 1,
+					Size = UDim2.fromOffset(170, 300),
+					Parent = h.Library.GUI,
+					Visible = false,
+				}, { u, e("UISizeConstraint", { MinSize = Vector2.new(170, 0) }) })
+				table.insert(k.OpenFrames, v)
+				local w, x =
+					function()
+						local w = 0
+						if ai.ViewportSize.Y - p.AbsolutePosition.Y < v.AbsoluteSize.Y - 5 then
+							w = v.AbsoluteSize.Y - 5 - (ai.ViewportSize.Y - p.AbsolutePosition.Y) + 40
+						end
+						v.Position = UDim2.fromOffset(p.AbsolutePosition.X - 1, p.AbsolutePosition.Y - 5 - w)
+					end, 0
+				local y, z =
+					function()
+						if #l.Values > 10 then
+							v.Size = UDim2.fromOffset(x, 392)
+						else
+							v.Size = UDim2.fromOffset(x, s.AbsoluteContentSize.Y + 10)
+						end
+					end, function()
+						t.CanvasSize = UDim2.fromOffset(0, s.AbsoluteContentSize.Y)
+					end
+				w()
+				y()
+				c.AddSignal(p:GetPropertyChangedSignal("AbsolutePosition"), w)
+				c.AddSignal(p.MouseButton1Click, function()
+					l:Open()
+				end)
+				c.AddSignal(ag.InputBegan, function(A)
+					if
+						A.UserInputType == Enum.UserInputType.MouseButton1
+						or A.UserInputType == Enum.UserInputType.Touch
+					then
+						local B, C = u.AbsolutePosition, u.AbsoluteSize
+						if ah.X < B.X or ah.X > B.X + C.X or ah.Y < (B.Y - 20 - 1) or ah.Y > B.Y + C.Y then
+							l:Close()
+						end
+					end
+				end)
+				local A = h.ScrollFrame
+				function l.Open(B)
+					l.Opened = true
+					A.ScrollingEnabled = false
+					v.Visible = true
+					af:Create(
+						u,
+						TweenInfo.new(0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out),
+						{ Size = UDim2.fromScale(1, 1) }
+					):Play()
+				end
+				function l.Close(B)
+					l.Opened = false
+					A.ScrollingEnabled = true
+					u.Size = UDim2.fromScale(1, 0.6)
+					v.Visible = false
+				end
+				function l.Display(B)
+					local C, D = l.Values, ""
+					if j.Multi then
+						for E, F in next, C do
+							if l.Value[F] then
+								D = D .. F .. ", "
+							end
+						end
+						D = D:sub(1, #D - 2)
+					else
+						D = l.Value or ""
+					end
+					n.Text = (D == "" and "--" or D)
+				end
+				function l.GetActiveValues(B)
+					if j.Multi then
+						local C = {}
+						for D, E in next, l.Value do
+							table.insert(C, D)
+						end
+						return C
+					else
+						return l.Value and 1 or 0
+					end
+				end
+				function l.BuildDropdownList(B)
+					local C, D = l.Values, {}
+					for E, F in next, t:GetChildren() do
+						if not F:IsA("UIListLayout") then
+							F:Destroy()
+						end
+					end
+					local G = 0
+					for H, I in next, C do
+						local J = {}
+						G = G + 1
+						local K, L =
+							e("Frame", {
+								Size = UDim2.fromOffset(4, 14),
+								BackgroundColor3 = Color3.fromRGB(76, 194, 255),
+								Position = UDim2.fromOffset(-1, 16),
+								AnchorPoint = Vector2.new(0, 0.5),
+								ThemeTag = { BackgroundColor3 = "Accent" },
+							}, { e("UICorner", { CornerRadius = UDim.new(0, 2) }) }), e("TextLabel", {
+								FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json"),
+								Text = I,
+								TextColor3 = Color3.fromRGB(200, 200, 200),
+								TextSize = 13,
+								TextXAlignment = Enum.TextXAlignment.Left,
+								BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+								AutomaticSize = Enum.AutomaticSize.Y,
+								BackgroundTransparency = 1,
+								Size = UDim2.fromScale(1, 1),
+								Position = UDim2.fromOffset(10, 0),
+								Name = "ButtonLabel",
+								ThemeTag = { TextColor3 = "Text" },
+							})
+						local M, N = (
+							e("TextButton", {
+								Size = UDim2.new(1, -5, 0, 32),
+								BackgroundTransparency = 1,
+								ZIndex = 23,
+								Text = "",
+								Parent = t,
+								ThemeTag = { BackgroundColor3 = "DropdownOption" },
+							}, { K, L, e("UICorner", { CornerRadius = UDim.new(0, 6) }) })
+						)
+						if j.Multi then
+							N = l.Value[I]
+						else
+							N = l.Value == I
+						end
+						local O, P = c.SpringMotor(1, M, "BackgroundTransparency")
+						local Q, R = c.SpringMotor(1, K, "BackgroundTransparency")
+						local S = d.SingleMotor.new(6)
+						S:onStep(function(T)
+							K.Size = UDim2.new(0, 4, 0, T)
+						end)
+						c.AddSignal(M.MouseEnter, function()
+							P(N and 0.85 or 0.89)
+						end)
+						c.AddSignal(M.MouseLeave, function()
+							P(N and 0.89 or 1)
+						end)
+						c.AddSignal(M.MouseButton1Down, function()
+							P(0.92)
+						end)
+						c.AddSignal(M.MouseButton1Up, function()
+							P(N and 0.85 or 0.89)
+						end)
+						function J.UpdateButton(T)
+							if j.Multi then
+								N = l.Value[I]
+								if N then
+									P(0.89)
+								end
+							else
+								N = l.Value == I
+								P(N and 0.89 or 1)
+							end
+							S:setGoal(d.Spring.new(N and 14 or 6, { frequency = 6 }))
+							R(N and 0 or 1)
+						end
+						L.InputBegan:Connect(function(T)
+							if
+								T.UserInputType == Enum.UserInputType.MouseButton1
+								or T.UserInputType == Enum.UserInputType.Touch
+							then
+								local U = not N
+								if l:GetActiveValues() == 1 and not U and not j.AllowNull then
+								else
+									if j.Multi then
+										N = U
+										l.Value[I] = N and true or nil
+									else
+										N = U
+										l.Value = N and I or nil
+										for V, W in next, D do
+											W:UpdateButton()
+										end
+									end
+									J:UpdateButton()
+									l:Display()
+									k:SafeCallback(l.Callback, l.Value)
+									k:SafeCallback(l.Changed, l.Value)
+								end
+							end
+						end)
+						J:UpdateButton()
+						l:Display()
+						D[M] = J
+					end
+					x = 0
+					for J, K in next, D do
+						if J.ButtonLabel then
+							if J.ButtonLabel.TextBounds.X > x then
+								x = J.ButtonLabel.TextBounds.X
+							end
+						end
+					end
+					x = x + 30
+					z()
+					y()
+				end
+				function l.SetValues(B, C)
+					if C then
+						l.Values = C
+					end
+					l:BuildDropdownList()
+				end
+				function l.OnChanged(B, C)
+					l.Changed = C
+					C(l.Value)
+				end
+				function l.SetValue(B, C)
+					if l.Multi then
+						local D = {}
+						for E, F in next, C do
+							if table.find(l.Values, E) then
+								D[E] = true
+							end
+						end
+						l.Value = D
+					else
+						if not C then
+							l.Value = nil
+						elseif table.find(l.Values, C) then
+							l.Value = C
+						end
+					end
+					l:BuildDropdownList()
+					k:SafeCallback(l.Callback, l.Value)
+					k:SafeCallback(l.Changed, l.Value)
+				end
+				function l.Destroy(B)
+					m:Destroy()
+					k.Options[i] = nil
+				end
+				l:BuildDropdownList()
+				l:Display()
+				local B = {}
+				if type(j.Default) == "string" then
+					local C = table.find(l.Values, j.Default)
+					if C then
+						table.insert(B, C)
+					end
+				elseif type(j.Default) == "table" then
+					for C, D in next, j.Default do
+						local E = table.find(l.Values, D)
+						if E then
+							table.insert(B, E)
+						end
+					end
+				elseif type(j.Default) == "number" and l.Values[j.Default] ~= nil then
+					table.insert(B, j.Default)
+				end
+				if next(B) then
+					for C = 1, #B do
+						local D = B[C]
+						if j.Multi then
+							l.Value[l.Values[D]] = true
+						else
+							l.Value = l.Values[D]
+						end
+						if not j.Multi then
+							break
+						end
+					end
+					l:BuildDropdownList()
+					l:Display()
+				end
+				k.Options[i] = l
+				return l
 			end
-			function z.OnChanged(ac, ad)
-				z.Changed = ad
-				ad(z.Value)
+			return g
+		end),
+		[23] = LPH_NO_VIRTUALIZE(function()
+			local aa, ab, ac, ad, ae = b(23)
+			local af = ab.Parent.Parent
+			local ag = ac(af.Creator)
+			local ah, ai, aj, c = ag.New, ag.AddSignal, af.Components, {}
+			c.__index = c
+			c.__type = "Input"
+			function c.New(d, e, f)
+				local g = d.Library
+				assert(f.Title, "Input - Missing Title")
+				f.Callback = f.Callback or function() end
+				local h, i =
+					{
+						Value = f.Default or "",
+						Numeric = f.Numeric or false,
+						Finished = f.Finished or false,
+						Callback = f.Callback or function(h) end,
+						Type = "Input",
+					}, ac(aj.Element)(f.Title, f.Description, d.Container, false)
+				h.SetTitle = i.SetTitle
+				h.SetDesc = i.SetDesc
+				local j = ac(aj.Textbox)(i.Frame, true)
+				j.Frame.Position = UDim2.new(1, -10, 0.5, 0)
+				j.Frame.AnchorPoint = Vector2.new(1, 0.5)
+				j.Frame.Size = UDim2.fromOffset(160, 30)
+				j.Input.Text = f.Default or ""
+				j.Input.PlaceholderText = f.Placeholder or ""
+				local k = j.Input
+				function h.SetValue(l, m)
+					if f.MaxLength and #m > f.MaxLength then
+						m = m:sub(1, f.MaxLength)
+					end
+					if h.Numeric then
+						if (not tonumber(m)) and m:len() > 0 then
+							m = h.Value
+						end
+					end
+					h.Value = m
+					k.Text = m
+					g:SafeCallback(h.Callback, h.Value)
+					g:SafeCallback(h.Changed, h.Value)
+				end
+				if h.Finished then
+					ai(k.FocusLost, function(l)
+						if not l then
+							return
+						end
+						h:SetValue(k.Text)
+					end)
+				else
+					ai(k:GetPropertyChangedSignal("Text"), function()
+						h:SetValue(k.Text)
+					end)
+				end
+				function h.OnChanged(l, m)
+					h.Changed = m
+					m(h.Value)
+				end
+				function h.Destroy(l)
+					i:Destroy()
+					g.Options[e] = nil
+				end
+				g.Options[e] = h
+				return h
 			end
-			function z.Destroy(ac)
-				A:Destroy()
-				y.Options[w] = nil
-			end
-			p.AddSignal(A.Frame.MouseButton1Click, function()
-				ab()
-			end)
-			z:Display()
-			y.Options[w] = z
-			return z
-		end
-		return u
-	end),
-	[22] = LPH_NO_VIRTUALIZE(function()
-		local aa, ab, ac, ad, ae = b(22)
-		local af, ag, ah, ai, aj =
-			game:GetService("TweenService"),
-			game:GetService("UserInputService"),
-			game:GetService("Players").LocalPlayer:GetMouse(),
-			game:GetService("Workspace").CurrentCamera,
-			ab.Parent.Parent
-		local c, d = ac(aj.Creator), ac(aj.Packages.Flipper)
-		local e, f, g = c.New, aj.Components, {}
-		g.__index = g
-		g.__type = "Dropdown"
-		function g.New(h, i, j)
-			local k, l, m =
-				h.Library, {
-					Values = j.Values,
-					Value = j.Default,
-					Multi = j.Multi,
-					Buttons = {},
-					Opened = false,
-					Type = "Dropdown",
-					Callback = j.Callback or function() end,
-				}, ac(f.Element)(j.Title, j.Description, h.Container, false)
-			m.DescLabel.Size = UDim2.new(1, -170, 0, 14)
-			l.SetTitle = m.SetTitle
-			l.SetDesc = m.SetDesc
-			local n, o =
-				e("TextLabel", {
-					FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal),
-					Text = "Value",
+			return c
+		end),
+		[24] = LPH_NO_VIRTUALIZE(function()
+			local aa, ab, ac, ad, ae = b(24)
+			local af, ag = game:GetService("UserInputService"), ab.Parent.Parent
+			local ah = ac(ag.Creator)
+			local ai, aj, c = ah.New, ag.Components, {}
+			c.__index = c
+			c.__type = "Keybind"
+			function c.New(d, e, f)
+				local g = d.Library
+				assert(f.Title, "KeyBind - Missing Title")
+				assert(f.Default, "KeyBind - Missing default value.")
+				local h, i, j =
+					{
+						Value = f.Default,
+						Toggled = false,
+						Mode = f.Mode or "Toggle",
+						Type = "Keybind",
+						Callback = f.Callback or function(h) end,
+						ChangedCallback = f.ChangedCallback or function(h) end,
+					}, false, ac(aj.Element)(f.Title, f.Description, d.Container, true)
+				h.SetTitle = j.SetTitle
+				h.SetDesc = j.SetDesc
+				local k = ai("TextLabel", {
+					FontFace = Font.new(
+						"rbxasset://fonts/families/GothamSSm.json",
+						Enum.FontWeight.Regular,
+						Enum.FontStyle.Normal
+					),
+					Text = f.Default,
 					TextColor3 = Color3.fromRGB(240, 240, 240),
 					TextSize = 13,
-					TextXAlignment = Enum.TextXAlignment.Left,
-					Size = UDim2.new(1, -30, 0, 14),
-					Position = UDim2.new(0, 8, 0.5, 0),
+					TextXAlignment = Enum.TextXAlignment.Center,
+					Size = UDim2.new(0, 0, 0, 14),
+					Position = UDim2.new(0, 0, 0.5, 0),
 					AnchorPoint = Vector2.new(0, 0.5),
 					BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+					AutomaticSize = Enum.AutomaticSize.X,
 					BackgroundTransparency = 1,
-					TextTruncate = Enum.TextTruncate.AtEnd,
 					ThemeTag = { TextColor3 = "Text" },
-				}), e("ImageLabel", {
-					Image = "rbxassetid://10709790948",
-					Size = UDim2.fromOffset(16, 16),
-					AnchorPoint = Vector2.new(1, 0.5),
-					Position = UDim2.new(1, -8, 0.5, 0),
-					BackgroundTransparency = 1,
-					ThemeTag = { ImageColor3 = "SubText" },
 				})
-			local p, s =
-				e("TextButton", {
-					Size = UDim2.fromOffset(160, 30),
+				local l = ai("TextButton", {
+					Size = UDim2.fromOffset(0, 30),
 					Position = UDim2.new(1, -10, 0.5, 0),
 					AnchorPoint = Vector2.new(1, 0.5),
 					BackgroundTransparency = 0.9,
-					Parent = m.Frame,
-					ThemeTag = { BackgroundColor3 = "DropdownFrame" },
+					Parent = j.Frame,
+					AutomaticSize = Enum.AutomaticSize.X,
+					ThemeTag = { BackgroundColor3 = "Keybind" },
 				}, {
-					e("UICorner", { CornerRadius = UDim.new(0, 5) }),
-					e("UIStroke", {
+					ai("UICorner", { CornerRadius = UDim.new(0, 5) }),
+					ai("UIPadding", { PaddingLeft = UDim.new(0, 8), PaddingRight = UDim.new(0, 8) }),
+					ai("UIStroke", {
 						Transparency = 0.5,
 						ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
 						ThemeTag = { Color = "InElementBorder" },
 					}),
-					o,
-					n,
-				}), e("UIListLayout", { Padding = UDim.new(0, 3) })
-			local t = e("ScrollingFrame", {
-				Size = UDim2.new(1, -5, 1, -10),
-				Position = UDim2.fromOffset(5, 5),
-				BackgroundTransparency = 1,
-				BottomImage = "rbxassetid://6889812791",
-				MidImage = "rbxassetid://6889812721",
-				TopImage = "rbxassetid://6276641225",
-				ScrollBarImageColor3 = Color3.fromRGB(255, 255, 255),
-				ScrollBarImageTransparency = 0.95,
-				ScrollBarThickness = 4,
-				BorderSizePixel = 0,
-				CanvasSize = UDim2.fromScale(0, 0),
-			}, { s })
-			local u = e(
-				"Frame",
-				{ Size = UDim2.fromScale(1, 0.6), ThemeTag = { BackgroundColor3 = "DropdownHolder" } },
-				{
-					t,
-					e("UICorner", { CornerRadius = UDim.new(0, 7) }),
-					e(
-						"UIStroke",
-						{ ApplyStrokeMode = Enum.ApplyStrokeMode.Border, ThemeTag = { Color = "DropdownBorder" } }
-					),
-					e("ImageLabel", {
-						BackgroundTransparency = 1,
-						Image = "http://www.roblox.com/asset/?id=5554236805",
-						ScaleType = Enum.ScaleType.Slice,
-						SliceCenter = Rect.new(23, 23, 277, 277),
-						Size = UDim2.fromScale(1, 1) + UDim2.fromOffset(30, 30),
-						Position = UDim2.fromOffset(-15, -15),
-						ImageColor3 = Color3.fromRGB(0, 0, 0),
-						ImageTransparency = 0.1,
-					}),
-				}
-			)
-			local v = e("Frame", {
-				BackgroundTransparency = 1,
-				Size = UDim2.fromOffset(170, 300),
-				Parent = h.Library.GUI,
-				Visible = false,
-			}, { u, e("UISizeConstraint", { MinSize = Vector2.new(170, 0) }) })
-			table.insert(k.OpenFrames, v)
-			local w, x =
-				function()
-					local w = 0
-					if ai.ViewportSize.Y - p.AbsolutePosition.Y < v.AbsoluteSize.Y - 5 then
-						w = v.AbsoluteSize.Y - 5 - (ai.ViewportSize.Y - p.AbsolutePosition.Y) + 40
-					end
-					v.Position = UDim2.fromOffset(p.AbsolutePosition.X - 1, p.AbsolutePosition.Y - 5 - w)
-				end, 0
-			local y, z =
-				function()
-					if #l.Values > 10 then
-						v.Size = UDim2.fromOffset(x, 392)
-					else
-						v.Size = UDim2.fromOffset(x, s.AbsoluteContentSize.Y + 10)
-					end
-				end, function()
-					t.CanvasSize = UDim2.fromOffset(0, s.AbsoluteContentSize.Y)
-				end
-			w()
-			y()
-			c.AddSignal(p:GetPropertyChangedSignal("AbsolutePosition"), w)
-			c.AddSignal(p.MouseButton1Click, function()
-				l:Open()
-			end)
-			c.AddSignal(ag.InputBegan, function(A)
-				if
-					A.UserInputType == Enum.UserInputType.MouseButton1
-					or A.UserInputType == Enum.UserInputType.Touch
-				then
-					local B, C = u.AbsolutePosition, u.AbsoluteSize
-					if ah.X < B.X or ah.X > B.X + C.X or ah.Y < (B.Y - 20 - 1) or ah.Y > B.Y + C.Y then
-						l:Close()
-					end
-				end
-			end)
-			local A = h.ScrollFrame
-			function l.Open(B)
-				l.Opened = true
-				A.ScrollingEnabled = false
-				v.Visible = true
-				af:Create(
-					u,
-					TweenInfo.new(0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out),
-					{ Size = UDim2.fromScale(1, 1) }
-				):Play()
-			end
-			function l.Close(B)
-				l.Opened = false
-				A.ScrollingEnabled = true
-				u.Size = UDim2.fromScale(1, 0.6)
-				v.Visible = false
-			end
-			function l.Display(B)
-				local C, D = l.Values, ""
-				if j.Multi then
-					for E, F in next, C do
-						if l.Value[F] then
-							D = D .. F .. ", "
-						end
-					end
-					D = D:sub(1, #D - 2)
-				else
-					D = l.Value or ""
-				end
-				n.Text = (D == "" and "--" or D)
-			end
-			function l.GetActiveValues(B)
-				if j.Multi then
-					local C = {}
-					for D, E in next, l.Value do
-						table.insert(C, D)
-					end
-					return C
-				else
-					return l.Value and 1 or 0
-				end
-			end
-			function l.BuildDropdownList(B)
-				local C, D = l.Values, {}
-				for E, F in next, t:GetChildren() do
-					if not F:IsA("UIListLayout") then
-						F:Destroy()
-					end
-				end
-				local G = 0
-				for H, I in next, C do
-					local J = {}
-					G = G + 1
-					local K, L =
-						e("Frame", {
-							Size = UDim2.fromOffset(4, 14),
-							BackgroundColor3 = Color3.fromRGB(76, 194, 255),
-							Position = UDim2.fromOffset(-1, 16),
-							AnchorPoint = Vector2.new(0, 0.5),
-							ThemeTag = { BackgroundColor3 = "Accent" },
-						}, { e("UICorner", { CornerRadius = UDim.new(0, 2) }) }), e("TextLabel", {
-							FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json"),
-							Text = I,
-							TextColor3 = Color3.fromRGB(200, 200, 200),
-							TextSize = 13,
-							TextXAlignment = Enum.TextXAlignment.Left,
-							BackgroundColor3 = Color3.fromRGB(255, 255, 255),
-							AutomaticSize = Enum.AutomaticSize.Y,
-							BackgroundTransparency = 1,
-							Size = UDim2.fromScale(1, 1),
-							Position = UDim2.fromOffset(10, 0),
-							Name = "ButtonLabel",
-							ThemeTag = { TextColor3 = "Text" },
-						})
-					local M, N = (
-						e("TextButton", {
-							Size = UDim2.new(1, -5, 0, 32),
-							BackgroundTransparency = 1,
-							ZIndex = 23,
-							Text = "",
-							Parent = t,
-							ThemeTag = { BackgroundColor3 = "DropdownOption" },
-						}, { K, L, e("UICorner", { CornerRadius = UDim.new(0, 6) }) })
-					)
-					if j.Multi then
-						N = l.Value[I]
-					else
-						N = l.Value == I
-					end
-					local O, P = c.SpringMotor(1, M, "BackgroundTransparency")
-					local Q, R = c.SpringMotor(1, K, "BackgroundTransparency")
-					local S = d.SingleMotor.new(6)
-					S:onStep(function(T)
-						K.Size = UDim2.new(0, 4, 0, T)
-					end)
-					c.AddSignal(M.MouseEnter, function()
-						P(N and 0.85 or 0.89)
-					end)
-					c.AddSignal(M.MouseLeave, function()
-						P(N and 0.89 or 1)
-					end)
-					c.AddSignal(M.MouseButton1Down, function()
-						P(0.92)
-					end)
-					c.AddSignal(M.MouseButton1Up, function()
-						P(N and 0.85 or 0.89)
-					end)
-					function J.UpdateButton(T)
-						if j.Multi then
-							N = l.Value[I]
-							if N then
-								P(0.89)
-							end
-						else
-							N = l.Value == I
-							P(N and 0.89 or 1)
-						end
-						S:setGoal(d.Spring.new(N and 14 or 6, { frequency = 6 }))
-						R(N and 0 or 1)
-					end
-					L.InputBegan:Connect(function(T)
-						if
-							T.UserInputType == Enum.UserInputType.MouseButton1
-							or T.UserInputType == Enum.UserInputType.Touch
-						then
-							local U = not N
-							if l:GetActiveValues() == 1 and not U and not j.AllowNull then
-							else
-								if j.Multi then
-									N = U
-									l.Value[I] = N and true or nil
-								else
-									N = U
-									l.Value = N and I or nil
-									for V, W in next, D do
-										W:UpdateButton()
-									end
-								end
-								J:UpdateButton()
-								l:Display()
-								k:SafeCallback(l.Callback, l.Value)
-								k:SafeCallback(l.Changed, l.Value)
-							end
-						end
-					end)
-					J:UpdateButton()
-					l:Display()
-					D[M] = J
-				end
-				x = 0
-				for J, K in next, D do
-					if J.ButtonLabel then
-						if J.ButtonLabel.TextBounds.X > x then
-							x = J.ButtonLabel.TextBounds.X
-						end
-					end
-				end
-				x = x + 30
-				z()
-				y()
-			end
-			function l.SetValues(B, C)
-				if C then
-					l.Values = C
-				end
-				l:BuildDropdownList()
-			end
-			function l.OnChanged(B, C)
-				l.Changed = C
-				C(l.Value)
-			end
-			function l.SetValue(B, C)
-				if l.Multi then
-					local D = {}
-					for E, F in next, C do
-						if table.find(l.Values, E) then
-							D[E] = true
-						end
-					end
-					l.Value = D
-				else
-					if not C then
-						l.Value = nil
-					elseif table.find(l.Values, C) then
-						l.Value = C
-					end
-				end
-				l:BuildDropdownList()
-				k:SafeCallback(l.Callback, l.Value)
-				k:SafeCallback(l.Changed, l.Value)
-			end
-			function l.Destroy(B)
-				m:Destroy()
-				k.Options[i] = nil
-			end
-			l:BuildDropdownList()
-			l:Display()
-			local B = {}
-			if type(j.Default) == "string" then
-				local C = table.find(l.Values, j.Default)
-				if C then
-					table.insert(B, C)
-				end
-			elseif type(j.Default) == "table" then
-				for C, D in next, j.Default do
-					local E = table.find(l.Values, D)
-					if E then
-						table.insert(B, E)
-					end
-				end
-			elseif type(j.Default) == "number" and l.Values[j.Default] ~= nil then
-				table.insert(B, j.Default)
-			end
-			if next(B) then
-				for C = 1, #B do
-					local D = B[C]
-					if j.Multi then
-						l.Value[l.Values[D]] = true
-					else
-						l.Value = l.Values[D]
-					end
-					if not j.Multi then
-						break
-					end
-				end
-				l:BuildDropdownList()
-				l:Display()
-			end
-			k.Options[i] = l
-			return l
-		end
-		return g
-	end),
-	[23] = LPH_NO_VIRTUALIZE(function()
-		local aa, ab, ac, ad, ae = b(23)
-		local af = ab.Parent.Parent
-		local ag = ac(af.Creator)
-		local ah, ai, aj, c = ag.New, ag.AddSignal, af.Components, {}
-		c.__index = c
-		c.__type = "Input"
-		function c.New(d, e, f)
-			local g = d.Library
-			assert(f.Title, "Input - Missing Title")
-			f.Callback = f.Callback or function() end
-			local h, i =
-				{
-					Value = f.Default or "",
-					Numeric = f.Numeric or false,
-					Finished = f.Finished or false,
-					Callback = f.Callback or function(h) end,
-					Type = "Input",
-				}, ac(aj.Element)(f.Title, f.Description, d.Container, false)
-			h.SetTitle = i.SetTitle
-			h.SetDesc = i.SetDesc
-			local j = ac(aj.Textbox)(i.Frame, true)
-			j.Frame.Position = UDim2.new(1, -10, 0.5, 0)
-			j.Frame.AnchorPoint = Vector2.new(1, 0.5)
-			j.Frame.Size = UDim2.fromOffset(160, 30)
-			j.Input.Text = f.Default or ""
-			j.Input.PlaceholderText = f.Placeholder or ""
-			local k = j.Input
-			function h.SetValue(l, m)
-				if f.MaxLength and #m > f.MaxLength then
-					m = m:sub(1, f.MaxLength)
-				end
-				if h.Numeric then
-					if (not tonumber(m)) and m:len() > 0 then
-						m = h.Value
-					end
-				end
-				h.Value = m
-				k.Text = m
-				g:SafeCallback(h.Callback, h.Value)
-				g:SafeCallback(h.Changed, h.Value)
-			end
-			if h.Finished then
-				ai(k.FocusLost, function(l)
-					if not l then
-						return
-					end
-					h:SetValue(k.Text)
-				end)
-			else
-				ai(k:GetPropertyChangedSignal("Text"), function()
-					h:SetValue(k.Text)
-				end)
-			end
-			function h.OnChanged(l, m)
-				h.Changed = m
-				m(h.Value)
-			end
-			function h.Destroy(l)
-				i:Destroy()
-				g.Options[e] = nil
-			end
-			g.Options[e] = h
-			return h
-		end
-		return c
-	end),
-	[24] = LPH_NO_VIRTUALIZE(function()
-		local aa, ab, ac, ad, ae = b(24)
-		local af, ag = game:GetService("UserInputService"), ab.Parent.Parent
-		local ah = ac(ag.Creator)
-		local ai, aj, c = ah.New, ag.Components, {}
-		c.__index = c
-		c.__type = "Keybind"
-		function c.New(d, e, f)
-			local g = d.Library
-			assert(f.Title, "KeyBind - Missing Title")
-			assert(f.Default, "KeyBind - Missing default value.")
-			local h, i, j =
-				{
-					Value = f.Default,
-					Toggled = false,
-					Mode = f.Mode or "Toggle",
-					Type = "Keybind",
-					Callback = f.Callback or function(h) end,
-					ChangedCallback = f.ChangedCallback or function(h) end,
-				}, false, ac(aj.Element)(f.Title, f.Description, d.Container, true)
-			h.SetTitle = j.SetTitle
-			h.SetDesc = j.SetDesc
-			local k = ai("TextLabel", {
-				FontFace = Font.new(
-					"rbxasset://fonts/families/GothamSSm.json",
-					Enum.FontWeight.Regular,
-					Enum.FontStyle.Normal
-				),
-				Text = f.Default,
-				TextColor3 = Color3.fromRGB(240, 240, 240),
-				TextSize = 13,
-				TextXAlignment = Enum.TextXAlignment.Center,
-				Size = UDim2.new(0, 0, 0, 14),
-				Position = UDim2.new(0, 0, 0.5, 0),
-				AnchorPoint = Vector2.new(0, 0.5),
-				BackgroundColor3 = Color3.fromRGB(255, 255, 255),
-				AutomaticSize = Enum.AutomaticSize.X,
-				BackgroundTransparency = 1,
-				ThemeTag = { TextColor3 = "Text" },
-			})
-			local l = ai("TextButton", {
-				Size = UDim2.fromOffset(0, 30),
-				Position = UDim2.new(1, -10, 0.5, 0),
-				AnchorPoint = Vector2.new(1, 0.5),
-				BackgroundTransparency = 0.9,
-				Parent = j.Frame,
-				AutomaticSize = Enum.AutomaticSize.X,
-				ThemeTag = { BackgroundColor3 = "Keybind" },
-			}, {
-				ai("UICorner", { CornerRadius = UDim.new(0, 5) }),
-				ai("UIPadding", { PaddingLeft = UDim.new(0, 8), PaddingRight = UDim.new(0, 8) }),
-				ai("UIStroke", {
-					Transparency = 0.5,
-					ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
-					ThemeTag = { Color = "InElementBorder" },
-				}),
-				k,
-			})
-			function h.GetState(m)
-				if af:GetFocusedTextBox() and h.Mode ~= "Always" then
-					return false
-				end
-				if h.Mode == "Always" then
-					return true
-				elseif h.Mode == "Hold" then
-					if h.Value == "None" then
+					k,
+				})
+				function h.GetState(m)
+					if af:GetFocusedTextBox() and h.Mode ~= "Always" then
 						return false
 					end
-					local n = h.Value
-					if n == "MouseLeft" or n == "MouseRight" then
-						return n == "MouseLeft" and af:IsMouseButtonPressed(Enum.UserInputType.MouseButton1)
-							or n == "MouseRight" and af:IsMouseButtonPressed(Enum.UserInputType.MouseButton2)
-					else
-						return af:IsKeyDown(Enum.KeyCode[h.Value])
-					end
-				else
-					return h.Toggled
-				end
-			end
-			function h.SetValue(m, n, o)
-				n = n or h.Key
-				o = o or h.Mode
-				k.Text = n
-				h.Value = n
-				h.Mode = o
-			end
-			function h.OnClick(m, n)
-				h.Clicked = n
-			end
-			function h.OnChanged(m, n)
-				h.Changed = n
-				n(h.Value)
-			end
-			function h.DoClick(m)
-				g:SafeCallback(h.Callback, h.Toggled)
-				g:SafeCallback(h.Clicked, h.Toggled)
-			end
-			function h.Destroy(m)
-				j:Destroy()
-				g.Options[e] = nil
-			end
-			ah.AddSignal(l.InputBegan, function(m)
-				if
-					m.UserInputType == Enum.UserInputType.MouseButton1
-					or m.UserInputType == Enum.UserInputType.Touch
-				then
-					i = true
-					k.Text = "..."
-					wait(0.2)
-					local n
-					n = af.InputBegan:Connect(function(o)
-						local p
-						if o.UserInputType == Enum.UserInputType.Keyboard then
-							p = o.KeyCode.Name
-						elseif o.UserInputType == Enum.UserInputType.MouseButton1 then
-							p = "MouseLeft"
-						elseif o.UserInputType == Enum.UserInputType.MouseButton2 then
-							p = "MouseRight"
+					if h.Mode == "Always" then
+						return true
+					elseif h.Mode == "Hold" then
+						if h.Value == "None" then
+							return false
 						end
-						local s
-						s = af.InputEnded:Connect(function(t)
-							if
-								t.KeyCode.Name == p
-								or p == "MouseLeft" and t.UserInputType == Enum.UserInputType.MouseButton1
-								or p == "MouseRight" and t.UserInputType == Enum.UserInputType.MouseButton2
-							then
-								i = false
-								k.Text = p
-								h.Value = p
-								g:SafeCallback(h.ChangedCallback, t.KeyCode or t.UserInputType)
-								g:SafeCallback(h.Changed, t.KeyCode or t.UserInputType)
-								n:Disconnect()
-								s:Disconnect()
-							end
-						end)
-					end)
-				end
-			end)
-			ah.AddSignal(af.InputBegan, function(m)
-				if not i and not af:GetFocusedTextBox() then
-					if h.Mode == "Toggle" then
 						local n = h.Value
 						if n == "MouseLeft" or n == "MouseRight" then
-							if
-								n == "MouseLeft" and m.UserInputType == Enum.UserInputType.MouseButton1
-								or n == "MouseRight" and m.UserInputType == Enum.UserInputType.MouseButton2
-							then
-								h.Toggled = not h.Toggled
-								h:DoClick()
+							return n == "MouseLeft" and af:IsMouseButtonPressed(Enum.UserInputType.MouseButton1)
+								or n == "MouseRight" and af:IsMouseButtonPressed(Enum.UserInputType.MouseButton2)
+						else
+							return af:IsKeyDown(Enum.KeyCode[h.Value])
+						end
+					else
+						return h.Toggled
+					end
+				end
+				function h.SetValue(m, n, o)
+					n = n or h.Key
+					o = o or h.Mode
+					k.Text = n
+					h.Value = n
+					h.Mode = o
+				end
+				function h.OnClick(m, n)
+					h.Clicked = n
+				end
+				function h.OnChanged(m, n)
+					h.Changed = n
+					n(h.Value)
+				end
+				function h.DoClick(m)
+					g:SafeCallback(h.Callback, h.Toggled)
+					g:SafeCallback(h.Clicked, h.Toggled)
+				end
+				function h.Destroy(m)
+					j:Destroy()
+					g.Options[e] = nil
+				end
+				ah.AddSignal(l.InputBegan, function(m)
+					if
+						m.UserInputType == Enum.UserInputType.MouseButton1
+						or m.UserInputType == Enum.UserInputType.Touch
+					then
+						i = true
+						k.Text = "..."
+						wait(0.2)
+						local n
+						n = af.InputBegan:Connect(function(o)
+							local p
+							if o.UserInputType == Enum.UserInputType.Keyboard then
+								p = o.KeyCode.Name
+							elseif o.UserInputType == Enum.UserInputType.MouseButton1 then
+								p = "MouseLeft"
+							elseif o.UserInputType == Enum.UserInputType.MouseButton2 then
+								p = "MouseRight"
 							end
-						elseif m.UserInputType == Enum.UserInputType.Keyboard then
-							if m.KeyCode.Name == n then
-								h.Toggled = not h.Toggled
-								h:DoClick()
+							local s
+							s = af.InputEnded:Connect(function(t)
+								if
+									t.KeyCode.Name == p
+									or p == "MouseLeft" and t.UserInputType == Enum.UserInputType.MouseButton1
+									or p == "MouseRight" and t.UserInputType == Enum.UserInputType.MouseButton2
+								then
+									i = false
+									k.Text = p
+									h.Value = p
+									g:SafeCallback(h.ChangedCallback, t.KeyCode or t.UserInputType)
+									g:SafeCallback(h.Changed, t.KeyCode or t.UserInputType)
+									n:Disconnect()
+									s:Disconnect()
+								end
+							end)
+						end)
+					end
+				end)
+				ah.AddSignal(af.InputBegan, function(m)
+					if not i and not af:GetFocusedTextBox() then
+						if h.Mode == "Toggle" then
+							local n = h.Value
+							if n == "MouseLeft" or n == "MouseRight" then
+								if
+									n == "MouseLeft" and m.UserInputType == Enum.UserInputType.MouseButton1
+									or n == "MouseRight" and m.UserInputType == Enum.UserInputType.MouseButton2
+								then
+									h.Toggled = not h.Toggled
+									h:DoClick()
+								end
+							elseif m.UserInputType == Enum.UserInputType.Keyboard then
+								if m.KeyCode.Name == n then
+									h.Toggled = not h.Toggled
+									h:DoClick()
+								end
 							end
 						end
 					end
-				end
-			end)
-			g.Options[e] = h
-			return h
-		end
-		return c
-	end),
-	[25] = LPH_NO_VIRTUALIZE(function()
-		local aa, ab, ac, ad, ae = b(25)
-		local af = ab.Parent.Parent
-		local ag, ah, ai, aj = af.Components, ac(af.Packages.Flipper), ac(af.Creator), {}
-		aj.__index = aj
-		aj.__type = "Paragraph"
-		function aj.New(c, d)
-			assert(d.Title, "Paragraph - Missing Title")
-			d.Content = d.Content or ""
-			local e = ac(ag.Element)(d.Title, d.Content, aj.Container, false)
-			e.Frame.BackgroundTransparency = 0.92
-			e.Border.Transparency = 0.6
-			return e
-		end
-		return aj
-	end),
-	[26] = LPH_NO_VIRTUALIZE(function()
-		local aa, ab, ac, ad, ae = b(26)
-		local af, ag = game:GetService("UserInputService"), ab.Parent.Parent
-		local ah = ac(ag.Creator)
-		local ai, aj, c = ah.New, ag.Components, {}
-		c.__index = c
-		c.__type = "Slider"
-		function c.New(d, e, f)
-			local g = d.Library
-			assert(f.Title, "Slider - Missing Title.")
-			assert(f.Default, "Slider - Missing default value.")
-			assert(f.Min, "Slider - Missing minimum value.")
-			assert(f.Max, "Slider - Missing maximum value.")
-			assert(f.Rounding, "Slider - Missing rounding value.")
-			local h, i, j =
-				{
-					Value = nil,
-					Min = f.Min,
-					Max = f.Max,
-					Rounding = f.Rounding,
-					Callback = f.Callback or function(h) end,
-					Type = "Slider",
-				}, false, ac(aj.Element)(f.Title, f.Description, d.Container, false)
-			j.DescLabel.Size = UDim2.new(1, -170, 0, 14)
-			h.SetTitle = j.SetTitle
-			h.SetDesc = j.SetDesc
-			local k = ai("ImageLabel", {
-				AnchorPoint = Vector2.new(0, 0.5),
-				Position = UDim2.new(0, -7, 0.5, 0),
-				Size = UDim2.fromOffset(14, 14),
-				Image = "http://www.roblox.com/asset/?id=12266946128",
-				ThemeTag = { ImageColor3 = "Accent" },
-			})
-			local l, m, n =
-				ai(
-					"Frame",
-					{ BackgroundTransparency = 1, Position = UDim2.fromOffset(7, 0), Size = UDim2.new(1, -14, 1, 0) },
-					{ k }
-				),
-				ai(
-					"Frame",
-					{ Size = UDim2.new(0, 0, 1, 0), ThemeTag = { BackgroundColor3 = "Accent" } },
-					{ ai("UICorner", { CornerRadius = UDim.new(1, 0) }) }
-				),
-				ai("TextLabel", {
-					FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json"),
-					Text = "Value",
-					TextSize = 12,
-					TextWrapped = true,
-					TextXAlignment = Enum.TextXAlignment.Right,
-					BackgroundColor3 = Color3.fromRGB(255, 255, 255),
-					BackgroundTransparency = 1,
-					Size = UDim2.new(0, 100, 0, 14),
-					Position = UDim2.new(0, -4, 0.5, 0),
-					AnchorPoint = Vector2.new(1, 0.5),
-					ThemeTag = { TextColor3 = "SubText" },
-				})
-			local o = ai("Frame", {
-				Size = UDim2.new(1, 0, 0, 4),
-				AnchorPoint = Vector2.new(1, 0.5),
-				Position = UDim2.new(1, -10, 0.5, 0),
-				BackgroundTransparency = 0.4,
-				Parent = j.Frame,
-				ThemeTag = { BackgroundColor3 = "SliderRail" },
-			}, {
-				ai("UICorner", { CornerRadius = UDim.new(1, 0) }),
-				ai("UISizeConstraint", { MaxSize = Vector2.new(150, math.huge) }),
-				n,
-				m,
-				l,
-			})
-			ah.AddSignal(k.InputBegan, function(p)
-				if
-					p.UserInputType == Enum.UserInputType.MouseButton1
-					or p.UserInputType == Enum.UserInputType.Touch
-				then
-					i = true
-				end
-			end)
-			ah.AddSignal(k.InputEnded, function(p)
-				if
-					p.UserInputType == Enum.UserInputType.MouseButton1
-					or p.UserInputType == Enum.UserInputType.Touch
-				then
-					i = false
-				end
-			end)
-			ah.AddSignal(af.InputChanged, function(p)
-				if
-					i
-					and (
-						p.UserInputType == Enum.UserInputType.MouseMovement
-						or p.UserInputType == Enum.UserInputType.Touch
-					)
-				then
-					local s = math.clamp((p.Position.X - l.AbsolutePosition.X) / l.AbsoluteSize.X, 0, 1)
-					h:SetValue(h.Min + ((h.Max - h.Min) * s))
-				end
-			end)
-			function h.OnChanged(p, s)
-				h.Changed = s
-				s(h.Value)
+				end)
+				g.Options[e] = h
+				return h
 			end
-			function h.SetValue(p, s)
-				p.Value = g:Round(math.clamp(s, h.Min, h.Max), h.Rounding)
-				k.Position = UDim2.new((p.Value - h.Min) / (h.Max - h.Min), -7, 0.5, 0)
-				m.Size = UDim2.fromScale((p.Value - h.Min) / (h.Max - h.Min), 1)
-				n.Text = tostring(p.Value)
-				g:SafeCallback(h.Callback, p.Value)
-				g:SafeCallback(h.Changed, p.Value)
+			return c
+		end),
+		[25] = LPH_NO_VIRTUALIZE(function()
+			local aa, ab, ac, ad, ae = b(25)
+			local af = ab.Parent.Parent
+			local ag, ah, ai, aj = af.Components, ac(af.Packages.Flipper), ac(af.Creator), {}
+			aj.__index = aj
+			aj.__type = "Paragraph"
+			function aj.New(c, d)
+				assert(d.Title, "Paragraph - Missing Title")
+				d.Content = d.Content or ""
+				local e = ac(ag.Element)(d.Title, d.Content, aj.Container, false)
+				e.Frame.BackgroundTransparency = 0.92
+				e.Border.Transparency = 0.6
+				return e
 			end
-			function h.Destroy(p)
-				j:Destroy()
-				g.Options[e] = nil
-			end
-			h:SetValue(f.Default)
-			g.Options[e] = h
-			return h
-		end
-		return c
-	end),
-	[27] = LPH_NO_VIRTUALIZE(function()
-		local aa, ab, ac, ad, ae = b(27)
-		local af, ag = game:GetService("TweenService"), ab.Parent.Parent
-		local ah = ac(ag.Creator)
-		local ai, aj, c = ah.New, ag.Components, {}
-		c.__index = c
-		c.__type = "Toggle"
-		function c.New(d, e, f)
-			local g = d.Library
-			assert(f.Title, "Toggle - Missing Title")
-			local h, i =
-				{
-					Value = f.Default or false,
-					Callback = f.Callback or function(h) end,
-					Type = "Toggle",
-				}, ac(aj.Element)(f.Title, f.Description, d.Container, true)
-			i.DescLabel.Size = UDim2.new(1, -54, 0, 14)
-			h.SetTitle = i.SetTitle
-			h.SetDesc = i.SetDesc
-			local j, k =
-				ai("ImageLabel", {
+			return aj
+		end),
+		[26] = LPH_NO_VIRTUALIZE(function()
+			local aa, ab, ac, ad, ae = b(26)
+			local af, ag = game:GetService("UserInputService"), ab.Parent.Parent
+			local ah = ac(ag.Creator)
+			local ai, aj, c = ah.New, ag.Components, {}
+			c.__index = c
+			c.__type = "Slider"
+			function c.New(d, e, f)
+				local g = d.Library
+				assert(f.Title, "Slider - Missing Title.")
+				assert(f.Default, "Slider - Missing default value.")
+				assert(f.Min, "Slider - Missing minimum value.")
+				assert(f.Max, "Slider - Missing maximum value.")
+				assert(f.Rounding, "Slider - Missing rounding value.")
+				local h, i, j =
+					{
+						Value = nil,
+						Min = f.Min,
+						Max = f.Max,
+						Rounding = f.Rounding,
+						Callback = f.Callback or function(h) end,
+						Type = "Slider",
+					}, false, ac(aj.Element)(f.Title, f.Description, d.Container, false)
+				j.DescLabel.Size = UDim2.new(1, -170, 0, 14)
+				h.SetTitle = j.SetTitle
+				h.SetDesc = j.SetDesc
+				local k = ai("ImageLabel", {
 					AnchorPoint = Vector2.new(0, 0.5),
+					Position = UDim2.new(0, -7, 0.5, 0),
 					Size = UDim2.fromOffset(14, 14),
-					Position = UDim2.new(0, 2, 0.5, 0),
 					Image = "http://www.roblox.com/asset/?id=12266946128",
-					ImageTransparency = 0.5,
-					ThemeTag = { ImageColor3 = "ToggleSlider" },
-				}), ai("UIStroke", { Transparency = 0.5, ThemeTag = { Color = "ToggleSlider" } })
-			local l = ai("Frame", {
-				Size = UDim2.fromOffset(36, 18),
-				AnchorPoint = Vector2.new(1, 0.5),
-				Position = UDim2.new(1, -10, 0.5, 0),
-				Parent = i.Frame,
-				BackgroundTransparency = 1,
-				ThemeTag = { BackgroundColor3 = "Accent" },
-			}, { ai("UICorner", { CornerRadius = UDim.new(0, 9) }), k, j })
-			function h.OnChanged(m, n)
-				h.Changed = n
-				n(h.Value)
-			end
-			function h.SetValue(m, n)
-				n = not not n
-				h.Value = n
-				ah.OverrideTag(k, { Color = h.Value and "Accent" or "ToggleSlider" })
-				ah.OverrideTag(j, { ImageColor3 = h.Value and "ToggleToggled" or "ToggleSlider" })
-				af:Create(
-					j,
-					TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out),
-					{ Position = UDim2.new(0, h.Value and 19 or 2, 0.5, 0) }
-				):Play()
-				af:Create(
+					ThemeTag = { ImageColor3 = "Accent" },
+				})
+				local l, m, n =
+					ai("Frame", {
+						BackgroundTransparency = 1,
+						Position = UDim2.fromOffset(7, 0),
+						Size = UDim2.new(1, -14, 1, 0),
+					}, { k }), ai("Frame", { Size = UDim2.new(0, 0, 1, 0), ThemeTag = { BackgroundColor3 = "Accent" } }, { ai("UICorner", { CornerRadius = UDim.new(1, 0) }) }), ai("TextLabel", {
+						FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json"),
+						Text = "Value",
+						TextSize = 12,
+						TextWrapped = true,
+						TextXAlignment = Enum.TextXAlignment.Right,
+						BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+						BackgroundTransparency = 1,
+						Size = UDim2.new(0, 100, 0, 14),
+						Position = UDim2.new(0, -4, 0.5, 0),
+						AnchorPoint = Vector2.new(1, 0.5),
+						ThemeTag = { TextColor3 = "SubText" },
+					})
+				local o = ai("Frame", {
+					Size = UDim2.new(1, 0, 0, 4),
+					AnchorPoint = Vector2.new(1, 0.5),
+					Position = UDim2.new(1, -10, 0.5, 0),
+					BackgroundTransparency = 0.4,
+					Parent = j.Frame,
+					ThemeTag = { BackgroundColor3 = "SliderRail" },
+				}, {
+					ai("UICorner", { CornerRadius = UDim.new(1, 0) }),
+					ai("UISizeConstraint", { MaxSize = Vector2.new(150, math.huge) }),
+					n,
+					m,
 					l,
-					TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out),
-					{ BackgroundTransparency = h.Value and 0 or 1 }
-				):Play()
-				j.ImageTransparency = h.Value and 0 or 0.5
-				g:SafeCallback(h.Callback, h.Value)
-				g:SafeCallback(h.Changed, h.Value)
-			end
-			function h.Destroy(m)
-				i:Destroy()
-				g.Options[e] = nil
-			end
-			ah.AddSignal(i.Frame.MouseButton1Click, function()
-				h:SetValue(not h.Value)
-			end)
-			h:SetValue(h.Value)
-			g.Options[e] = h
-			return h
-		end
-		return c
-	end),
-	[28] = LPH_NO_VIRTUALIZE(function()
-		local aa, ab, ac, ad, ae = b(28)
-		return {
-			assets = {
-				["lucide-accessibility"] = "rbxassetid://10709751939",
-				["lucide-activity"] = "rbxassetid://10709752035",
-				["lucide-air-vent"] = "rbxassetid://10709752131",
-				["lucide-airplay"] = "rbxassetid://10709752254",
-				["lucide-alarm-check"] = "rbxassetid://10709752405",
-				["lucide-alarm-clock"] = "rbxassetid://10709752630",
-				["lucide-alarm-clock-off"] = "rbxassetid://10709752508",
-				["lucide-alarm-minus"] = "rbxassetid://10709752732",
-				["lucide-alarm-plus"] = "rbxassetid://10709752825",
-				["lucide-album"] = "rbxassetid://10709752906",
-				["lucide-alert-circle"] = "rbxassetid://10709752996",
-				["lucide-alert-octagon"] = "rbxassetid://10709753064",
-				["lucide-alert-triangle"] = "rbxassetid://10709753149",
-				["lucide-align-center"] = "rbxassetid://10709753570",
-				["lucide-align-center-horizontal"] = "rbxassetid://10709753272",
-				["lucide-align-center-vertical"] = "rbxassetid://10709753421",
-				["lucide-align-end-horizontal"] = "rbxassetid://10709753692",
-				["lucide-align-end-vertical"] = "rbxassetid://10709753808",
-				["lucide-align-horizontal-distribute-center"] = "rbxassetid://10747779791",
-				["lucide-align-horizontal-distribute-end"] = "rbxassetid://10747784534",
-				["lucide-align-horizontal-distribute-start"] = "rbxassetid://10709754118",
-				["lucide-align-horizontal-justify-center"] = "rbxassetid://10709754204",
-				["lucide-align-horizontal-justify-end"] = "rbxassetid://10709754317",
-				["lucide-align-horizontal-justify-start"] = "rbxassetid://10709754436",
-				["lucide-align-horizontal-space-around"] = "rbxassetid://10709754590",
-				["lucide-align-horizontal-space-between"] = "rbxassetid://10709754749",
-				["lucide-align-justify"] = "rbxassetid://10709759610",
-				["lucide-align-left"] = "rbxassetid://10709759764",
-				["lucide-align-right"] = "rbxassetid://10709759895",
-				["lucide-align-start-horizontal"] = "rbxassetid://10709760051",
-				["lucide-align-start-vertical"] = "rbxassetid://10709760244",
-				["lucide-align-vertical-distribute-center"] = "rbxassetid://10709760351",
-				["lucide-align-vertical-distribute-end"] = "rbxassetid://10709760434",
-				["lucide-align-vertical-distribute-start"] = "rbxassetid://10709760612",
-				["lucide-align-vertical-justify-center"] = "rbxassetid://10709760814",
-				["lucide-align-vertical-justify-end"] = "rbxassetid://10709761003",
-				["lucide-align-vertical-justify-start"] = "rbxassetid://10709761176",
-				["lucide-align-vertical-space-around"] = "rbxassetid://10709761324",
-				["lucide-align-vertical-space-between"] = "rbxassetid://10709761434",
-				["lucide-anchor"] = "rbxassetid://10709761530",
-				["lucide-angry"] = "rbxassetid://10709761629",
-				["lucide-annoyed"] = "rbxassetid://10709761722",
-				["lucide-aperture"] = "rbxassetid://10709761813",
-				["lucide-apple"] = "rbxassetid://10709761889",
-				["lucide-archive"] = "rbxassetid://10709762233",
-				["lucide-archive-restore"] = "rbxassetid://10709762058",
-				["lucide-armchair"] = "rbxassetid://10709762327",
-				["lucide-arrow-big-down"] = "rbxassetid://10747796644",
-				["lucide-arrow-big-left"] = "rbxassetid://10709762574",
-				["lucide-arrow-big-right"] = "rbxassetid://10709762727",
-				["lucide-arrow-big-up"] = "rbxassetid://10709762879",
-				["lucide-arrow-down"] = "rbxassetid://10709767827",
-				["lucide-arrow-down-circle"] = "rbxassetid://10709763034",
-				["lucide-arrow-down-left"] = "rbxassetid://10709767656",
-				["lucide-arrow-down-right"] = "rbxassetid://10709767750",
-				["lucide-arrow-left"] = "rbxassetid://10709768114",
-				["lucide-arrow-left-circle"] = "rbxassetid://10709767936",
-				["lucide-arrow-left-right"] = "rbxassetid://10709768019",
-				["lucide-arrow-right"] = "rbxassetid://10709768347",
-				["lucide-arrow-right-circle"] = "rbxassetid://10709768226",
-				["lucide-arrow-up"] = "rbxassetid://10709768939",
-				["lucide-arrow-up-circle"] = "rbxassetid://10709768432",
-				["lucide-arrow-up-down"] = "rbxassetid://10709768538",
-				["lucide-arrow-up-left"] = "rbxassetid://10709768661",
-				["lucide-arrow-up-right"] = "rbxassetid://10709768787",
-				["lucide-asterisk"] = "rbxassetid://10709769095",
-				["lucide-at-sign"] = "rbxassetid://10709769286",
-				["lucide-award"] = "rbxassetid://10709769406",
-				["lucide-axe"] = "rbxassetid://10709769508",
-				["lucide-axis-3d"] = "rbxassetid://10709769598",
-				["lucide-baby"] = "rbxassetid://10709769732",
-				["lucide-backpack"] = "rbxassetid://10709769841",
-				["lucide-baggage-claim"] = "rbxassetid://10709769935",
-				["lucide-banana"] = "rbxassetid://10709770005",
-				["lucide-banknote"] = "rbxassetid://10709770178",
-				["lucide-bar-chart"] = "rbxassetid://10709773755",
-				["lucide-bar-chart-2"] = "rbxassetid://10709770317",
-				["lucide-bar-chart-3"] = "rbxassetid://10709770431",
-				["lucide-bar-chart-4"] = "rbxassetid://10709770560",
-				["lucide-bar-chart-horizontal"] = "rbxassetid://10709773669",
-				["lucide-barcode"] = "rbxassetid://10747360675",
-				["lucide-baseline"] = "rbxassetid://10709773863",
-				["lucide-bath"] = "rbxassetid://10709773963",
-				["lucide-battery"] = "rbxassetid://10709774640",
-				["lucide-battery-charging"] = "rbxassetid://10709774068",
-				["lucide-battery-full"] = "rbxassetid://10709774206",
-				["lucide-battery-low"] = "rbxassetid://10709774370",
-				["lucide-battery-medium"] = "rbxassetid://10709774513",
-				["lucide-beaker"] = "rbxassetid://10709774756",
-				["lucide-bed"] = "rbxassetid://10709775036",
-				["lucide-bed-double"] = "rbxassetid://10709774864",
-				["lucide-bed-single"] = "rbxassetid://10709774968",
-				["lucide-beer"] = "rbxassetid://10709775167",
-				["lucide-bell"] = "rbxassetid://10709775704",
-				["lucide-bell-minus"] = "rbxassetid://10709775241",
-				["lucide-bell-off"] = "rbxassetid://10709775320",
-				["lucide-bell-plus"] = "rbxassetid://10709775448",
-				["lucide-bell-ring"] = "rbxassetid://10709775560",
-				["lucide-bike"] = "rbxassetid://10709775894",
-				["lucide-binary"] = "rbxassetid://10709776050",
-				["lucide-bitcoin"] = "rbxassetid://10709776126",
-				["lucide-bluetooth"] = "rbxassetid://10709776655",
-				["lucide-bluetooth-connected"] = "rbxassetid://10709776240",
-				["lucide-bluetooth-off"] = "rbxassetid://10709776344",
-				["lucide-bluetooth-searching"] = "rbxassetid://10709776501",
-				["lucide-bold"] = "rbxassetid://10747813908",
-				["lucide-bomb"] = "rbxassetid://10709781460",
-				["lucide-bone"] = "rbxassetid://10709781605",
-				["lucide-book"] = "rbxassetid://10709781824",
-				["lucide-book-open"] = "rbxassetid://10709781717",
-				["lucide-bookmark"] = "rbxassetid://10709782154",
-				["lucide-bookmark-minus"] = "rbxassetid://10709781919",
-				["lucide-bookmark-plus"] = "rbxassetid://10709782044",
-				["lucide-bot"] = "rbxassetid://10709782230",
-				["lucide-box"] = "rbxassetid://10709782497",
-				["lucide-box-select"] = "rbxassetid://10709782342",
-				["lucide-boxes"] = "rbxassetid://10709782582",
-				["lucide-briefcase"] = "rbxassetid://10709782662",
-				["lucide-brush"] = "rbxassetid://10709782758",
-				["lucide-bug"] = "rbxassetid://10709782845",
-				["lucide-building"] = "rbxassetid://10709783051",
-				["lucide-building-2"] = "rbxassetid://10709782939",
-				["lucide-bus"] = "rbxassetid://10709783137",
-				["lucide-cake"] = "rbxassetid://10709783217",
-				["lucide-calculator"] = "rbxassetid://10709783311",
-				["lucide-calendar"] = "rbxassetid://10709789505",
-				["lucide-calendar-check"] = "rbxassetid://10709783474",
-				["lucide-calendar-check-2"] = "rbxassetid://10709783392",
-				["lucide-calendar-clock"] = "rbxassetid://10709783577",
-				["lucide-calendar-days"] = "rbxassetid://10709783673",
-				["lucide-calendar-heart"] = "rbxassetid://10709783835",
-				["lucide-calendar-minus"] = "rbxassetid://10709783959",
-				["lucide-calendar-off"] = "rbxassetid://10709788784",
-				["lucide-calendar-plus"] = "rbxassetid://10709788937",
-				["lucide-calendar-range"] = "rbxassetid://10709789053",
-				["lucide-calendar-search"] = "rbxassetid://10709789200",
-				["lucide-calendar-x"] = "rbxassetid://10709789407",
-				["lucide-calendar-x-2"] = "rbxassetid://10709789329",
-				["lucide-camera"] = "rbxassetid://10709789686",
-				["lucide-camera-off"] = "rbxassetid://10747822677",
-				["lucide-car"] = "rbxassetid://10709789810",
-				["lucide-carrot"] = "rbxassetid://10709789960",
-				["lucide-cast"] = "rbxassetid://10709790097",
-				["lucide-charge"] = "rbxassetid://10709790202",
-				["lucide-check"] = "rbxassetid://10709790644",
-				["lucide-check-circle"] = "rbxassetid://10709790387",
-				["lucide-check-circle-2"] = "rbxassetid://10709790298",
-				["lucide-check-square"] = "rbxassetid://10709790537",
-				["lucide-chef-hat"] = "rbxassetid://10709790757",
-				["lucide-cherry"] = "rbxassetid://10709790875",
-				["lucide-chevron-down"] = "rbxassetid://10709790948",
-				["lucide-chevron-first"] = "rbxassetid://10709791015",
-				["lucide-chevron-last"] = "rbxassetid://10709791130",
-				["lucide-chevron-left"] = "rbxassetid://10709791281",
-				["lucide-chevron-right"] = "rbxassetid://10709791437",
-				["lucide-chevron-up"] = "rbxassetid://10709791523",
-				["lucide-chevrons-down"] = "rbxassetid://10709796864",
-				["lucide-chevrons-down-up"] = "rbxassetid://10709791632",
-				["lucide-chevrons-left"] = "rbxassetid://10709797151",
-				["lucide-chevrons-left-right"] = "rbxassetid://10709797006",
-				["lucide-chevrons-right"] = "rbxassetid://10709797382",
-				["lucide-chevrons-right-left"] = "rbxassetid://10709797274",
-				["lucide-chevrons-up"] = "rbxassetid://10709797622",
-				["lucide-chevrons-up-down"] = "rbxassetid://10709797508",
-				["lucide-chrome"] = "rbxassetid://10709797725",
-				["lucide-circle"] = "rbxassetid://10709798174",
-				["lucide-circle-dot"] = "rbxassetid://10709797837",
-				["lucide-circle-ellipsis"] = "rbxassetid://10709797985",
-				["lucide-circle-slashed"] = "rbxassetid://10709798100",
-				["lucide-citrus"] = "rbxassetid://10709798276",
-				["lucide-clapperboard"] = "rbxassetid://10709798350",
-				["lucide-clipboard"] = "rbxassetid://10709799288",
-				["lucide-clipboard-check"] = "rbxassetid://10709798443",
-				["lucide-clipboard-copy"] = "rbxassetid://10709798574",
-				["lucide-clipboard-edit"] = "rbxassetid://10709798682",
-				["lucide-clipboard-list"] = "rbxassetid://10709798792",
-				["lucide-clipboard-signature"] = "rbxassetid://10709798890",
-				["lucide-clipboard-type"] = "rbxassetid://10709798999",
-				["lucide-clipboard-x"] = "rbxassetid://10709799124",
-				["lucide-clock"] = "rbxassetid://10709805144",
-				["lucide-clock-1"] = "rbxassetid://10709799535",
-				["lucide-clock-10"] = "rbxassetid://10709799718",
-				["lucide-clock-11"] = "rbxassetid://10709799818",
-				["lucide-clock-12"] = "rbxassetid://10709799962",
-				["lucide-clock-2"] = "rbxassetid://10709803876",
-				["lucide-clock-3"] = "rbxassetid://10709803989",
-				["lucide-clock-4"] = "rbxassetid://10709804164",
-				["lucide-clock-5"] = "rbxassetid://10709804291",
-				["lucide-clock-6"] = "rbxassetid://10709804435",
-				["lucide-clock-7"] = "rbxassetid://10709804599",
-				["lucide-clock-8"] = "rbxassetid://10709804784",
-				["lucide-clock-9"] = "rbxassetid://10709804996",
-				["lucide-cloud"] = "rbxassetid://10709806740",
-				["lucide-cloud-cog"] = "rbxassetid://10709805262",
-				["lucide-cloud-drizzle"] = "rbxassetid://10709805371",
-				["lucide-cloud-fog"] = "rbxassetid://10709805477",
-				["lucide-cloud-hail"] = "rbxassetid://10709805596",
-				["lucide-cloud-lightning"] = "rbxassetid://10709805727",
-				["lucide-cloud-moon"] = "rbxassetid://10709805942",
-				["lucide-cloud-moon-rain"] = "rbxassetid://10709805838",
-				["lucide-cloud-off"] = "rbxassetid://10709806060",
-				["lucide-cloud-rain"] = "rbxassetid://10709806277",
-				["lucide-cloud-rain-wind"] = "rbxassetid://10709806166",
-				["lucide-cloud-snow"] = "rbxassetid://10709806374",
-				["lucide-cloud-sun"] = "rbxassetid://10709806631",
-				["lucide-cloud-sun-rain"] = "rbxassetid://10709806475",
-				["lucide-cloudy"] = "rbxassetid://10709806859",
-				["lucide-clover"] = "rbxassetid://10709806995",
-				["lucide-code"] = "rbxassetid://10709810463",
-				["lucide-code-2"] = "rbxassetid://10709807111",
-				["lucide-codepen"] = "rbxassetid://10709810534",
-				["lucide-codesandbox"] = "rbxassetid://10709810676",
-				["lucide-coffee"] = "rbxassetid://10709810814",
-				["lucide-cog"] = "rbxassetid://10709810948",
-				["lucide-coins"] = "rbxassetid://10709811110",
-				["lucide-columns"] = "rbxassetid://10709811261",
-				["lucide-command"] = "rbxassetid://10709811365",
-				["lucide-compass"] = "rbxassetid://10709811445",
-				["lucide-component"] = "rbxassetid://10709811595",
-				["lucide-concierge-bell"] = "rbxassetid://10709811706",
-				["lucide-connection"] = "rbxassetid://10747361219",
-				["lucide-contact"] = "rbxassetid://10709811834",
-				["lucide-contrast"] = "rbxassetid://10709811939",
-				["lucide-cookie"] = "rbxassetid://10709812067",
-				["lucide-copy"] = "rbxassetid://10709812159",
-				["lucide-copyleft"] = "rbxassetid://10709812251",
-				["lucide-copyright"] = "rbxassetid://10709812311",
-				["lucide-corner-down-left"] = "rbxassetid://10709812396",
-				["lucide-corner-down-right"] = "rbxassetid://10709812485",
-				["lucide-corner-left-down"] = "rbxassetid://10709812632",
-				["lucide-corner-left-up"] = "rbxassetid://10709812784",
-				["lucide-corner-right-down"] = "rbxassetid://10709812939",
-				["lucide-corner-right-up"] = "rbxassetid://10709813094",
-				["lucide-corner-up-left"] = "rbxassetid://10709813185",
-				["lucide-corner-up-right"] = "rbxassetid://10709813281",
-				["lucide-cpu"] = "rbxassetid://10709813383",
-				["lucide-croissant"] = "rbxassetid://10709818125",
-				["lucide-crop"] = "rbxassetid://10709818245",
-				["lucide-cross"] = "rbxassetid://10709818399",
-				["lucide-crosshair"] = "rbxassetid://10709818534",
-				["lucide-crown"] = "rbxassetid://10709818626",
-				["lucide-cup-soda"] = "rbxassetid://10709818763",
-				["lucide-curly-braces"] = "rbxassetid://10709818847",
-				["lucide-currency"] = "rbxassetid://10709818931",
-				["lucide-database"] = "rbxassetid://10709818996",
-				["lucide-delete"] = "rbxassetid://10709819059",
-				["lucide-diamond"] = "rbxassetid://10709819149",
-				["lucide-dice-1"] = "rbxassetid://10709819266",
-				["lucide-dice-2"] = "rbxassetid://10709819361",
-				["lucide-dice-3"] = "rbxassetid://10709819508",
-				["lucide-dice-4"] = "rbxassetid://10709819670",
-				["lucide-dice-5"] = "rbxassetid://10709819801",
-				["lucide-dice-6"] = "rbxassetid://10709819896",
-				["lucide-dices"] = "rbxassetid://10723343321",
-				["lucide-diff"] = "rbxassetid://10723343416",
-				["lucide-disc"] = "rbxassetid://10723343537",
-				["lucide-divide"] = "rbxassetid://10723343805",
-				["lucide-divide-circle"] = "rbxassetid://10723343636",
-				["lucide-divide-square"] = "rbxassetid://10723343737",
-				["lucide-dollar-sign"] = "rbxassetid://10723343958",
-				["lucide-download"] = "rbxassetid://10723344270",
-				["lucide-download-cloud"] = "rbxassetid://10723344088",
-				["lucide-droplet"] = "rbxassetid://10723344432",
-				["lucide-droplets"] = "rbxassetid://10734883356",
-				["lucide-drumstick"] = "rbxassetid://10723344737",
-				["lucide-edit"] = "rbxassetid://10734883598",
-				["lucide-edit-2"] = "rbxassetid://10723344885",
-				["lucide-edit-3"] = "rbxassetid://10723345088",
-				["lucide-egg"] = "rbxassetid://10723345518",
-				["lucide-egg-fried"] = "rbxassetid://10723345347",
-				["lucide-electricity"] = "rbxassetid://10723345749",
-				["lucide-electricity-off"] = "rbxassetid://10723345643",
-				["lucide-equal"] = "rbxassetid://10723345990",
-				["lucide-equal-not"] = "rbxassetid://10723345866",
-				["lucide-eraser"] = "rbxassetid://10723346158",
-				["lucide-euro"] = "rbxassetid://10723346372",
-				["lucide-expand"] = "rbxassetid://10723346553",
-				["lucide-external-link"] = "rbxassetid://10723346684",
-				["lucide-eye"] = "rbxassetid://10723346959",
-				["lucide-eye-off"] = "rbxassetid://10723346871",
-				["lucide-factory"] = "rbxassetid://10723347051",
-				["lucide-fan"] = "rbxassetid://10723354359",
-				["lucide-fast-forward"] = "rbxassetid://10723354521",
-				["lucide-feather"] = "rbxassetid://10723354671",
-				["lucide-figma"] = "rbxassetid://10723354801",
-				["lucide-file"] = "rbxassetid://10723374641",
-				["lucide-file-archive"] = "rbxassetid://10723354921",
-				["lucide-file-audio"] = "rbxassetid://10723355148",
-				["lucide-file-audio-2"] = "rbxassetid://10723355026",
-				["lucide-file-axis-3d"] = "rbxassetid://10723355272",
-				["lucide-file-badge"] = "rbxassetid://10723355622",
-				["lucide-file-badge-2"] = "rbxassetid://10723355451",
-				["lucide-file-bar-chart"] = "rbxassetid://10723355887",
-				["lucide-file-bar-chart-2"] = "rbxassetid://10723355746",
-				["lucide-file-box"] = "rbxassetid://10723355989",
-				["lucide-file-check"] = "rbxassetid://10723356210",
-				["lucide-file-check-2"] = "rbxassetid://10723356100",
-				["lucide-file-clock"] = "rbxassetid://10723356329",
-				["lucide-file-code"] = "rbxassetid://10723356507",
-				["lucide-file-cog"] = "rbxassetid://10723356830",
-				["lucide-file-cog-2"] = "rbxassetid://10723356676",
-				["lucide-file-diff"] = "rbxassetid://10723357039",
-				["lucide-file-digit"] = "rbxassetid://10723357151",
-				["lucide-file-down"] = "rbxassetid://10723357322",
-				["lucide-file-edit"] = "rbxassetid://10723357495",
-				["lucide-file-heart"] = "rbxassetid://10723357637",
-				["lucide-file-image"] = "rbxassetid://10723357790",
-				["lucide-file-input"] = "rbxassetid://10723357933",
-				["lucide-file-json"] = "rbxassetid://10723364435",
-				["lucide-file-json-2"] = "rbxassetid://10723364361",
-				["lucide-file-key"] = "rbxassetid://10723364605",
-				["lucide-file-key-2"] = "rbxassetid://10723364515",
-				["lucide-file-line-chart"] = "rbxassetid://10723364725",
-				["lucide-file-lock"] = "rbxassetid://10723364957",
-				["lucide-file-lock-2"] = "rbxassetid://10723364861",
-				["lucide-file-minus"] = "rbxassetid://10723365254",
-				["lucide-file-minus-2"] = "rbxassetid://10723365086",
-				["lucide-file-output"] = "rbxassetid://10723365457",
-				["lucide-file-pie-chart"] = "rbxassetid://10723365598",
-				["lucide-file-plus"] = "rbxassetid://10723365877",
-				["lucide-file-plus-2"] = "rbxassetid://10723365766",
-				["lucide-file-question"] = "rbxassetid://10723365987",
-				["lucide-file-scan"] = "rbxassetid://10723366167",
-				["lucide-file-search"] = "rbxassetid://10723366550",
-				["lucide-file-search-2"] = "rbxassetid://10723366340",
-				["lucide-file-signature"] = "rbxassetid://10723366741",
-				["lucide-file-spreadsheet"] = "rbxassetid://10723366962",
-				["lucide-file-symlink"] = "rbxassetid://10723367098",
-				["lucide-file-terminal"] = "rbxassetid://10723367244",
-				["lucide-file-text"] = "rbxassetid://10723367380",
-				["lucide-file-type"] = "rbxassetid://10723367606",
-				["lucide-file-type-2"] = "rbxassetid://10723367509",
-				["lucide-file-up"] = "rbxassetid://10723367734",
-				["lucide-file-video"] = "rbxassetid://10723373884",
-				["lucide-file-video-2"] = "rbxassetid://10723367834",
-				["lucide-file-volume"] = "rbxassetid://10723374172",
-				["lucide-file-volume-2"] = "rbxassetid://10723374030",
-				["lucide-file-warning"] = "rbxassetid://10723374276",
-				["lucide-file-x"] = "rbxassetid://10723374544",
-				["lucide-file-x-2"] = "rbxassetid://10723374378",
-				["lucide-files"] = "rbxassetid://10723374759",
-				["lucide-film"] = "rbxassetid://10723374981",
-				["lucide-filter"] = "rbxassetid://10723375128",
-				["lucide-fingerprint"] = "rbxassetid://10723375250",
-				["lucide-flag"] = "rbxassetid://10723375890",
-				["lucide-flag-off"] = "rbxassetid://10723375443",
-				["lucide-flag-triangle-left"] = "rbxassetid://10723375608",
-				["lucide-flag-triangle-right"] = "rbxassetid://10723375727",
-				["lucide-flame"] = "rbxassetid://10723376114",
-				["lucide-flashlight"] = "rbxassetid://10723376471",
-				["lucide-flashlight-off"] = "rbxassetid://10723376365",
-				["lucide-flask-conical"] = "rbxassetid://10734883986",
-				["lucide-flask-round"] = "rbxassetid://10723376614",
-				["lucide-flip-horizontal"] = "rbxassetid://10723376884",
-				["lucide-flip-horizontal-2"] = "rbxassetid://10723376745",
-				["lucide-flip-vertical"] = "rbxassetid://10723377138",
-				["lucide-flip-vertical-2"] = "rbxassetid://10723377026",
-				["lucide-flower"] = "rbxassetid://10747830374",
-				["lucide-flower-2"] = "rbxassetid://10723377305",
-				["lucide-focus"] = "rbxassetid://10723377537",
-				["lucide-folder"] = "rbxassetid://10723387563",
-				["lucide-folder-archive"] = "rbxassetid://10723384478",
-				["lucide-folder-check"] = "rbxassetid://10723384605",
-				["lucide-folder-clock"] = "rbxassetid://10723384731",
-				["lucide-folder-closed"] = "rbxassetid://10723384893",
-				["lucide-folder-cog"] = "rbxassetid://10723385213",
-				["lucide-folder-cog-2"] = "rbxassetid://10723385036",
-				["lucide-folder-down"] = "rbxassetid://10723385338",
-				["lucide-folder-edit"] = "rbxassetid://10723385445",
-				["lucide-folder-heart"] = "rbxassetid://10723385545",
-				["lucide-folder-input"] = "rbxassetid://10723385721",
-				["lucide-folder-key"] = "rbxassetid://10723385848",
-				["lucide-folder-lock"] = "rbxassetid://10723386005",
-				["lucide-folder-minus"] = "rbxassetid://10723386127",
-				["lucide-folder-open"] = "rbxassetid://10723386277",
-				["lucide-folder-output"] = "rbxassetid://10723386386",
-				["lucide-folder-plus"] = "rbxassetid://10723386531",
-				["lucide-folder-search"] = "rbxassetid://10723386787",
-				["lucide-folder-search-2"] = "rbxassetid://10723386674",
-				["lucide-folder-symlink"] = "rbxassetid://10723386930",
-				["lucide-folder-tree"] = "rbxassetid://10723387085",
-				["lucide-folder-up"] = "rbxassetid://10723387265",
-				["lucide-folder-x"] = "rbxassetid://10723387448",
-				["lucide-folders"] = "rbxassetid://10723387721",
-				["lucide-form-input"] = "rbxassetid://10723387841",
-				["lucide-forward"] = "rbxassetid://10723388016",
-				["lucide-frame"] = "rbxassetid://10723394389",
-				["lucide-framer"] = "rbxassetid://10723394565",
-				["lucide-frown"] = "rbxassetid://10723394681",
-				["lucide-fuel"] = "rbxassetid://10723394846",
-				["lucide-function-square"] = "rbxassetid://10723395041",
-				["lucide-gamepad"] = "rbxassetid://10723395457",
-				["lucide-gamepad-2"] = "rbxassetid://10723395215",
-				["lucide-gauge"] = "rbxassetid://10723395708",
-				["lucide-gavel"] = "rbxassetid://10723395896",
-				["lucide-gem"] = "rbxassetid://10723396000",
-				["lucide-ghost"] = "rbxassetid://10723396107",
-				["lucide-gift"] = "rbxassetid://10723396402",
-				["lucide-gift-card"] = "rbxassetid://10723396225",
-				["lucide-git-branch"] = "rbxassetid://10723396676",
-				["lucide-git-branch-plus"] = "rbxassetid://10723396542",
-				["lucide-git-commit"] = "rbxassetid://10723396812",
-				["lucide-git-compare"] = "rbxassetid://10723396954",
-				["lucide-git-fork"] = "rbxassetid://10723397049",
-				["lucide-git-merge"] = "rbxassetid://10723397165",
-				["lucide-git-pull-request"] = "rbxassetid://10723397431",
-				["lucide-git-pull-request-closed"] = "rbxassetid://10723397268",
-				["lucide-git-pull-request-draft"] = "rbxassetid://10734884302",
-				["lucide-glass"] = "rbxassetid://10723397788",
-				["lucide-glass-2"] = "rbxassetid://10723397529",
-				["lucide-glass-water"] = "rbxassetid://10723397678",
-				["lucide-glasses"] = "rbxassetid://10723397895",
-				["lucide-globe"] = "rbxassetid://10723404337",
-				["lucide-globe-2"] = "rbxassetid://10723398002",
-				["lucide-grab"] = "rbxassetid://10723404472",
-				["lucide-graduation-cap"] = "rbxassetid://10723404691",
-				["lucide-grape"] = "rbxassetid://10723404822",
-				["lucide-grid"] = "rbxassetid://10723404936",
-				["lucide-grip-horizontal"] = "rbxassetid://10723405089",
-				["lucide-grip-vertical"] = "rbxassetid://10723405236",
-				["lucide-hammer"] = "rbxassetid://10723405360",
-				["lucide-hand"] = "rbxassetid://10723405649",
-				["lucide-hand-metal"] = "rbxassetid://10723405508",
-				["lucide-hard-drive"] = "rbxassetid://10723405749",
-				["lucide-hard-hat"] = "rbxassetid://10723405859",
-				["lucide-hash"] = "rbxassetid://10723405975",
-				["lucide-haze"] = "rbxassetid://10723406078",
-				["lucide-headphones"] = "rbxassetid://10723406165",
-				["lucide-heart"] = "rbxassetid://10723406885",
-				["lucide-heart-crack"] = "rbxassetid://10723406299",
-				["lucide-heart-handshake"] = "rbxassetid://10723406480",
-				["lucide-heart-off"] = "rbxassetid://10723406662",
-				["lucide-heart-pulse"] = "rbxassetid://10723406795",
-				["lucide-help-circle"] = "rbxassetid://10723406988",
-				["lucide-hexagon"] = "rbxassetid://10723407092",
-				["lucide-highlighter"] = "rbxassetid://10723407192",
-				["lucide-history"] = "rbxassetid://10723407335",
-				["lucide-home"] = "rbxassetid://10723407389",
-				["lucide-hourglass"] = "rbxassetid://10723407498",
-				["lucide-ice-cream"] = "rbxassetid://10723414308",
-				["lucide-image"] = "rbxassetid://10723415040",
-				["lucide-image-minus"] = "rbxassetid://10723414487",
-				["lucide-image-off"] = "rbxassetid://10723414677",
-				["lucide-image-plus"] = "rbxassetid://10723414827",
-				["lucide-import"] = "rbxassetid://10723415205",
-				["lucide-inbox"] = "rbxassetid://10723415335",
-				["lucide-indent"] = "rbxassetid://10723415494",
-				["lucide-indian-rupee"] = "rbxassetid://10723415642",
-				["lucide-infinity"] = "rbxassetid://10723415766",
-				["lucide-info"] = "rbxassetid://10723415903",
-				["lucide-inspect"] = "rbxassetid://10723416057",
-				["lucide-italic"] = "rbxassetid://10723416195",
-				["lucide-japanese-yen"] = "rbxassetid://10723416363",
-				["lucide-joystick"] = "rbxassetid://10723416527",
-				["lucide-key"] = "rbxassetid://10723416652",
-				["lucide-keyboard"] = "rbxassetid://10723416765",
-				["lucide-lamp"] = "rbxassetid://10723417513",
-				["lucide-lamp-ceiling"] = "rbxassetid://10723416922",
-				["lucide-lamp-desk"] = "rbxassetid://10723417016",
-				["lucide-lamp-floor"] = "rbxassetid://10723417131",
-				["lucide-lamp-wall-down"] = "rbxassetid://10723417240",
-				["lucide-lamp-wall-up"] = "rbxassetid://10723417356",
-				["lucide-landmark"] = "rbxassetid://10723417608",
-				["lucide-languages"] = "rbxassetid://10723417703",
-				["lucide-laptop"] = "rbxassetid://10723423881",
-				["lucide-laptop-2"] = "rbxassetid://10723417797",
-				["lucide-lasso"] = "rbxassetid://10723424235",
-				["lucide-lasso-select"] = "rbxassetid://10723424058",
-				["lucide-laugh"] = "rbxassetid://10723424372",
-				["lucide-layers"] = "rbxassetid://10723424505",
-				["lucide-layout"] = "rbxassetid://10723425376",
-				["lucide-layout-dashboard"] = "rbxassetid://10723424646",
-				["lucide-layout-grid"] = "rbxassetid://10723424838",
-				["lucide-layout-list"] = "rbxassetid://10723424963",
-				["lucide-layout-template"] = "rbxassetid://10723425187",
-				["lucide-leaf"] = "rbxassetid://10723425539",
-				["lucide-library"] = "rbxassetid://10723425615",
-				["lucide-life-buoy"] = "rbxassetid://10723425685",
-				["lucide-lightbulb"] = "rbxassetid://10723425852",
-				["lucide-lightbulb-off"] = "rbxassetid://10723425762",
-				["lucide-line-chart"] = "rbxassetid://10723426393",
-				["lucide-link"] = "rbxassetid://10723426722",
-				["lucide-link-2"] = "rbxassetid://10723426595",
-				["lucide-link-2-off"] = "rbxassetid://10723426513",
-				["lucide-list"] = "rbxassetid://10723433811",
-				["lucide-list-checks"] = "rbxassetid://10734884548",
-				["lucide-list-end"] = "rbxassetid://10723426886",
-				["lucide-list-minus"] = "rbxassetid://10723426986",
-				["lucide-list-music"] = "rbxassetid://10723427081",
-				["lucide-list-ordered"] = "rbxassetid://10723427199",
-				["lucide-list-plus"] = "rbxassetid://10723427334",
-				["lucide-list-start"] = "rbxassetid://10723427494",
-				["lucide-list-video"] = "rbxassetid://10723427619",
-				["lucide-list-x"] = "rbxassetid://10723433655",
-				["lucide-loader"] = "rbxassetid://10723434070",
-				["lucide-loader-2"] = "rbxassetid://10723433935",
-				["lucide-locate"] = "rbxassetid://10723434557",
-				["lucide-locate-fixed"] = "rbxassetid://10723434236",
-				["lucide-locate-off"] = "rbxassetid://10723434379",
-				["lucide-lock"] = "rbxassetid://10723434711",
-				["lucide-log-in"] = "rbxassetid://10723434830",
-				["lucide-log-out"] = "rbxassetid://10723434906",
-				["lucide-luggage"] = "rbxassetid://10723434993",
-				["lucide-magnet"] = "rbxassetid://10723435069",
-				["lucide-mail"] = "rbxassetid://10734885430",
-				["lucide-mail-check"] = "rbxassetid://10723435182",
-				["lucide-mail-minus"] = "rbxassetid://10723435261",
-				["lucide-mail-open"] = "rbxassetid://10723435342",
-				["lucide-mail-plus"] = "rbxassetid://10723435443",
-				["lucide-mail-question"] = "rbxassetid://10723435515",
-				["lucide-mail-search"] = "rbxassetid://10734884739",
-				["lucide-mail-warning"] = "rbxassetid://10734885015",
-				["lucide-mail-x"] = "rbxassetid://10734885247",
-				["lucide-mails"] = "rbxassetid://10734885614",
-				["lucide-map"] = "rbxassetid://10734886202",
-				["lucide-map-pin"] = "rbxassetid://10734886004",
-				["lucide-map-pin-off"] = "rbxassetid://10734885803",
-				["lucide-maximize"] = "rbxassetid://10734886735",
-				["lucide-maximize-2"] = "rbxassetid://10734886496",
-				["lucide-medal"] = "rbxassetid://10734887072",
-				["lucide-megaphone"] = "rbxassetid://10734887454",
-				["lucide-megaphone-off"] = "rbxassetid://10734887311",
-				["lucide-meh"] = "rbxassetid://10734887603",
-				["lucide-menu"] = "rbxassetid://10734887784",
-				["lucide-message-circle"] = "rbxassetid://10734888000",
-				["lucide-message-square"] = "rbxassetid://10734888228",
-				["lucide-mic"] = "rbxassetid://10734888864",
-				["lucide-mic-2"] = "rbxassetid://10734888430",
-				["lucide-mic-off"] = "rbxassetid://10734888646",
-				["lucide-microscope"] = "rbxassetid://10734889106",
-				["lucide-microwave"] = "rbxassetid://10734895076",
-				["lucide-milestone"] = "rbxassetid://10734895310",
-				["lucide-minimize"] = "rbxassetid://10734895698",
-				["lucide-minimize-2"] = "rbxassetid://10734895530",
-				["lucide-minus"] = "rbxassetid://10734896206",
-				["lucide-minus-circle"] = "rbxassetid://10734895856",
-				["lucide-minus-square"] = "rbxassetid://10734896029",
-				["lucide-monitor"] = "rbxassetid://10734896881",
-				["lucide-monitor-off"] = "rbxassetid://10734896360",
-				["lucide-monitor-speaker"] = "rbxassetid://10734896512",
-				["lucide-moon"] = "rbxassetid://10734897102",
-				["lucide-more-horizontal"] = "rbxassetid://10734897250",
-				["lucide-more-vertical"] = "rbxassetid://10734897387",
-				["lucide-mountain"] = "rbxassetid://10734897956",
-				["lucide-mountain-snow"] = "rbxassetid://10734897665",
-				["lucide-mouse"] = "rbxassetid://10734898592",
-				["lucide-mouse-pointer"] = "rbxassetid://10734898476",
-				["lucide-mouse-pointer-2"] = "rbxassetid://10734898194",
-				["lucide-mouse-pointer-click"] = "rbxassetid://10734898355",
-				["lucide-move"] = "rbxassetid://10734900011",
-				["lucide-move-3d"] = "rbxassetid://10734898756",
-				["lucide-move-diagonal"] = "rbxassetid://10734899164",
-				["lucide-move-diagonal-2"] = "rbxassetid://10734898934",
-				["lucide-move-horizontal"] = "rbxassetid://10734899414",
-				["lucide-move-vertical"] = "rbxassetid://10734899821",
-				["lucide-music"] = "rbxassetid://10734905958",
-				["lucide-music-2"] = "rbxassetid://10734900215",
-				["lucide-music-3"] = "rbxassetid://10734905665",
-				["lucide-music-4"] = "rbxassetid://10734905823",
-				["lucide-navigation"] = "rbxassetid://10734906744",
-				["lucide-navigation-2"] = "rbxassetid://10734906332",
-				["lucide-navigation-2-off"] = "rbxassetid://10734906144",
-				["lucide-navigation-off"] = "rbxassetid://10734906580",
-				["lucide-network"] = "rbxassetid://10734906975",
-				["lucide-newspaper"] = "rbxassetid://10734907168",
-				["lucide-octagon"] = "rbxassetid://10734907361",
-				["lucide-option"] = "rbxassetid://10734907649",
-				["lucide-outdent"] = "rbxassetid://10734907933",
-				["lucide-package"] = "rbxassetid://10734909540",
-				["lucide-package-2"] = "rbxassetid://10734908151",
-				["lucide-package-check"] = "rbxassetid://10734908384",
-				["lucide-package-minus"] = "rbxassetid://10734908626",
-				["lucide-package-open"] = "rbxassetid://10734908793",
-				["lucide-package-plus"] = "rbxassetid://10734909016",
-				["lucide-package-search"] = "rbxassetid://10734909196",
-				["lucide-package-x"] = "rbxassetid://10734909375",
-				["lucide-paint-bucket"] = "rbxassetid://10734909847",
-				["lucide-paintbrush"] = "rbxassetid://10734910187",
-				["lucide-paintbrush-2"] = "rbxassetid://10734910030",
-				["lucide-palette"] = "rbxassetid://10734910430",
-				["lucide-palmtree"] = "rbxassetid://10734910680",
-				["lucide-paperclip"] = "rbxassetid://10734910927",
-				["lucide-party-popper"] = "rbxassetid://10734918735",
-				["lucide-pause"] = "rbxassetid://10734919336",
-				["lucide-pause-circle"] = "rbxassetid://10735024209",
-				["lucide-pause-octagon"] = "rbxassetid://10734919143",
-				["lucide-pen-tool"] = "rbxassetid://10734919503",
-				["lucide-pencil"] = "rbxassetid://10734919691",
-				["lucide-percent"] = "rbxassetid://10734919919",
-				["lucide-person-standing"] = "rbxassetid://10734920149",
-				["lucide-phone"] = "rbxassetid://10734921524",
-				["lucide-phone-call"] = "rbxassetid://10734920305",
-				["lucide-phone-forwarded"] = "rbxassetid://10734920508",
-				["lucide-phone-incoming"] = "rbxassetid://10734920694",
-				["lucide-phone-missed"] = "rbxassetid://10734920845",
-				["lucide-phone-off"] = "rbxassetid://10734921077",
-				["lucide-phone-outgoing"] = "rbxassetid://10734921288",
-				["lucide-pie-chart"] = "rbxassetid://10734921727",
-				["lucide-piggy-bank"] = "rbxassetid://10734921935",
-				["lucide-pin"] = "rbxassetid://10734922324",
-				["lucide-pin-off"] = "rbxassetid://10734922180",
-				["lucide-pipette"] = "rbxassetid://10734922497",
-				["lucide-pizza"] = "rbxassetid://10734922774",
-				["lucide-plane"] = "rbxassetid://10734922971",
-				["lucide-play"] = "rbxassetid://10734923549",
-				["lucide-play-circle"] = "rbxassetid://10734923214",
-				["lucide-plus"] = "rbxassetid://10734924532",
-				["lucide-plus-circle"] = "rbxassetid://10734923868",
-				["lucide-plus-square"] = "rbxassetid://10734924219",
-				["lucide-podcast"] = "rbxassetid://10734929553",
-				["lucide-pointer"] = "rbxassetid://10734929723",
-				["lucide-pound-sterling"] = "rbxassetid://10734929981",
-				["lucide-power"] = "rbxassetid://10734930466",
-				["lucide-power-off"] = "rbxassetid://10734930257",
-				["lucide-printer"] = "rbxassetid://10734930632",
-				["lucide-puzzle"] = "rbxassetid://10734930886",
-				["lucide-quote"] = "rbxassetid://10734931234",
-				["lucide-radio"] = "rbxassetid://10734931596",
-				["lucide-radio-receiver"] = "rbxassetid://10734931402",
-				["lucide-rectangle-horizontal"] = "rbxassetid://10734931777",
-				["lucide-rectangle-vertical"] = "rbxassetid://10734932081",
-				["lucide-recycle"] = "rbxassetid://10734932295",
-				["lucide-redo"] = "rbxassetid://10734932822",
-				["lucide-redo-2"] = "rbxassetid://10734932586",
-				["lucide-refresh-ccw"] = "rbxassetid://10734933056",
-				["lucide-refresh-cw"] = "rbxassetid://10734933222",
-				["lucide-refrigerator"] = "rbxassetid://10734933465",
-				["lucide-regex"] = "rbxassetid://10734933655",
-				["lucide-repeat"] = "rbxassetid://10734933966",
-				["lucide-repeat-1"] = "rbxassetid://10734933826",
-				["lucide-reply"] = "rbxassetid://10734934252",
-				["lucide-reply-all"] = "rbxassetid://10734934132",
-				["lucide-rewind"] = "rbxassetid://10734934347",
-				["lucide-rocket"] = "rbxassetid://10734934585",
-				["lucide-rocking-chair"] = "rbxassetid://10734939942",
-				["lucide-rotate-3d"] = "rbxassetid://10734940107",
-				["lucide-rotate-ccw"] = "rbxassetid://10734940376",
-				["lucide-rotate-cw"] = "rbxassetid://10734940654",
-				["lucide-rss"] = "rbxassetid://10734940825",
-				["lucide-ruler"] = "rbxassetid://10734941018",
-				["lucide-russian-ruble"] = "rbxassetid://10734941199",
-				["lucide-sailboat"] = "rbxassetid://10734941354",
-				["lucide-save"] = "rbxassetid://10734941499",
-				["lucide-scale"] = "rbxassetid://10734941912",
-				["lucide-scale-3d"] = "rbxassetid://10734941739",
-				["lucide-scaling"] = "rbxassetid://10734942072",
-				["lucide-scan"] = "rbxassetid://10734942565",
-				["lucide-scan-face"] = "rbxassetid://10734942198",
-				["lucide-scan-line"] = "rbxassetid://10734942351",
-				["lucide-scissors"] = "rbxassetid://10734942778",
-				["lucide-screen-share"] = "rbxassetid://10734943193",
-				["lucide-screen-share-off"] = "rbxassetid://10734942967",
-				["lucide-scroll"] = "rbxassetid://10734943448",
-				["lucide-search"] = "rbxassetid://10734943674",
-				["lucide-send"] = "rbxassetid://10734943902",
-				["lucide-separator-horizontal"] = "rbxassetid://10734944115",
-				["lucide-separator-vertical"] = "rbxassetid://10734944326",
-				["lucide-server"] = "rbxassetid://10734949856",
-				["lucide-server-cog"] = "rbxassetid://10734944444",
-				["lucide-server-crash"] = "rbxassetid://10734944554",
-				["lucide-server-off"] = "rbxassetid://10734944668",
-				["lucide-settings"] = "rbxassetid://10734950309",
-				["lucide-settings-2"] = "rbxassetid://10734950020",
-				["lucide-share"] = "rbxassetid://10734950813",
-				["lucide-share-2"] = "rbxassetid://10734950553",
-				["lucide-sheet"] = "rbxassetid://10734951038",
-				["lucide-shield"] = "rbxassetid://10734951847",
-				["lucide-shield-alert"] = "rbxassetid://10734951173",
-				["lucide-shield-check"] = "rbxassetid://10734951367",
-				["lucide-shield-close"] = "rbxassetid://10734951535",
-				["lucide-shield-off"] = "rbxassetid://10734951684",
-				["lucide-shirt"] = "rbxassetid://10734952036",
-				["lucide-shopping-bag"] = "rbxassetid://10734952273",
-				["lucide-shopping-cart"] = "rbxassetid://10734952479",
-				["lucide-shovel"] = "rbxassetid://10734952773",
-				["lucide-shower-head"] = "rbxassetid://10734952942",
-				["lucide-shrink"] = "rbxassetid://10734953073",
-				["lucide-shrub"] = "rbxassetid://10734953241",
-				["lucide-shuffle"] = "rbxassetid://10734953451",
-				["lucide-sidebar"] = "rbxassetid://10734954301",
-				["lucide-sidebar-close"] = "rbxassetid://10734953715",
-				["lucide-sidebar-open"] = "rbxassetid://10734954000",
-				["lucide-sigma"] = "rbxassetid://10734954538",
-				["lucide-signal"] = "rbxassetid://10734961133",
-				["lucide-signal-high"] = "rbxassetid://10734954807",
-				["lucide-signal-low"] = "rbxassetid://10734955080",
-				["lucide-signal-medium"] = "rbxassetid://10734955336",
-				["lucide-signal-zero"] = "rbxassetid://10734960878",
-				["lucide-siren"] = "rbxassetid://10734961284",
-				["lucide-skip-back"] = "rbxassetid://10734961526",
-				["lucide-skip-forward"] = "rbxassetid://10734961809",
-				["lucide-skull"] = "rbxassetid://10734962068",
-				["lucide-slack"] = "rbxassetid://10734962339",
-				["lucide-slash"] = "rbxassetid://10734962600",
-				["lucide-slice"] = "rbxassetid://10734963024",
-				["lucide-sliders"] = "rbxassetid://10734963400",
-				["lucide-sliders-horizontal"] = "rbxassetid://10734963191",
-				["lucide-smartphone"] = "rbxassetid://10734963940",
-				["lucide-smartphone-charging"] = "rbxassetid://10734963671",
-				["lucide-smile"] = "rbxassetid://10734964441",
-				["lucide-smile-plus"] = "rbxassetid://10734964188",
-				["lucide-snowflake"] = "rbxassetid://10734964600",
-				["lucide-sofa"] = "rbxassetid://10734964852",
-				["lucide-sort-asc"] = "rbxassetid://10734965115",
-				["lucide-sort-desc"] = "rbxassetid://10734965287",
-				["lucide-speaker"] = "rbxassetid://10734965419",
-				["lucide-sprout"] = "rbxassetid://10734965572",
-				["lucide-square"] = "rbxassetid://10734965702",
-				["lucide-star"] = "rbxassetid://10734966248",
-				["lucide-star-half"] = "rbxassetid://10734965897",
-				["lucide-star-off"] = "rbxassetid://10734966097",
-				["lucide-stethoscope"] = "rbxassetid://10734966384",
-				["lucide-sticker"] = "rbxassetid://10734972234",
-				["lucide-sticky-note"] = "rbxassetid://10734972463",
-				["lucide-stop-circle"] = "rbxassetid://10734972621",
-				["lucide-stretch-horizontal"] = "rbxassetid://10734972862",
-				["lucide-stretch-vertical"] = "rbxassetid://10734973130",
-				["lucide-strikethrough"] = "rbxassetid://10734973290",
-				["lucide-subscript"] = "rbxassetid://10734973457",
-				["lucide-sun"] = "rbxassetid://10734974297",
-				["lucide-sun-dim"] = "rbxassetid://10734973645",
-				["lucide-sun-medium"] = "rbxassetid://10734973778",
-				["lucide-sun-moon"] = "rbxassetid://10734973999",
-				["lucide-sun-snow"] = "rbxassetid://10734974130",
-				["lucide-sunrise"] = "rbxassetid://10734974522",
-				["lucide-sunset"] = "rbxassetid://10734974689",
-				["lucide-superscript"] = "rbxassetid://10734974850",
-				["lucide-swiss-franc"] = "rbxassetid://10734975024",
-				["lucide-switch-camera"] = "rbxassetid://10734975214",
-				["lucide-sword"] = "rbxassetid://10734975486",
-				["lucide-swords"] = "rbxassetid://10734975692",
-				["lucide-syringe"] = "rbxassetid://10734975932",
-				["lucide-table"] = "rbxassetid://10734976230",
-				["lucide-table-2"] = "rbxassetid://10734976097",
-				["lucide-tablet"] = "rbxassetid://10734976394",
-				["lucide-tag"] = "rbxassetid://10734976528",
-				["lucide-tags"] = "rbxassetid://10734976739",
-				["lucide-target"] = "rbxassetid://10734977012",
-				["lucide-tent"] = "rbxassetid://10734981750",
-				["lucide-terminal"] = "rbxassetid://10734982144",
-				["lucide-terminal-square"] = "rbxassetid://10734981995",
-				["lucide-text-cursor"] = "rbxassetid://10734982395",
-				["lucide-text-cursor-input"] = "rbxassetid://10734982297",
-				["lucide-thermometer"] = "rbxassetid://10734983134",
-				["lucide-thermometer-snowflake"] = "rbxassetid://10734982571",
-				["lucide-thermometer-sun"] = "rbxassetid://10734982771",
-				["lucide-thumbs-down"] = "rbxassetid://10734983359",
-				["lucide-thumbs-up"] = "rbxassetid://10734983629",
-				["lucide-ticket"] = "rbxassetid://10734983868",
-				["lucide-timer"] = "rbxassetid://10734984606",
-				["lucide-timer-off"] = "rbxassetid://10734984138",
-				["lucide-timer-reset"] = "rbxassetid://10734984355",
-				["lucide-toggle-left"] = "rbxassetid://10734984834",
-				["lucide-toggle-right"] = "rbxassetid://10734985040",
-				["lucide-tornado"] = "rbxassetid://10734985247",
-				["lucide-toy-brick"] = "rbxassetid://10747361919",
-				["lucide-train"] = "rbxassetid://10747362105",
-				["lucide-trash"] = "rbxassetid://10747362393",
-				["lucide-trash-2"] = "rbxassetid://10747362241",
-				["lucide-tree-deciduous"] = "rbxassetid://10747362534",
-				["lucide-tree-pine"] = "rbxassetid://10747362748",
-				["lucide-trees"] = "rbxassetid://10747363016",
-				["lucide-trending-down"] = "rbxassetid://10747363205",
-				["lucide-trending-up"] = "rbxassetid://10747363465",
-				["lucide-triangle"] = "rbxassetid://10747363621",
-				["lucide-trophy"] = "rbxassetid://10747363809",
-				["lucide-truck"] = "rbxassetid://10747364031",
-				["lucide-tv"] = "rbxassetid://10747364593",
-				["lucide-tv-2"] = "rbxassetid://10747364302",
-				["lucide-type"] = "rbxassetid://10747364761",
-				["lucide-umbrella"] = "rbxassetid://10747364971",
-				["lucide-underline"] = "rbxassetid://10747365191",
-				["lucide-undo"] = "rbxassetid://10747365484",
-				["lucide-undo-2"] = "rbxassetid://10747365359",
-				["lucide-unlink"] = "rbxassetid://10747365771",
-				["lucide-unlink-2"] = "rbxassetid://10747397871",
-				["lucide-unlock"] = "rbxassetid://10747366027",
-				["lucide-upload"] = "rbxassetid://10747366434",
-				["lucide-upload-cloud"] = "rbxassetid://10747366266",
-				["lucide-usb"] = "rbxassetid://10747366606",
-				["lucide-user"] = "rbxassetid://10747373176",
-				["lucide-user-check"] = "rbxassetid://10747371901",
-				["lucide-user-cog"] = "rbxassetid://10747372167",
-				["lucide-user-minus"] = "rbxassetid://10747372346",
-				["lucide-user-plus"] = "rbxassetid://10747372702",
-				["lucide-user-x"] = "rbxassetid://10747372992",
-				["lucide-users"] = "rbxassetid://10747373426",
-				["lucide-utensils"] = "rbxassetid://10747373821",
-				["lucide-utensils-crossed"] = "rbxassetid://10747373629",
-				["lucide-venetian-mask"] = "rbxassetid://10747374003",
-				["lucide-verified"] = "rbxassetid://10747374131",
-				["lucide-vibrate"] = "rbxassetid://10747374489",
-				["lucide-vibrate-off"] = "rbxassetid://10747374269",
-				["lucide-video"] = "rbxassetid://10747374938",
-				["lucide-video-off"] = "rbxassetid://10747374721",
-				["lucide-view"] = "rbxassetid://10747375132",
-				["lucide-voicemail"] = "rbxassetid://10747375281",
-				["lucide-volume"] = "rbxassetid://10747376008",
-				["lucide-volume-1"] = "rbxassetid://10747375450",
-				["lucide-volume-2"] = "rbxassetid://10747375679",
-				["lucide-volume-x"] = "rbxassetid://10747375880",
-				["lucide-wallet"] = "rbxassetid://10747376205",
-				["lucide-wand"] = "rbxassetid://10747376565",
-				["lucide-wand-2"] = "rbxassetid://10747376349",
-				["lucide-watch"] = "rbxassetid://10747376722",
-				["lucide-waves"] = "rbxassetid://10747376931",
-				["lucide-webcam"] = "rbxassetid://10747381992",
-				["lucide-wifi"] = "rbxassetid://10747382504",
-				["lucide-wifi-off"] = "rbxassetid://10747382268",
-				["lucide-wind"] = "rbxassetid://10747382750",
-				["lucide-wrap-text"] = "rbxassetid://10747383065",
-				["lucide-wrench"] = "rbxassetid://10747383470",
-				["lucide-x"] = "rbxassetid://10747384394",
-				["lucide-x-circle"] = "rbxassetid://10747383819",
-				["lucide-x-octagon"] = "rbxassetid://10747384037",
-				["lucide-x-square"] = "rbxassetid://10747384217",
-				["lucide-zoom-in"] = "rbxassetid://10747384552",
-				["lucide-zoom-out"] = "rbxassetid://10747384679",
-			},
-		}
-	end),
-	[30] = LPH_NO_VIRTUALIZE(function()
-		local aa, ab, ac, ad, ae = b(30)
-		local af = {
-			SingleMotor = ac(ab.SingleMotor),
-			GroupMotor = ac(ab.GroupMotor),
-			Instant = ac(ab.Instant),
-			Linear = ac(ab.Linear),
-			Spring = ac(ab.Spring),
-			isMotor = ac(ab.isMotor),
-		}
-		return af
-	end),
-	[31] = LPH_NO_VIRTUALIZE(function()
-		local aa, ab, ac, ad, ae = b(31)
-		local af, ag, ah, ai = game:GetService("RunService"), ac(ab.Parent.Signal), function() end, {}
-		ai.__index = ai
-		function ai.new()
-			return setmetatable({ _onStep = ag.new(), _onStart = ag.new(), _onComplete = ag.new() }, ai)
-		end
-		function ai.onStep(aj, c)
-			return aj._onStep:connect(c)
-		end
-		function ai.onStart(aj, c)
-			return aj._onStart:connect(c)
-		end
-		function ai.onComplete(aj, c)
-			return aj._onComplete:connect(c)
-		end
-		function ai.start(aj)
-			if not aj._connection then
-				aj._connection = af.RenderStepped:Connect(function(c)
-					aj:step(c)
+				})
+				ah.AddSignal(k.InputBegan, function(p)
+					if
+						p.UserInputType == Enum.UserInputType.MouseButton1
+						or p.UserInputType == Enum.UserInputType.Touch
+					then
+						i = true
+					end
 				end)
+				ah.AddSignal(k.InputEnded, function(p)
+					if
+						p.UserInputType == Enum.UserInputType.MouseButton1
+						or p.UserInputType == Enum.UserInputType.Touch
+					then
+						i = false
+					end
+				end)
+				ah.AddSignal(af.InputChanged, function(p)
+					if
+						i
+						and (
+							p.UserInputType == Enum.UserInputType.MouseMovement
+							or p.UserInputType == Enum.UserInputType.Touch
+						)
+					then
+						local s = math.clamp((p.Position.X - l.AbsolutePosition.X) / l.AbsoluteSize.X, 0, 1)
+						h:SetValue(h.Min + ((h.Max - h.Min) * s))
+					end
+				end)
+				function h.OnChanged(p, s)
+					h.Changed = s
+					s(h.Value)
+				end
+				function h.SetValue(p, s)
+					p.Value = g:Round(math.clamp(s, h.Min, h.Max), h.Rounding)
+					k.Position = UDim2.new((p.Value - h.Min) / (h.Max - h.Min), -7, 0.5, 0)
+					m.Size = UDim2.fromScale((p.Value - h.Min) / (h.Max - h.Min), 1)
+					n.Text = tostring(p.Value)
+					g:SafeCallback(h.Callback, p.Value)
+					g:SafeCallback(h.Changed, p.Value)
+				end
+				function h.Destroy(p)
+					j:Destroy()
+					g.Options[e] = nil
+				end
+				h:SetValue(f.Default)
+				g.Options[e] = h
+				return h
 			end
-		end
-		function ai.stop(aj)
-			if aj._connection then
-				aj._connection:Disconnect()
-				aj._connection = nil
+			return c
+		end),
+		[27] = LPH_NO_VIRTUALIZE(function()
+			local aa, ab, ac, ad, ae = b(27)
+			local af, ag = game:GetService("TweenService"), ab.Parent.Parent
+			local ah = ac(ag.Creator)
+			local ai, aj, c = ah.New, ag.Components, {}
+			c.__index = c
+			c.__type = "Toggle"
+			function c.New(d, e, f)
+				local g = d.Library
+				assert(f.Title, "Toggle - Missing Title")
+				local h, i =
+					{
+						Value = f.Default or false,
+						Callback = f.Callback or function(h) end,
+						Type = "Toggle",
+					}, ac(aj.Element)(f.Title, f.Description, d.Container, true)
+				i.DescLabel.Size = UDim2.new(1, -54, 0, 14)
+				h.SetTitle = i.SetTitle
+				h.SetDesc = i.SetDesc
+				local j, k =
+					ai("ImageLabel", {
+						AnchorPoint = Vector2.new(0, 0.5),
+						Size = UDim2.fromOffset(14, 14),
+						Position = UDim2.new(0, 2, 0.5, 0),
+						Image = "http://www.roblox.com/asset/?id=12266946128",
+						ImageTransparency = 0.5,
+						ThemeTag = { ImageColor3 = "ToggleSlider" },
+					}), ai("UIStroke", { Transparency = 0.5, ThemeTag = { Color = "ToggleSlider" } })
+				local l = ai("Frame", {
+					Size = UDim2.fromOffset(36, 18),
+					AnchorPoint = Vector2.new(1, 0.5),
+					Position = UDim2.new(1, -10, 0.5, 0),
+					Parent = i.Frame,
+					BackgroundTransparency = 1,
+					ThemeTag = { BackgroundColor3 = "Accent" },
+				}, { ai("UICorner", { CornerRadius = UDim.new(0, 9) }), k, j })
+				function h.OnChanged(m, n)
+					h.Changed = n
+					n(h.Value)
+				end
+				function h.SetValue(m, n)
+					n = not not n
+					h.Value = n
+					ah.OverrideTag(k, { Color = h.Value and "Accent" or "ToggleSlider" })
+					ah.OverrideTag(j, { ImageColor3 = h.Value and "ToggleToggled" or "ToggleSlider" })
+					af:Create(
+						j,
+						TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out),
+						{ Position = UDim2.new(0, h.Value and 19 or 2, 0.5, 0) }
+					):Play()
+					af:Create(
+						l,
+						TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out),
+						{ BackgroundTransparency = h.Value and 0 or 1 }
+					):Play()
+					j.ImageTransparency = h.Value and 0 or 0.5
+					g:SafeCallback(h.Callback, h.Value)
+					g:SafeCallback(h.Changed, h.Value)
+				end
+				function h.Destroy(m)
+					i:Destroy()
+					g.Options[e] = nil
+				end
+				ah.AddSignal(i.Frame.MouseButton1Click, function()
+					h:SetValue(not h.Value)
+				end)
+				h:SetValue(h.Value)
+				g.Options[e] = h
+				return h
 			end
-		end
-		ai.destroy = ai.stop
-		ai.step = ah
-		ai.getValue = ah
-		ai.setGoal = ah
-		function ai.__tostring(aj)
-			return "Motor"
-		end
-		return ai
-	end),
-	[32] = LPH_NO_VIRTUALIZE(function()
-		local aa, ab, ac, ad, ae = b(32)
-		return function()
-			local af, ag = game:GetService("RunService"), ac(ab.Parent.BaseMotor)
-			describe("connection management", function()
-				local ah = ag.new()
-				it("should hook up connections on :start()", function()
+			return c
+		end),
+		[28] = LPH_NO_VIRTUALIZE(function()
+			local aa, ab, ac, ad, ae = b(28)
+			return {
+				assets = {
+					["lucide-accessibility"] = "rbxassetid://10709751939",
+					["lucide-activity"] = "rbxassetid://10709752035",
+					["lucide-air-vent"] = "rbxassetid://10709752131",
+					["lucide-airplay"] = "rbxassetid://10709752254",
+					["lucide-alarm-check"] = "rbxassetid://10709752405",
+					["lucide-alarm-clock"] = "rbxassetid://10709752630",
+					["lucide-alarm-clock-off"] = "rbxassetid://10709752508",
+					["lucide-alarm-minus"] = "rbxassetid://10709752732",
+					["lucide-alarm-plus"] = "rbxassetid://10709752825",
+					["lucide-album"] = "rbxassetid://10709752906",
+					["lucide-alert-circle"] = "rbxassetid://10709752996",
+					["lucide-alert-octagon"] = "rbxassetid://10709753064",
+					["lucide-alert-triangle"] = "rbxassetid://10709753149",
+					["lucide-align-center"] = "rbxassetid://10709753570",
+					["lucide-align-center-horizontal"] = "rbxassetid://10709753272",
+					["lucide-align-center-vertical"] = "rbxassetid://10709753421",
+					["lucide-align-end-horizontal"] = "rbxassetid://10709753692",
+					["lucide-align-end-vertical"] = "rbxassetid://10709753808",
+					["lucide-align-horizontal-distribute-center"] = "rbxassetid://10747779791",
+					["lucide-align-horizontal-distribute-end"] = "rbxassetid://10747784534",
+					["lucide-align-horizontal-distribute-start"] = "rbxassetid://10709754118",
+					["lucide-align-horizontal-justify-center"] = "rbxassetid://10709754204",
+					["lucide-align-horizontal-justify-end"] = "rbxassetid://10709754317",
+					["lucide-align-horizontal-justify-start"] = "rbxassetid://10709754436",
+					["lucide-align-horizontal-space-around"] = "rbxassetid://10709754590",
+					["lucide-align-horizontal-space-between"] = "rbxassetid://10709754749",
+					["lucide-align-justify"] = "rbxassetid://10709759610",
+					["lucide-align-left"] = "rbxassetid://10709759764",
+					["lucide-align-right"] = "rbxassetid://10709759895",
+					["lucide-align-start-horizontal"] = "rbxassetid://10709760051",
+					["lucide-align-start-vertical"] = "rbxassetid://10709760244",
+					["lucide-align-vertical-distribute-center"] = "rbxassetid://10709760351",
+					["lucide-align-vertical-distribute-end"] = "rbxassetid://10709760434",
+					["lucide-align-vertical-distribute-start"] = "rbxassetid://10709760612",
+					["lucide-align-vertical-justify-center"] = "rbxassetid://10709760814",
+					["lucide-align-vertical-justify-end"] = "rbxassetid://10709761003",
+					["lucide-align-vertical-justify-start"] = "rbxassetid://10709761176",
+					["lucide-align-vertical-space-around"] = "rbxassetid://10709761324",
+					["lucide-align-vertical-space-between"] = "rbxassetid://10709761434",
+					["lucide-anchor"] = "rbxassetid://10709761530",
+					["lucide-angry"] = "rbxassetid://10709761629",
+					["lucide-annoyed"] = "rbxassetid://10709761722",
+					["lucide-aperture"] = "rbxassetid://10709761813",
+					["lucide-apple"] = "rbxassetid://10709761889",
+					["lucide-archive"] = "rbxassetid://10709762233",
+					["lucide-archive-restore"] = "rbxassetid://10709762058",
+					["lucide-armchair"] = "rbxassetid://10709762327",
+					["lucide-arrow-big-down"] = "rbxassetid://10747796644",
+					["lucide-arrow-big-left"] = "rbxassetid://10709762574",
+					["lucide-arrow-big-right"] = "rbxassetid://10709762727",
+					["lucide-arrow-big-up"] = "rbxassetid://10709762879",
+					["lucide-arrow-down"] = "rbxassetid://10709767827",
+					["lucide-arrow-down-circle"] = "rbxassetid://10709763034",
+					["lucide-arrow-down-left"] = "rbxassetid://10709767656",
+					["lucide-arrow-down-right"] = "rbxassetid://10709767750",
+					["lucide-arrow-left"] = "rbxassetid://10709768114",
+					["lucide-arrow-left-circle"] = "rbxassetid://10709767936",
+					["lucide-arrow-left-right"] = "rbxassetid://10709768019",
+					["lucide-arrow-right"] = "rbxassetid://10709768347",
+					["lucide-arrow-right-circle"] = "rbxassetid://10709768226",
+					["lucide-arrow-up"] = "rbxassetid://10709768939",
+					["lucide-arrow-up-circle"] = "rbxassetid://10709768432",
+					["lucide-arrow-up-down"] = "rbxassetid://10709768538",
+					["lucide-arrow-up-left"] = "rbxassetid://10709768661",
+					["lucide-arrow-up-right"] = "rbxassetid://10709768787",
+					["lucide-asterisk"] = "rbxassetid://10709769095",
+					["lucide-at-sign"] = "rbxassetid://10709769286",
+					["lucide-award"] = "rbxassetid://10709769406",
+					["lucide-axe"] = "rbxassetid://10709769508",
+					["lucide-axis-3d"] = "rbxassetid://10709769598",
+					["lucide-baby"] = "rbxassetid://10709769732",
+					["lucide-backpack"] = "rbxassetid://10709769841",
+					["lucide-baggage-claim"] = "rbxassetid://10709769935",
+					["lucide-banana"] = "rbxassetid://10709770005",
+					["lucide-banknote"] = "rbxassetid://10709770178",
+					["lucide-bar-chart"] = "rbxassetid://10709773755",
+					["lucide-bar-chart-2"] = "rbxassetid://10709770317",
+					["lucide-bar-chart-3"] = "rbxassetid://10709770431",
+					["lucide-bar-chart-4"] = "rbxassetid://10709770560",
+					["lucide-bar-chart-horizontal"] = "rbxassetid://10709773669",
+					["lucide-barcode"] = "rbxassetid://10747360675",
+					["lucide-baseline"] = "rbxassetid://10709773863",
+					["lucide-bath"] = "rbxassetid://10709773963",
+					["lucide-battery"] = "rbxassetid://10709774640",
+					["lucide-battery-charging"] = "rbxassetid://10709774068",
+					["lucide-battery-full"] = "rbxassetid://10709774206",
+					["lucide-battery-low"] = "rbxassetid://10709774370",
+					["lucide-battery-medium"] = "rbxassetid://10709774513",
+					["lucide-beaker"] = "rbxassetid://10709774756",
+					["lucide-bed"] = "rbxassetid://10709775036",
+					["lucide-bed-double"] = "rbxassetid://10709774864",
+					["lucide-bed-single"] = "rbxassetid://10709774968",
+					["lucide-beer"] = "rbxassetid://10709775167",
+					["lucide-bell"] = "rbxassetid://10709775704",
+					["lucide-bell-minus"] = "rbxassetid://10709775241",
+					["lucide-bell-off"] = "rbxassetid://10709775320",
+					["lucide-bell-plus"] = "rbxassetid://10709775448",
+					["lucide-bell-ring"] = "rbxassetid://10709775560",
+					["lucide-bike"] = "rbxassetid://10709775894",
+					["lucide-binary"] = "rbxassetid://10709776050",
+					["lucide-bitcoin"] = "rbxassetid://10709776126",
+					["lucide-bluetooth"] = "rbxassetid://10709776655",
+					["lucide-bluetooth-connected"] = "rbxassetid://10709776240",
+					["lucide-bluetooth-off"] = "rbxassetid://10709776344",
+					["lucide-bluetooth-searching"] = "rbxassetid://10709776501",
+					["lucide-bold"] = "rbxassetid://10747813908",
+					["lucide-bomb"] = "rbxassetid://10709781460",
+					["lucide-bone"] = "rbxassetid://10709781605",
+					["lucide-book"] = "rbxassetid://10709781824",
+					["lucide-book-open"] = "rbxassetid://10709781717",
+					["lucide-bookmark"] = "rbxassetid://10709782154",
+					["lucide-bookmark-minus"] = "rbxassetid://10709781919",
+					["lucide-bookmark-plus"] = "rbxassetid://10709782044",
+					["lucide-bot"] = "rbxassetid://10709782230",
+					["lucide-box"] = "rbxassetid://10709782497",
+					["lucide-box-select"] = "rbxassetid://10709782342",
+					["lucide-boxes"] = "rbxassetid://10709782582",
+					["lucide-briefcase"] = "rbxassetid://10709782662",
+					["lucide-brush"] = "rbxassetid://10709782758",
+					["lucide-bug"] = "rbxassetid://10709782845",
+					["lucide-building"] = "rbxassetid://10709783051",
+					["lucide-building-2"] = "rbxassetid://10709782939",
+					["lucide-bus"] = "rbxassetid://10709783137",
+					["lucide-cake"] = "rbxassetid://10709783217",
+					["lucide-calculator"] = "rbxassetid://10709783311",
+					["lucide-calendar"] = "rbxassetid://10709789505",
+					["lucide-calendar-check"] = "rbxassetid://10709783474",
+					["lucide-calendar-check-2"] = "rbxassetid://10709783392",
+					["lucide-calendar-clock"] = "rbxassetid://10709783577",
+					["lucide-calendar-days"] = "rbxassetid://10709783673",
+					["lucide-calendar-heart"] = "rbxassetid://10709783835",
+					["lucide-calendar-minus"] = "rbxassetid://10709783959",
+					["lucide-calendar-off"] = "rbxassetid://10709788784",
+					["lucide-calendar-plus"] = "rbxassetid://10709788937",
+					["lucide-calendar-range"] = "rbxassetid://10709789053",
+					["lucide-calendar-search"] = "rbxassetid://10709789200",
+					["lucide-calendar-x"] = "rbxassetid://10709789407",
+					["lucide-calendar-x-2"] = "rbxassetid://10709789329",
+					["lucide-camera"] = "rbxassetid://10709789686",
+					["lucide-camera-off"] = "rbxassetid://10747822677",
+					["lucide-car"] = "rbxassetid://10709789810",
+					["lucide-carrot"] = "rbxassetid://10709789960",
+					["lucide-cast"] = "rbxassetid://10709790097",
+					["lucide-charge"] = "rbxassetid://10709790202",
+					["lucide-check"] = "rbxassetid://10709790644",
+					["lucide-check-circle"] = "rbxassetid://10709790387",
+					["lucide-check-circle-2"] = "rbxassetid://10709790298",
+					["lucide-check-square"] = "rbxassetid://10709790537",
+					["lucide-chef-hat"] = "rbxassetid://10709790757",
+					["lucide-cherry"] = "rbxassetid://10709790875",
+					["lucide-chevron-down"] = "rbxassetid://10709790948",
+					["lucide-chevron-first"] = "rbxassetid://10709791015",
+					["lucide-chevron-last"] = "rbxassetid://10709791130",
+					["lucide-chevron-left"] = "rbxassetid://10709791281",
+					["lucide-chevron-right"] = "rbxassetid://10709791437",
+					["lucide-chevron-up"] = "rbxassetid://10709791523",
+					["lucide-chevrons-down"] = "rbxassetid://10709796864",
+					["lucide-chevrons-down-up"] = "rbxassetid://10709791632",
+					["lucide-chevrons-left"] = "rbxassetid://10709797151",
+					["lucide-chevrons-left-right"] = "rbxassetid://10709797006",
+					["lucide-chevrons-right"] = "rbxassetid://10709797382",
+					["lucide-chevrons-right-left"] = "rbxassetid://10709797274",
+					["lucide-chevrons-up"] = "rbxassetid://10709797622",
+					["lucide-chevrons-up-down"] = "rbxassetid://10709797508",
+					["lucide-chrome"] = "rbxassetid://10709797725",
+					["lucide-circle"] = "rbxassetid://10709798174",
+					["lucide-circle-dot"] = "rbxassetid://10709797837",
+					["lucide-circle-ellipsis"] = "rbxassetid://10709797985",
+					["lucide-circle-slashed"] = "rbxassetid://10709798100",
+					["lucide-citrus"] = "rbxassetid://10709798276",
+					["lucide-clapperboard"] = "rbxassetid://10709798350",
+					["lucide-clipboard"] = "rbxassetid://10709799288",
+					["lucide-clipboard-check"] = "rbxassetid://10709798443",
+					["lucide-clipboard-copy"] = "rbxassetid://10709798574",
+					["lucide-clipboard-edit"] = "rbxassetid://10709798682",
+					["lucide-clipboard-list"] = "rbxassetid://10709798792",
+					["lucide-clipboard-signature"] = "rbxassetid://10709798890",
+					["lucide-clipboard-type"] = "rbxassetid://10709798999",
+					["lucide-clipboard-x"] = "rbxassetid://10709799124",
+					["lucide-clock"] = "rbxassetid://10709805144",
+					["lucide-clock-1"] = "rbxassetid://10709799535",
+					["lucide-clock-10"] = "rbxassetid://10709799718",
+					["lucide-clock-11"] = "rbxassetid://10709799818",
+					["lucide-clock-12"] = "rbxassetid://10709799962",
+					["lucide-clock-2"] = "rbxassetid://10709803876",
+					["lucide-clock-3"] = "rbxassetid://10709803989",
+					["lucide-clock-4"] = "rbxassetid://10709804164",
+					["lucide-clock-5"] = "rbxassetid://10709804291",
+					["lucide-clock-6"] = "rbxassetid://10709804435",
+					["lucide-clock-7"] = "rbxassetid://10709804599",
+					["lucide-clock-8"] = "rbxassetid://10709804784",
+					["lucide-clock-9"] = "rbxassetid://10709804996",
+					["lucide-cloud"] = "rbxassetid://10709806740",
+					["lucide-cloud-cog"] = "rbxassetid://10709805262",
+					["lucide-cloud-drizzle"] = "rbxassetid://10709805371",
+					["lucide-cloud-fog"] = "rbxassetid://10709805477",
+					["lucide-cloud-hail"] = "rbxassetid://10709805596",
+					["lucide-cloud-lightning"] = "rbxassetid://10709805727",
+					["lucide-cloud-moon"] = "rbxassetid://10709805942",
+					["lucide-cloud-moon-rain"] = "rbxassetid://10709805838",
+					["lucide-cloud-off"] = "rbxassetid://10709806060",
+					["lucide-cloud-rain"] = "rbxassetid://10709806277",
+					["lucide-cloud-rain-wind"] = "rbxassetid://10709806166",
+					["lucide-cloud-snow"] = "rbxassetid://10709806374",
+					["lucide-cloud-sun"] = "rbxassetid://10709806631",
+					["lucide-cloud-sun-rain"] = "rbxassetid://10709806475",
+					["lucide-cloudy"] = "rbxassetid://10709806859",
+					["lucide-clover"] = "rbxassetid://10709806995",
+					["lucide-code"] = "rbxassetid://10709810463",
+					["lucide-code-2"] = "rbxassetid://10709807111",
+					["lucide-codepen"] = "rbxassetid://10709810534",
+					["lucide-codesandbox"] = "rbxassetid://10709810676",
+					["lucide-coffee"] = "rbxassetid://10709810814",
+					["lucide-cog"] = "rbxassetid://10709810948",
+					["lucide-coins"] = "rbxassetid://10709811110",
+					["lucide-columns"] = "rbxassetid://10709811261",
+					["lucide-command"] = "rbxassetid://10709811365",
+					["lucide-compass"] = "rbxassetid://10709811445",
+					["lucide-component"] = "rbxassetid://10709811595",
+					["lucide-concierge-bell"] = "rbxassetid://10709811706",
+					["lucide-connection"] = "rbxassetid://10747361219",
+					["lucide-contact"] = "rbxassetid://10709811834",
+					["lucide-contrast"] = "rbxassetid://10709811939",
+					["lucide-cookie"] = "rbxassetid://10709812067",
+					["lucide-copy"] = "rbxassetid://10709812159",
+					["lucide-copyleft"] = "rbxassetid://10709812251",
+					["lucide-copyright"] = "rbxassetid://10709812311",
+					["lucide-corner-down-left"] = "rbxassetid://10709812396",
+					["lucide-corner-down-right"] = "rbxassetid://10709812485",
+					["lucide-corner-left-down"] = "rbxassetid://10709812632",
+					["lucide-corner-left-up"] = "rbxassetid://10709812784",
+					["lucide-corner-right-down"] = "rbxassetid://10709812939",
+					["lucide-corner-right-up"] = "rbxassetid://10709813094",
+					["lucide-corner-up-left"] = "rbxassetid://10709813185",
+					["lucide-corner-up-right"] = "rbxassetid://10709813281",
+					["lucide-cpu"] = "rbxassetid://10709813383",
+					["lucide-croissant"] = "rbxassetid://10709818125",
+					["lucide-crop"] = "rbxassetid://10709818245",
+					["lucide-cross"] = "rbxassetid://10709818399",
+					["lucide-crosshair"] = "rbxassetid://10709818534",
+					["lucide-crown"] = "rbxassetid://10709818626",
+					["lucide-cup-soda"] = "rbxassetid://10709818763",
+					["lucide-curly-braces"] = "rbxassetid://10709818847",
+					["lucide-currency"] = "rbxassetid://10709818931",
+					["lucide-database"] = "rbxassetid://10709818996",
+					["lucide-delete"] = "rbxassetid://10709819059",
+					["lucide-diamond"] = "rbxassetid://10709819149",
+					["lucide-dice-1"] = "rbxassetid://10709819266",
+					["lucide-dice-2"] = "rbxassetid://10709819361",
+					["lucide-dice-3"] = "rbxassetid://10709819508",
+					["lucide-dice-4"] = "rbxassetid://10709819670",
+					["lucide-dice-5"] = "rbxassetid://10709819801",
+					["lucide-dice-6"] = "rbxassetid://10709819896",
+					["lucide-dices"] = "rbxassetid://10723343321",
+					["lucide-diff"] = "rbxassetid://10723343416",
+					["lucide-disc"] = "rbxassetid://10723343537",
+					["lucide-divide"] = "rbxassetid://10723343805",
+					["lucide-divide-circle"] = "rbxassetid://10723343636",
+					["lucide-divide-square"] = "rbxassetid://10723343737",
+					["lucide-dollar-sign"] = "rbxassetid://10723343958",
+					["lucide-download"] = "rbxassetid://10723344270",
+					["lucide-download-cloud"] = "rbxassetid://10723344088",
+					["lucide-droplet"] = "rbxassetid://10723344432",
+					["lucide-droplets"] = "rbxassetid://10734883356",
+					["lucide-drumstick"] = "rbxassetid://10723344737",
+					["lucide-edit"] = "rbxassetid://10734883598",
+					["lucide-edit-2"] = "rbxassetid://10723344885",
+					["lucide-edit-3"] = "rbxassetid://10723345088",
+					["lucide-egg"] = "rbxassetid://10723345518",
+					["lucide-egg-fried"] = "rbxassetid://10723345347",
+					["lucide-electricity"] = "rbxassetid://10723345749",
+					["lucide-electricity-off"] = "rbxassetid://10723345643",
+					["lucide-equal"] = "rbxassetid://10723345990",
+					["lucide-equal-not"] = "rbxassetid://10723345866",
+					["lucide-eraser"] = "rbxassetid://10723346158",
+					["lucide-euro"] = "rbxassetid://10723346372",
+					["lucide-expand"] = "rbxassetid://10723346553",
+					["lucide-external-link"] = "rbxassetid://10723346684",
+					["lucide-eye"] = "rbxassetid://10723346959",
+					["lucide-eye-off"] = "rbxassetid://10723346871",
+					["lucide-factory"] = "rbxassetid://10723347051",
+					["lucide-fan"] = "rbxassetid://10723354359",
+					["lucide-fast-forward"] = "rbxassetid://10723354521",
+					["lucide-feather"] = "rbxassetid://10723354671",
+					["lucide-figma"] = "rbxassetid://10723354801",
+					["lucide-file"] = "rbxassetid://10723374641",
+					["lucide-file-archive"] = "rbxassetid://10723354921",
+					["lucide-file-audio"] = "rbxassetid://10723355148",
+					["lucide-file-audio-2"] = "rbxassetid://10723355026",
+					["lucide-file-axis-3d"] = "rbxassetid://10723355272",
+					["lucide-file-badge"] = "rbxassetid://10723355622",
+					["lucide-file-badge-2"] = "rbxassetid://10723355451",
+					["lucide-file-bar-chart"] = "rbxassetid://10723355887",
+					["lucide-file-bar-chart-2"] = "rbxassetid://10723355746",
+					["lucide-file-box"] = "rbxassetid://10723355989",
+					["lucide-file-check"] = "rbxassetid://10723356210",
+					["lucide-file-check-2"] = "rbxassetid://10723356100",
+					["lucide-file-clock"] = "rbxassetid://10723356329",
+					["lucide-file-code"] = "rbxassetid://10723356507",
+					["lucide-file-cog"] = "rbxassetid://10723356830",
+					["lucide-file-cog-2"] = "rbxassetid://10723356676",
+					["lucide-file-diff"] = "rbxassetid://10723357039",
+					["lucide-file-digit"] = "rbxassetid://10723357151",
+					["lucide-file-down"] = "rbxassetid://10723357322",
+					["lucide-file-edit"] = "rbxassetid://10723357495",
+					["lucide-file-heart"] = "rbxassetid://10723357637",
+					["lucide-file-image"] = "rbxassetid://10723357790",
+					["lucide-file-input"] = "rbxassetid://10723357933",
+					["lucide-file-json"] = "rbxassetid://10723364435",
+					["lucide-file-json-2"] = "rbxassetid://10723364361",
+					["lucide-file-key"] = "rbxassetid://10723364605",
+					["lucide-file-key-2"] = "rbxassetid://10723364515",
+					["lucide-file-line-chart"] = "rbxassetid://10723364725",
+					["lucide-file-lock"] = "rbxassetid://10723364957",
+					["lucide-file-lock-2"] = "rbxassetid://10723364861",
+					["lucide-file-minus"] = "rbxassetid://10723365254",
+					["lucide-file-minus-2"] = "rbxassetid://10723365086",
+					["lucide-file-output"] = "rbxassetid://10723365457",
+					["lucide-file-pie-chart"] = "rbxassetid://10723365598",
+					["lucide-file-plus"] = "rbxassetid://10723365877",
+					["lucide-file-plus-2"] = "rbxassetid://10723365766",
+					["lucide-file-question"] = "rbxassetid://10723365987",
+					["lucide-file-scan"] = "rbxassetid://10723366167",
+					["lucide-file-search"] = "rbxassetid://10723366550",
+					["lucide-file-search-2"] = "rbxassetid://10723366340",
+					["lucide-file-signature"] = "rbxassetid://10723366741",
+					["lucide-file-spreadsheet"] = "rbxassetid://10723366962",
+					["lucide-file-symlink"] = "rbxassetid://10723367098",
+					["lucide-file-terminal"] = "rbxassetid://10723367244",
+					["lucide-file-text"] = "rbxassetid://10723367380",
+					["lucide-file-type"] = "rbxassetid://10723367606",
+					["lucide-file-type-2"] = "rbxassetid://10723367509",
+					["lucide-file-up"] = "rbxassetid://10723367734",
+					["lucide-file-video"] = "rbxassetid://10723373884",
+					["lucide-file-video-2"] = "rbxassetid://10723367834",
+					["lucide-file-volume"] = "rbxassetid://10723374172",
+					["lucide-file-volume-2"] = "rbxassetid://10723374030",
+					["lucide-file-warning"] = "rbxassetid://10723374276",
+					["lucide-file-x"] = "rbxassetid://10723374544",
+					["lucide-file-x-2"] = "rbxassetid://10723374378",
+					["lucide-files"] = "rbxassetid://10723374759",
+					["lucide-film"] = "rbxassetid://10723374981",
+					["lucide-filter"] = "rbxassetid://10723375128",
+					["lucide-fingerprint"] = "rbxassetid://10723375250",
+					["lucide-flag"] = "rbxassetid://10723375890",
+					["lucide-flag-off"] = "rbxassetid://10723375443",
+					["lucide-flag-triangle-left"] = "rbxassetid://10723375608",
+					["lucide-flag-triangle-right"] = "rbxassetid://10723375727",
+					["lucide-flame"] = "rbxassetid://10723376114",
+					["lucide-flashlight"] = "rbxassetid://10723376471",
+					["lucide-flashlight-off"] = "rbxassetid://10723376365",
+					["lucide-flask-conical"] = "rbxassetid://10734883986",
+					["lucide-flask-round"] = "rbxassetid://10723376614",
+					["lucide-flip-horizontal"] = "rbxassetid://10723376884",
+					["lucide-flip-horizontal-2"] = "rbxassetid://10723376745",
+					["lucide-flip-vertical"] = "rbxassetid://10723377138",
+					["lucide-flip-vertical-2"] = "rbxassetid://10723377026",
+					["lucide-flower"] = "rbxassetid://10747830374",
+					["lucide-flower-2"] = "rbxassetid://10723377305",
+					["lucide-focus"] = "rbxassetid://10723377537",
+					["lucide-folder"] = "rbxassetid://10723387563",
+					["lucide-folder-archive"] = "rbxassetid://10723384478",
+					["lucide-folder-check"] = "rbxassetid://10723384605",
+					["lucide-folder-clock"] = "rbxassetid://10723384731",
+					["lucide-folder-closed"] = "rbxassetid://10723384893",
+					["lucide-folder-cog"] = "rbxassetid://10723385213",
+					["lucide-folder-cog-2"] = "rbxassetid://10723385036",
+					["lucide-folder-down"] = "rbxassetid://10723385338",
+					["lucide-folder-edit"] = "rbxassetid://10723385445",
+					["lucide-folder-heart"] = "rbxassetid://10723385545",
+					["lucide-folder-input"] = "rbxassetid://10723385721",
+					["lucide-folder-key"] = "rbxassetid://10723385848",
+					["lucide-folder-lock"] = "rbxassetid://10723386005",
+					["lucide-folder-minus"] = "rbxassetid://10723386127",
+					["lucide-folder-open"] = "rbxassetid://10723386277",
+					["lucide-folder-output"] = "rbxassetid://10723386386",
+					["lucide-folder-plus"] = "rbxassetid://10723386531",
+					["lucide-folder-search"] = "rbxassetid://10723386787",
+					["lucide-folder-search-2"] = "rbxassetid://10723386674",
+					["lucide-folder-symlink"] = "rbxassetid://10723386930",
+					["lucide-folder-tree"] = "rbxassetid://10723387085",
+					["lucide-folder-up"] = "rbxassetid://10723387265",
+					["lucide-folder-x"] = "rbxassetid://10723387448",
+					["lucide-folders"] = "rbxassetid://10723387721",
+					["lucide-form-input"] = "rbxassetid://10723387841",
+					["lucide-forward"] = "rbxassetid://10723388016",
+					["lucide-frame"] = "rbxassetid://10723394389",
+					["lucide-framer"] = "rbxassetid://10723394565",
+					["lucide-frown"] = "rbxassetid://10723394681",
+					["lucide-fuel"] = "rbxassetid://10723394846",
+					["lucide-function-square"] = "rbxassetid://10723395041",
+					["lucide-gamepad"] = "rbxassetid://10723395457",
+					["lucide-gamepad-2"] = "rbxassetid://10723395215",
+					["lucide-gauge"] = "rbxassetid://10723395708",
+					["lucide-gavel"] = "rbxassetid://10723395896",
+					["lucide-gem"] = "rbxassetid://10723396000",
+					["lucide-ghost"] = "rbxassetid://10723396107",
+					["lucide-gift"] = "rbxassetid://10723396402",
+					["lucide-gift-card"] = "rbxassetid://10723396225",
+					["lucide-git-branch"] = "rbxassetid://10723396676",
+					["lucide-git-branch-plus"] = "rbxassetid://10723396542",
+					["lucide-git-commit"] = "rbxassetid://10723396812",
+					["lucide-git-compare"] = "rbxassetid://10723396954",
+					["lucide-git-fork"] = "rbxassetid://10723397049",
+					["lucide-git-merge"] = "rbxassetid://10723397165",
+					["lucide-git-pull-request"] = "rbxassetid://10723397431",
+					["lucide-git-pull-request-closed"] = "rbxassetid://10723397268",
+					["lucide-git-pull-request-draft"] = "rbxassetid://10734884302",
+					["lucide-glass"] = "rbxassetid://10723397788",
+					["lucide-glass-2"] = "rbxassetid://10723397529",
+					["lucide-glass-water"] = "rbxassetid://10723397678",
+					["lucide-glasses"] = "rbxassetid://10723397895",
+					["lucide-globe"] = "rbxassetid://10723404337",
+					["lucide-globe-2"] = "rbxassetid://10723398002",
+					["lucide-grab"] = "rbxassetid://10723404472",
+					["lucide-graduation-cap"] = "rbxassetid://10723404691",
+					["lucide-grape"] = "rbxassetid://10723404822",
+					["lucide-grid"] = "rbxassetid://10723404936",
+					["lucide-grip-horizontal"] = "rbxassetid://10723405089",
+					["lucide-grip-vertical"] = "rbxassetid://10723405236",
+					["lucide-hammer"] = "rbxassetid://10723405360",
+					["lucide-hand"] = "rbxassetid://10723405649",
+					["lucide-hand-metal"] = "rbxassetid://10723405508",
+					["lucide-hard-drive"] = "rbxassetid://10723405749",
+					["lucide-hard-hat"] = "rbxassetid://10723405859",
+					["lucide-hash"] = "rbxassetid://10723405975",
+					["lucide-haze"] = "rbxassetid://10723406078",
+					["lucide-headphones"] = "rbxassetid://10723406165",
+					["lucide-heart"] = "rbxassetid://10723406885",
+					["lucide-heart-crack"] = "rbxassetid://10723406299",
+					["lucide-heart-handshake"] = "rbxassetid://10723406480",
+					["lucide-heart-off"] = "rbxassetid://10723406662",
+					["lucide-heart-pulse"] = "rbxassetid://10723406795",
+					["lucide-help-circle"] = "rbxassetid://10723406988",
+					["lucide-hexagon"] = "rbxassetid://10723407092",
+					["lucide-highlighter"] = "rbxassetid://10723407192",
+					["lucide-history"] = "rbxassetid://10723407335",
+					["lucide-home"] = "rbxassetid://10723407389",
+					["lucide-hourglass"] = "rbxassetid://10723407498",
+					["lucide-ice-cream"] = "rbxassetid://10723414308",
+					["lucide-image"] = "rbxassetid://10723415040",
+					["lucide-image-minus"] = "rbxassetid://10723414487",
+					["lucide-image-off"] = "rbxassetid://10723414677",
+					["lucide-image-plus"] = "rbxassetid://10723414827",
+					["lucide-import"] = "rbxassetid://10723415205",
+					["lucide-inbox"] = "rbxassetid://10723415335",
+					["lucide-indent"] = "rbxassetid://10723415494",
+					["lucide-indian-rupee"] = "rbxassetid://10723415642",
+					["lucide-infinity"] = "rbxassetid://10723415766",
+					["lucide-info"] = "rbxassetid://10723415903",
+					["lucide-inspect"] = "rbxassetid://10723416057",
+					["lucide-italic"] = "rbxassetid://10723416195",
+					["lucide-japanese-yen"] = "rbxassetid://10723416363",
+					["lucide-joystick"] = "rbxassetid://10723416527",
+					["lucide-key"] = "rbxassetid://10723416652",
+					["lucide-keyboard"] = "rbxassetid://10723416765",
+					["lucide-lamp"] = "rbxassetid://10723417513",
+					["lucide-lamp-ceiling"] = "rbxassetid://10723416922",
+					["lucide-lamp-desk"] = "rbxassetid://10723417016",
+					["lucide-lamp-floor"] = "rbxassetid://10723417131",
+					["lucide-lamp-wall-down"] = "rbxassetid://10723417240",
+					["lucide-lamp-wall-up"] = "rbxassetid://10723417356",
+					["lucide-landmark"] = "rbxassetid://10723417608",
+					["lucide-languages"] = "rbxassetid://10723417703",
+					["lucide-laptop"] = "rbxassetid://10723423881",
+					["lucide-laptop-2"] = "rbxassetid://10723417797",
+					["lucide-lasso"] = "rbxassetid://10723424235",
+					["lucide-lasso-select"] = "rbxassetid://10723424058",
+					["lucide-laugh"] = "rbxassetid://10723424372",
+					["lucide-layers"] = "rbxassetid://10723424505",
+					["lucide-layout"] = "rbxassetid://10723425376",
+					["lucide-layout-dashboard"] = "rbxassetid://10723424646",
+					["lucide-layout-grid"] = "rbxassetid://10723424838",
+					["lucide-layout-list"] = "rbxassetid://10723424963",
+					["lucide-layout-template"] = "rbxassetid://10723425187",
+					["lucide-leaf"] = "rbxassetid://10723425539",
+					["lucide-library"] = "rbxassetid://10723425615",
+					["lucide-life-buoy"] = "rbxassetid://10723425685",
+					["lucide-lightbulb"] = "rbxassetid://10723425852",
+					["lucide-lightbulb-off"] = "rbxassetid://10723425762",
+					["lucide-line-chart"] = "rbxassetid://10723426393",
+					["lucide-link"] = "rbxassetid://10723426722",
+					["lucide-link-2"] = "rbxassetid://10723426595",
+					["lucide-link-2-off"] = "rbxassetid://10723426513",
+					["lucide-list"] = "rbxassetid://10723433811",
+					["lucide-list-checks"] = "rbxassetid://10734884548",
+					["lucide-list-end"] = "rbxassetid://10723426886",
+					["lucide-list-minus"] = "rbxassetid://10723426986",
+					["lucide-list-music"] = "rbxassetid://10723427081",
+					["lucide-list-ordered"] = "rbxassetid://10723427199",
+					["lucide-list-plus"] = "rbxassetid://10723427334",
+					["lucide-list-start"] = "rbxassetid://10723427494",
+					["lucide-list-video"] = "rbxassetid://10723427619",
+					["lucide-list-x"] = "rbxassetid://10723433655",
+					["lucide-loader"] = "rbxassetid://10723434070",
+					["lucide-loader-2"] = "rbxassetid://10723433935",
+					["lucide-locate"] = "rbxassetid://10723434557",
+					["lucide-locate-fixed"] = "rbxassetid://10723434236",
+					["lucide-locate-off"] = "rbxassetid://10723434379",
+					["lucide-lock"] = "rbxassetid://10723434711",
+					["lucide-log-in"] = "rbxassetid://10723434830",
+					["lucide-log-out"] = "rbxassetid://10723434906",
+					["lucide-luggage"] = "rbxassetid://10723434993",
+					["lucide-magnet"] = "rbxassetid://10723435069",
+					["lucide-mail"] = "rbxassetid://10734885430",
+					["lucide-mail-check"] = "rbxassetid://10723435182",
+					["lucide-mail-minus"] = "rbxassetid://10723435261",
+					["lucide-mail-open"] = "rbxassetid://10723435342",
+					["lucide-mail-plus"] = "rbxassetid://10723435443",
+					["lucide-mail-question"] = "rbxassetid://10723435515",
+					["lucide-mail-search"] = "rbxassetid://10734884739",
+					["lucide-mail-warning"] = "rbxassetid://10734885015",
+					["lucide-mail-x"] = "rbxassetid://10734885247",
+					["lucide-mails"] = "rbxassetid://10734885614",
+					["lucide-map"] = "rbxassetid://10734886202",
+					["lucide-map-pin"] = "rbxassetid://10734886004",
+					["lucide-map-pin-off"] = "rbxassetid://10734885803",
+					["lucide-maximize"] = "rbxassetid://10734886735",
+					["lucide-maximize-2"] = "rbxassetid://10734886496",
+					["lucide-medal"] = "rbxassetid://10734887072",
+					["lucide-megaphone"] = "rbxassetid://10734887454",
+					["lucide-megaphone-off"] = "rbxassetid://10734887311",
+					["lucide-meh"] = "rbxassetid://10734887603",
+					["lucide-menu"] = "rbxassetid://10734887784",
+					["lucide-message-circle"] = "rbxassetid://10734888000",
+					["lucide-message-square"] = "rbxassetid://10734888228",
+					["lucide-mic"] = "rbxassetid://10734888864",
+					["lucide-mic-2"] = "rbxassetid://10734888430",
+					["lucide-mic-off"] = "rbxassetid://10734888646",
+					["lucide-microscope"] = "rbxassetid://10734889106",
+					["lucide-microwave"] = "rbxassetid://10734895076",
+					["lucide-milestone"] = "rbxassetid://10734895310",
+					["lucide-minimize"] = "rbxassetid://10734895698",
+					["lucide-minimize-2"] = "rbxassetid://10734895530",
+					["lucide-minus"] = "rbxassetid://10734896206",
+					["lucide-minus-circle"] = "rbxassetid://10734895856",
+					["lucide-minus-square"] = "rbxassetid://10734896029",
+					["lucide-monitor"] = "rbxassetid://10734896881",
+					["lucide-monitor-off"] = "rbxassetid://10734896360",
+					["lucide-monitor-speaker"] = "rbxassetid://10734896512",
+					["lucide-moon"] = "rbxassetid://10734897102",
+					["lucide-more-horizontal"] = "rbxassetid://10734897250",
+					["lucide-more-vertical"] = "rbxassetid://10734897387",
+					["lucide-mountain"] = "rbxassetid://10734897956",
+					["lucide-mountain-snow"] = "rbxassetid://10734897665",
+					["lucide-mouse"] = "rbxassetid://10734898592",
+					["lucide-mouse-pointer"] = "rbxassetid://10734898476",
+					["lucide-mouse-pointer-2"] = "rbxassetid://10734898194",
+					["lucide-mouse-pointer-click"] = "rbxassetid://10734898355",
+					["lucide-move"] = "rbxassetid://10734900011",
+					["lucide-move-3d"] = "rbxassetid://10734898756",
+					["lucide-move-diagonal"] = "rbxassetid://10734899164",
+					["lucide-move-diagonal-2"] = "rbxassetid://10734898934",
+					["lucide-move-horizontal"] = "rbxassetid://10734899414",
+					["lucide-move-vertical"] = "rbxassetid://10734899821",
+					["lucide-music"] = "rbxassetid://10734905958",
+					["lucide-music-2"] = "rbxassetid://10734900215",
+					["lucide-music-3"] = "rbxassetid://10734905665",
+					["lucide-music-4"] = "rbxassetid://10734905823",
+					["lucide-navigation"] = "rbxassetid://10734906744",
+					["lucide-navigation-2"] = "rbxassetid://10734906332",
+					["lucide-navigation-2-off"] = "rbxassetid://10734906144",
+					["lucide-navigation-off"] = "rbxassetid://10734906580",
+					["lucide-network"] = "rbxassetid://10734906975",
+					["lucide-newspaper"] = "rbxassetid://10734907168",
+					["lucide-octagon"] = "rbxassetid://10734907361",
+					["lucide-option"] = "rbxassetid://10734907649",
+					["lucide-outdent"] = "rbxassetid://10734907933",
+					["lucide-package"] = "rbxassetid://10734909540",
+					["lucide-package-2"] = "rbxassetid://10734908151",
+					["lucide-package-check"] = "rbxassetid://10734908384",
+					["lucide-package-minus"] = "rbxassetid://10734908626",
+					["lucide-package-open"] = "rbxassetid://10734908793",
+					["lucide-package-plus"] = "rbxassetid://10734909016",
+					["lucide-package-search"] = "rbxassetid://10734909196",
+					["lucide-package-x"] = "rbxassetid://10734909375",
+					["lucide-paint-bucket"] = "rbxassetid://10734909847",
+					["lucide-paintbrush"] = "rbxassetid://10734910187",
+					["lucide-paintbrush-2"] = "rbxassetid://10734910030",
+					["lucide-palette"] = "rbxassetid://10734910430",
+					["lucide-palmtree"] = "rbxassetid://10734910680",
+					["lucide-paperclip"] = "rbxassetid://10734910927",
+					["lucide-party-popper"] = "rbxassetid://10734918735",
+					["lucide-pause"] = "rbxassetid://10734919336",
+					["lucide-pause-circle"] = "rbxassetid://10735024209",
+					["lucide-pause-octagon"] = "rbxassetid://10734919143",
+					["lucide-pen-tool"] = "rbxassetid://10734919503",
+					["lucide-pencil"] = "rbxassetid://10734919691",
+					["lucide-percent"] = "rbxassetid://10734919919",
+					["lucide-person-standing"] = "rbxassetid://10734920149",
+					["lucide-phone"] = "rbxassetid://10734921524",
+					["lucide-phone-call"] = "rbxassetid://10734920305",
+					["lucide-phone-forwarded"] = "rbxassetid://10734920508",
+					["lucide-phone-incoming"] = "rbxassetid://10734920694",
+					["lucide-phone-missed"] = "rbxassetid://10734920845",
+					["lucide-phone-off"] = "rbxassetid://10734921077",
+					["lucide-phone-outgoing"] = "rbxassetid://10734921288",
+					["lucide-pie-chart"] = "rbxassetid://10734921727",
+					["lucide-piggy-bank"] = "rbxassetid://10734921935",
+					["lucide-pin"] = "rbxassetid://10734922324",
+					["lucide-pin-off"] = "rbxassetid://10734922180",
+					["lucide-pipette"] = "rbxassetid://10734922497",
+					["lucide-pizza"] = "rbxassetid://10734922774",
+					["lucide-plane"] = "rbxassetid://10734922971",
+					["lucide-play"] = "rbxassetid://10734923549",
+					["lucide-play-circle"] = "rbxassetid://10734923214",
+					["lucide-plus"] = "rbxassetid://10734924532",
+					["lucide-plus-circle"] = "rbxassetid://10734923868",
+					["lucide-plus-square"] = "rbxassetid://10734924219",
+					["lucide-podcast"] = "rbxassetid://10734929553",
+					["lucide-pointer"] = "rbxassetid://10734929723",
+					["lucide-pound-sterling"] = "rbxassetid://10734929981",
+					["lucide-power"] = "rbxassetid://10734930466",
+					["lucide-power-off"] = "rbxassetid://10734930257",
+					["lucide-printer"] = "rbxassetid://10734930632",
+					["lucide-puzzle"] = "rbxassetid://10734930886",
+					["lucide-quote"] = "rbxassetid://10734931234",
+					["lucide-radio"] = "rbxassetid://10734931596",
+					["lucide-radio-receiver"] = "rbxassetid://10734931402",
+					["lucide-rectangle-horizontal"] = "rbxassetid://10734931777",
+					["lucide-rectangle-vertical"] = "rbxassetid://10734932081",
+					["lucide-recycle"] = "rbxassetid://10734932295",
+					["lucide-redo"] = "rbxassetid://10734932822",
+					["lucide-redo-2"] = "rbxassetid://10734932586",
+					["lucide-refresh-ccw"] = "rbxassetid://10734933056",
+					["lucide-refresh-cw"] = "rbxassetid://10734933222",
+					["lucide-refrigerator"] = "rbxassetid://10734933465",
+					["lucide-regex"] = "rbxassetid://10734933655",
+					["lucide-repeat"] = "rbxassetid://10734933966",
+					["lucide-repeat-1"] = "rbxassetid://10734933826",
+					["lucide-reply"] = "rbxassetid://10734934252",
+					["lucide-reply-all"] = "rbxassetid://10734934132",
+					["lucide-rewind"] = "rbxassetid://10734934347",
+					["lucide-rocket"] = "rbxassetid://10734934585",
+					["lucide-rocking-chair"] = "rbxassetid://10734939942",
+					["lucide-rotate-3d"] = "rbxassetid://10734940107",
+					["lucide-rotate-ccw"] = "rbxassetid://10734940376",
+					["lucide-rotate-cw"] = "rbxassetid://10734940654",
+					["lucide-rss"] = "rbxassetid://10734940825",
+					["lucide-ruler"] = "rbxassetid://10734941018",
+					["lucide-russian-ruble"] = "rbxassetid://10734941199",
+					["lucide-sailboat"] = "rbxassetid://10734941354",
+					["lucide-save"] = "rbxassetid://10734941499",
+					["lucide-scale"] = "rbxassetid://10734941912",
+					["lucide-scale-3d"] = "rbxassetid://10734941739",
+					["lucide-scaling"] = "rbxassetid://10734942072",
+					["lucide-scan"] = "rbxassetid://10734942565",
+					["lucide-scan-face"] = "rbxassetid://10734942198",
+					["lucide-scan-line"] = "rbxassetid://10734942351",
+					["lucide-scissors"] = "rbxassetid://10734942778",
+					["lucide-screen-share"] = "rbxassetid://10734943193",
+					["lucide-screen-share-off"] = "rbxassetid://10734942967",
+					["lucide-scroll"] = "rbxassetid://10734943448",
+					["lucide-search"] = "rbxassetid://10734943674",
+					["lucide-send"] = "rbxassetid://10734943902",
+					["lucide-separator-horizontal"] = "rbxassetid://10734944115",
+					["lucide-separator-vertical"] = "rbxassetid://10734944326",
+					["lucide-server"] = "rbxassetid://10734949856",
+					["lucide-server-cog"] = "rbxassetid://10734944444",
+					["lucide-server-crash"] = "rbxassetid://10734944554",
+					["lucide-server-off"] = "rbxassetid://10734944668",
+					["lucide-settings"] = "rbxassetid://10734950309",
+					["lucide-settings-2"] = "rbxassetid://10734950020",
+					["lucide-share"] = "rbxassetid://10734950813",
+					["lucide-share-2"] = "rbxassetid://10734950553",
+					["lucide-sheet"] = "rbxassetid://10734951038",
+					["lucide-shield"] = "rbxassetid://10734951847",
+					["lucide-shield-alert"] = "rbxassetid://10734951173",
+					["lucide-shield-check"] = "rbxassetid://10734951367",
+					["lucide-shield-close"] = "rbxassetid://10734951535",
+					["lucide-shield-off"] = "rbxassetid://10734951684",
+					["lucide-shirt"] = "rbxassetid://10734952036",
+					["lucide-shopping-bag"] = "rbxassetid://10734952273",
+					["lucide-shopping-cart"] = "rbxassetid://10734952479",
+					["lucide-shovel"] = "rbxassetid://10734952773",
+					["lucide-shower-head"] = "rbxassetid://10734952942",
+					["lucide-shrink"] = "rbxassetid://10734953073",
+					["lucide-shrub"] = "rbxassetid://10734953241",
+					["lucide-shuffle"] = "rbxassetid://10734953451",
+					["lucide-sidebar"] = "rbxassetid://10734954301",
+					["lucide-sidebar-close"] = "rbxassetid://10734953715",
+					["lucide-sidebar-open"] = "rbxassetid://10734954000",
+					["lucide-sigma"] = "rbxassetid://10734954538",
+					["lucide-signal"] = "rbxassetid://10734961133",
+					["lucide-signal-high"] = "rbxassetid://10734954807",
+					["lucide-signal-low"] = "rbxassetid://10734955080",
+					["lucide-signal-medium"] = "rbxassetid://10734955336",
+					["lucide-signal-zero"] = "rbxassetid://10734960878",
+					["lucide-siren"] = "rbxassetid://10734961284",
+					["lucide-skip-back"] = "rbxassetid://10734961526",
+					["lucide-skip-forward"] = "rbxassetid://10734961809",
+					["lucide-skull"] = "rbxassetid://10734962068",
+					["lucide-slack"] = "rbxassetid://10734962339",
+					["lucide-slash"] = "rbxassetid://10734962600",
+					["lucide-slice"] = "rbxassetid://10734963024",
+					["lucide-sliders"] = "rbxassetid://10734963400",
+					["lucide-sliders-horizontal"] = "rbxassetid://10734963191",
+					["lucide-smartphone"] = "rbxassetid://10734963940",
+					["lucide-smartphone-charging"] = "rbxassetid://10734963671",
+					["lucide-smile"] = "rbxassetid://10734964441",
+					["lucide-smile-plus"] = "rbxassetid://10734964188",
+					["lucide-snowflake"] = "rbxassetid://10734964600",
+					["lucide-sofa"] = "rbxassetid://10734964852",
+					["lucide-sort-asc"] = "rbxassetid://10734965115",
+					["lucide-sort-desc"] = "rbxassetid://10734965287",
+					["lucide-speaker"] = "rbxassetid://10734965419",
+					["lucide-sprout"] = "rbxassetid://10734965572",
+					["lucide-square"] = "rbxassetid://10734965702",
+					["lucide-star"] = "rbxassetid://10734966248",
+					["lucide-star-half"] = "rbxassetid://10734965897",
+					["lucide-star-off"] = "rbxassetid://10734966097",
+					["lucide-stethoscope"] = "rbxassetid://10734966384",
+					["lucide-sticker"] = "rbxassetid://10734972234",
+					["lucide-sticky-note"] = "rbxassetid://10734972463",
+					["lucide-stop-circle"] = "rbxassetid://10734972621",
+					["lucide-stretch-horizontal"] = "rbxassetid://10734972862",
+					["lucide-stretch-vertical"] = "rbxassetid://10734973130",
+					["lucide-strikethrough"] = "rbxassetid://10734973290",
+					["lucide-subscript"] = "rbxassetid://10734973457",
+					["lucide-sun"] = "rbxassetid://10734974297",
+					["lucide-sun-dim"] = "rbxassetid://10734973645",
+					["lucide-sun-medium"] = "rbxassetid://10734973778",
+					["lucide-sun-moon"] = "rbxassetid://10734973999",
+					["lucide-sun-snow"] = "rbxassetid://10734974130",
+					["lucide-sunrise"] = "rbxassetid://10734974522",
+					["lucide-sunset"] = "rbxassetid://10734974689",
+					["lucide-superscript"] = "rbxassetid://10734974850",
+					["lucide-swiss-franc"] = "rbxassetid://10734975024",
+					["lucide-switch-camera"] = "rbxassetid://10734975214",
+					["lucide-sword"] = "rbxassetid://10734975486",
+					["lucide-swords"] = "rbxassetid://10734975692",
+					["lucide-syringe"] = "rbxassetid://10734975932",
+					["lucide-table"] = "rbxassetid://10734976230",
+					["lucide-table-2"] = "rbxassetid://10734976097",
+					["lucide-tablet"] = "rbxassetid://10734976394",
+					["lucide-tag"] = "rbxassetid://10734976528",
+					["lucide-tags"] = "rbxassetid://10734976739",
+					["lucide-target"] = "rbxassetid://10734977012",
+					["lucide-tent"] = "rbxassetid://10734981750",
+					["lucide-terminal"] = "rbxassetid://10734982144",
+					["lucide-terminal-square"] = "rbxassetid://10734981995",
+					["lucide-text-cursor"] = "rbxassetid://10734982395",
+					["lucide-text-cursor-input"] = "rbxassetid://10734982297",
+					["lucide-thermometer"] = "rbxassetid://10734983134",
+					["lucide-thermometer-snowflake"] = "rbxassetid://10734982571",
+					["lucide-thermometer-sun"] = "rbxassetid://10734982771",
+					["lucide-thumbs-down"] = "rbxassetid://10734983359",
+					["lucide-thumbs-up"] = "rbxassetid://10734983629",
+					["lucide-ticket"] = "rbxassetid://10734983868",
+					["lucide-timer"] = "rbxassetid://10734984606",
+					["lucide-timer-off"] = "rbxassetid://10734984138",
+					["lucide-timer-reset"] = "rbxassetid://10734984355",
+					["lucide-toggle-left"] = "rbxassetid://10734984834",
+					["lucide-toggle-right"] = "rbxassetid://10734985040",
+					["lucide-tornado"] = "rbxassetid://10734985247",
+					["lucide-toy-brick"] = "rbxassetid://10747361919",
+					["lucide-train"] = "rbxassetid://10747362105",
+					["lucide-trash"] = "rbxassetid://10747362393",
+					["lucide-trash-2"] = "rbxassetid://10747362241",
+					["lucide-tree-deciduous"] = "rbxassetid://10747362534",
+					["lucide-tree-pine"] = "rbxassetid://10747362748",
+					["lucide-trees"] = "rbxassetid://10747363016",
+					["lucide-trending-down"] = "rbxassetid://10747363205",
+					["lucide-trending-up"] = "rbxassetid://10747363465",
+					["lucide-triangle"] = "rbxassetid://10747363621",
+					["lucide-trophy"] = "rbxassetid://10747363809",
+					["lucide-truck"] = "rbxassetid://10747364031",
+					["lucide-tv"] = "rbxassetid://10747364593",
+					["lucide-tv-2"] = "rbxassetid://10747364302",
+					["lucide-type"] = "rbxassetid://10747364761",
+					["lucide-umbrella"] = "rbxassetid://10747364971",
+					["lucide-underline"] = "rbxassetid://10747365191",
+					["lucide-undo"] = "rbxassetid://10747365484",
+					["lucide-undo-2"] = "rbxassetid://10747365359",
+					["lucide-unlink"] = "rbxassetid://10747365771",
+					["lucide-unlink-2"] = "rbxassetid://10747397871",
+					["lucide-unlock"] = "rbxassetid://10747366027",
+					["lucide-upload"] = "rbxassetid://10747366434",
+					["lucide-upload-cloud"] = "rbxassetid://10747366266",
+					["lucide-usb"] = "rbxassetid://10747366606",
+					["lucide-user"] = "rbxassetid://10747373176",
+					["lucide-user-check"] = "rbxassetid://10747371901",
+					["lucide-user-cog"] = "rbxassetid://10747372167",
+					["lucide-user-minus"] = "rbxassetid://10747372346",
+					["lucide-user-plus"] = "rbxassetid://10747372702",
+					["lucide-user-x"] = "rbxassetid://10747372992",
+					["lucide-users"] = "rbxassetid://10747373426",
+					["lucide-utensils"] = "rbxassetid://10747373821",
+					["lucide-utensils-crossed"] = "rbxassetid://10747373629",
+					["lucide-venetian-mask"] = "rbxassetid://10747374003",
+					["lucide-verified"] = "rbxassetid://10747374131",
+					["lucide-vibrate"] = "rbxassetid://10747374489",
+					["lucide-vibrate-off"] = "rbxassetid://10747374269",
+					["lucide-video"] = "rbxassetid://10747374938",
+					["lucide-video-off"] = "rbxassetid://10747374721",
+					["lucide-view"] = "rbxassetid://10747375132",
+					["lucide-voicemail"] = "rbxassetid://10747375281",
+					["lucide-volume"] = "rbxassetid://10747376008",
+					["lucide-volume-1"] = "rbxassetid://10747375450",
+					["lucide-volume-2"] = "rbxassetid://10747375679",
+					["lucide-volume-x"] = "rbxassetid://10747375880",
+					["lucide-wallet"] = "rbxassetid://10747376205",
+					["lucide-wand"] = "rbxassetid://10747376565",
+					["lucide-wand-2"] = "rbxassetid://10747376349",
+					["lucide-watch"] = "rbxassetid://10747376722",
+					["lucide-waves"] = "rbxassetid://10747376931",
+					["lucide-webcam"] = "rbxassetid://10747381992",
+					["lucide-wifi"] = "rbxassetid://10747382504",
+					["lucide-wifi-off"] = "rbxassetid://10747382268",
+					["lucide-wind"] = "rbxassetid://10747382750",
+					["lucide-wrap-text"] = "rbxassetid://10747383065",
+					["lucide-wrench"] = "rbxassetid://10747383470",
+					["lucide-x"] = "rbxassetid://10747384394",
+					["lucide-x-circle"] = "rbxassetid://10747383819",
+					["lucide-x-octagon"] = "rbxassetid://10747384037",
+					["lucide-x-square"] = "rbxassetid://10747384217",
+					["lucide-zoom-in"] = "rbxassetid://10747384552",
+					["lucide-zoom-out"] = "rbxassetid://10747384679",
+				},
+			}
+		end),
+		[30] = LPH_NO_VIRTUALIZE(function()
+			local aa, ab, ac, ad, ae = b(30)
+			local af = {
+				SingleMotor = ac(ab.SingleMotor),
+				GroupMotor = ac(ab.GroupMotor),
+				Instant = ac(ab.Instant),
+				Linear = ac(ab.Linear),
+				Spring = ac(ab.Spring),
+				isMotor = ac(ab.isMotor),
+			}
+			return af
+		end),
+		[31] = LPH_NO_VIRTUALIZE(function()
+			local aa, ab, ac, ad, ae = b(31)
+			local af, ag, ah, ai = game:GetService("RunService"), ac(ab.Parent.Signal), function() end, {}
+			ai.__index = ai
+			function ai.new()
+				return setmetatable({ _onStep = ag.new(), _onStart = ag.new(), _onComplete = ag.new() }, ai)
+			end
+			function ai.onStep(aj, c)
+				return aj._onStep:connect(c)
+			end
+			function ai.onStart(aj, c)
+				return aj._onStart:connect(c)
+			end
+			function ai.onComplete(aj, c)
+				return aj._onComplete:connect(c)
+			end
+			function ai.start(aj)
+				if not aj._connection then
+					aj._connection = af.RenderStepped:Connect(function(c)
+						aj:step(c)
+					end)
+				end
+			end
+			function ai.stop(aj)
+				if aj._connection then
+					aj._connection:Disconnect()
+					aj._connection = nil
+				end
+			end
+			ai.destroy = ai.stop
+			ai.step = ah
+			ai.getValue = ah
+			ai.setGoal = ah
+			function ai.__tostring(aj)
+				return "Motor"
+			end
+			return ai
+		end),
+		[32] = LPH_NO_VIRTUALIZE(function()
+			local aa, ab, ac, ad, ae = b(32)
+			return function()
+				local af, ag = game:GetService("RunService"), ac(ab.Parent.BaseMotor)
+				describe("connection management", function()
+					local ah = ag.new()
+					it("should hook up connections on :start()", function()
+						ah:start()
+						expect(typeof(ah._connection)).to.equal("RBXScriptConnection")
+					end)
+					it("should remove connections on :stop() or :destroy()", function()
+						ah:stop()
+						expect(ah._connection).to.equal(nil)
+					end)
+				end)
+				it("should call :step() with deltaTime", function()
+					local ah, ai = (ag.new())
+					function ah.step(aj, ...)
+						ai = { ... }
+						ah:stop()
+					end
 					ah:start()
-					expect(typeof(ah._connection)).to.equal("RBXScriptConnection")
+					local aj = af.RenderStepped:Wait()
+					af.RenderStepped:Wait()
+					expect(ai).to.be.ok()
+					expect(ai[1]).to.equal(aj)
 				end)
-				it("should remove connections on :stop() or :destroy()", function()
-					ah:stop()
-					expect(ah._connection).to.equal(nil)
-				end)
-			end)
-			it("should call :step() with deltaTime", function()
-				local ah, ai = (ag.new())
-				function ah.step(aj, ...)
-					ai = { ... }
-					ah:stop()
+			end
+		end),
+		[33] = LPH_NO_VIRTUALIZE(function()
+			local aa, ab, ac, ad, ae = b(33)
+			local af, ag, ah = ac(ab.Parent.BaseMotor), ac(ab.Parent.SingleMotor), ac(ab.Parent.isMotor)
+			local ai = setmetatable({}, af)
+			ai.__index = ai
+			local aj = function(aj)
+				if ah(aj) then
+					return aj
 				end
-				ah:start()
-				local aj = af.RenderStepped:Wait()
-				af.RenderStepped:Wait()
-				expect(ai).to.be.ok()
-				expect(ai[1]).to.equal(aj)
-			end)
-		end
-	end),
-	[33] = LPH_NO_VIRTUALIZE(function()
-		local aa, ab, ac, ad, ae = b(33)
-		local af, ag, ah = ac(ab.Parent.BaseMotor), ac(ab.Parent.SingleMotor), ac(ab.Parent.isMotor)
-		local ai = setmetatable({}, af)
-		ai.__index = ai
-		local aj = function(aj)
-			if ah(aj) then
-				return aj
-			end
-			local c = typeof(aj)
-			if c == "number" then
-				return ag.new(aj, false)
-			elseif c == "table" then
-				return ai.new(aj, false)
-			end
-			error(("Unable to convert %q to motor; type %s is unsupported"):format(aj, c), 2)
-		end
-		function ai.new(c, d)
-			assert(c, "Missing argument #1: initialValues")
-			assert(typeof(c) == "table", "initialValues must be a table!")
-			assert(
-				not c.step,
-				[[initialValues contains disallowed property "step". Did you mean to put a table of values here?]]
-			)
-			local e = setmetatable(af.new(), ai)
-			if d ~= nil then
-				e._useImplicitConnections = d
-			else
-				e._useImplicitConnections = true
-			end
-			e._complete = true
-			e._motors = {}
-			for f, g in pairs(c) do
-				e._motors[f] = aj(g)
-			end
-			return e
-		end
-		function ai.step(c, d)
-			if c._complete then
-				return true
-			end
-			local e = true
-			for f, g in pairs(c._motors) do
-				local h = g:step(d)
-				if not h then
-					e = false
+				local c = typeof(aj)
+				if c == "number" then
+					return ag.new(aj, false)
+				elseif c == "table" then
+					return ai.new(aj, false)
 				end
+				error(("Unable to convert %q to motor; type %s is unsupported"):format(aj, c), 2)
 			end
-			c._onStep:fire(c:getValue())
-			if e then
+			function ai.new(c, d)
+				assert(c, "Missing argument #1: initialValues")
+				assert(typeof(c) == "table", "initialValues must be a table!")
+				assert(
+					not c.step,
+					[[initialValues contains disallowed property "step". Did you mean to put a table of values here?]]
+				)
+				local e = setmetatable(af.new(), ai)
+				if d ~= nil then
+					e._useImplicitConnections = d
+				else
+					e._useImplicitConnections = true
+				end
+				e._complete = true
+				e._motors = {}
+				for f, g in pairs(c) do
+					e._motors[f] = aj(g)
+				end
+				return e
+			end
+			function ai.step(c, d)
+				if c._complete then
+					return true
+				end
+				local e = true
+				for f, g in pairs(c._motors) do
+					local h = g:step(d)
+					if not h then
+						e = false
+					end
+				end
+				c._onStep:fire(c:getValue())
+				if e then
+					if c._useImplicitConnections then
+						c:stop()
+					end
+					c._complete = true
+					c._onComplete:fire()
+				end
+				return e
+			end
+			function ai.setGoal(c, d)
+				assert(
+					not d.step,
+					[[goals contains disallowed property "step". Did you mean to put a table of goals here?]]
+				)
+				c._complete = false
+				c._onStart:fire()
+				for e, f in pairs(d) do
+					local g = assert(c._motors[e], ("Unknown motor for key %s"):format(e))
+					g:setGoal(f)
+				end
 				if c._useImplicitConnections then
-					c:stop()
+					c:start()
 				end
-				c._complete = true
-				c._onComplete:fire()
 			end
-			return e
-		end
-		function ai.setGoal(c, d)
-			assert(
-				not d.step,
-				[[goals contains disallowed property "step". Did you mean to put a table of goals here?]]
-			)
-			c._complete = false
-			c._onStart:fire()
-			for e, f in pairs(d) do
-				local g = assert(c._motors[e], ("Unknown motor for key %s"):format(e))
-				g:setGoal(f)
+			function ai.getValue(c)
+				local d = {}
+				for e, f in pairs(c._motors) do
+					d[e] = f:getValue()
+				end
+				return d
 			end
-			if c._useImplicitConnections then
-				c:start()
+			function ai.__tostring(c)
+				return "Motor(Group)"
 			end
-		end
-		function ai.getValue(c)
-			local d = {}
-			for e, f in pairs(c._motors) do
-				d[e] = f:getValue()
-			end
-			return d
-		end
-		function ai.__tostring(c)
-			return "Motor(Group)"
-		end
-		return ai
-	end),
-	[34] = LPH_NO_VIRTUALIZE(function()
-		local aa, ab, ac, ad, ae = b(34)
-		return function()
-			local af, ag, ah = ac(ab.Parent.GroupMotor), ac(ab.Parent.Instant), ac(ab.Parent.Spring)
-			it("should complete when all child motors are complete", function()
-				local ai = af.new({ A = 1, B = 2 }, false)
-				expect(ai._complete).to.equal(true)
-				ai:setGoal({ A = ag.new(3), B = ah.new(4, { frequency = 7.5, dampingRatio = 1 }) })
-				expect(ai._complete).to.equal(false)
-				ai:step(1.6666666666666665E-2)
-				expect(ai._complete).to.equal(false)
-				for aj = 1, 30 do
+			return ai
+		end),
+		[34] = LPH_NO_VIRTUALIZE(function()
+			local aa, ab, ac, ad, ae = b(34)
+			return function()
+				local af, ag, ah = ac(ab.Parent.GroupMotor), ac(ab.Parent.Instant), ac(ab.Parent.Spring)
+				it("should complete when all child motors are complete", function()
+					local ai = af.new({ A = 1, B = 2 }, false)
+					expect(ai._complete).to.equal(true)
+					ai:setGoal({ A = ag.new(3), B = ah.new(4, { frequency = 7.5, dampingRatio = 1 }) })
+					expect(ai._complete).to.equal(false)
 					ai:step(1.6666666666666665E-2)
-				end
-				expect(ai._complete).to.equal(true)
-			end)
-			it("should start when the goal is set", function()
-				local ai, aj = af.new({ A = 0 }, false), false
-				ai:onStart(function()
-					aj = not aj
+					expect(ai._complete).to.equal(false)
+					for aj = 1, 30 do
+						ai:step(1.6666666666666665E-2)
+					end
+					expect(ai._complete).to.equal(true)
 				end)
-				ai:setGoal({ A = ag.new(1) })
-				expect(aj).to.equal(true)
-				ai:setGoal({ A = ag.new(1) })
-				expect(aj).to.equal(false)
-			end)
-			it("should properly return all values", function()
-				local ai = af.new({ A = 1, B = 2 }, false)
-				local aj = ai:getValue()
-				expect(aj.A).to.equal(1)
-				expect(aj.B).to.equal(2)
-			end)
-			it("should error when a goal is given to GroupMotor.new", function()
-				local ai = pcall(function()
-					af.new(ag.new(0))
+				it("should start when the goal is set", function()
+					local ai, aj = af.new({ A = 0 }, false), false
+					ai:onStart(function()
+						aj = not aj
+					end)
+					ai:setGoal({ A = ag.new(1) })
+					expect(aj).to.equal(true)
+					ai:setGoal({ A = ag.new(1) })
+					expect(aj).to.equal(false)
 				end)
-				expect(ai).to.equal(false)
-			end)
-			it([[should error when a single goal is provided to GroupMotor:step]], function()
-				local ai = pcall(function()
-					af.new({ a = 1 }):setGoal(ag.new(0))
+				it("should properly return all values", function()
+					local ai = af.new({ A = 1, B = 2 }, false)
+					local aj = ai:getValue()
+					expect(aj.A).to.equal(1)
+					expect(aj.B).to.equal(2)
 				end)
-				expect(ai).to.equal(false)
-			end)
-		end
-	end),
-	[35] = LPH_NO_VIRTUALIZE(function()
-		local aa, ab, ac, ad, ae = b(35)
-		local af = {}
-		af.__index = af
-		function af.new(ag)
-			return setmetatable({ _targetValue = ag }, af)
-		end
-		function af.step(ag)
-			return { complete = true, value = ag._targetValue }
-		end
-		return af
-	end),
-	[36] = LPH_NO_VIRTUALIZE(function()
-		local aa, ab, ac, ad, ae = b(36)
-		return function()
-			local af = ac(ab.Parent.Instant)
-			it("should return a completed state with the provided value", function()
-				local ag = af.new(1.23)
-				local ah = ag:step(0.1, { value = 0, complete = false })
-				expect(ah.complete).to.equal(true)
-				expect(ah.value).to.equal(1.23)
-			end)
-		end
-	end),
-	[37] = LPH_NO_VIRTUALIZE(function()
-		local aa, ab, ac, ad, ae = b(37)
-		local af = {}
-		af.__index = af
-		function af.new(ag, ah)
-			assert(ag, "Missing argument #1: targetValue")
-			ah = ah or {}
-			return setmetatable({ _targetValue = ag, _velocity = ah.velocity or 1 }, af)
-		end
-		function af.step(ag, ah, ai)
-			local aj, c, d = ah.value, ag._velocity, ag._targetValue
-			local e = ai * c
-			local f = e >= math.abs(d - aj)
-			aj = aj + e * (d > aj and 1 or -1)
-			if f then
-				aj = ag._targetValue
-				c = 0
+				it("should error when a goal is given to GroupMotor.new", function()
+					local ai = pcall(function()
+						af.new(ag.new(0))
+					end)
+					expect(ai).to.equal(false)
+				end)
+				it([[should error when a single goal is provided to GroupMotor:step]], function()
+					local ai = pcall(function()
+						af.new({ a = 1 }):setGoal(ag.new(0))
+					end)
+					expect(ai).to.equal(false)
+				end)
 			end
-			return { complete = f, value = aj, velocity = c }
-		end
-		return af
-	end),
-	[38] = LPH_NO_VIRTUALIZE(function()
-		local aa, ab, ac, ad, ae = b(38)
-		return function()
-			local af, ag = ac(ab.Parent.SingleMotor), ac(ab.Parent.Linear)
-			describe("completed state", function()
-				local ah, ai = af.new(0, false), ag.new(1, { velocity = 1 })
-				ah:setGoal(ai)
-				for aj = 1, 60 do
-					ah:step(1.6666666666666665E-2)
+		end),
+		[35] = LPH_NO_VIRTUALIZE(function()
+			local aa, ab, ac, ad, ae = b(35)
+			local af = {}
+			af.__index = af
+			function af.new(ag)
+				return setmetatable({ _targetValue = ag }, af)
+			end
+			function af.step(ag)
+				return { complete = true, value = ag._targetValue }
+			end
+			return af
+		end),
+		[36] = LPH_NO_VIRTUALIZE(function()
+			local aa, ab, ac, ad, ae = b(36)
+			return function()
+				local af = ac(ab.Parent.Instant)
+				it("should return a completed state with the provided value", function()
+					local ag = af.new(1.23)
+					local ah = ag:step(0.1, { value = 0, complete = false })
+					expect(ah.complete).to.equal(true)
+					expect(ah.value).to.equal(1.23)
+				end)
+			end
+		end),
+		[37] = LPH_NO_VIRTUALIZE(function()
+			local aa, ab, ac, ad, ae = b(37)
+			local af = {}
+			af.__index = af
+			function af.new(ag, ah)
+				assert(ag, "Missing argument #1: targetValue")
+				ah = ah or {}
+				return setmetatable({ _targetValue = ag, _velocity = ah.velocity or 1 }, af)
+			end
+			function af.step(ag, ah, ai)
+				local aj, c, d = ah.value, ag._velocity, ag._targetValue
+				local e = ai * c
+				local f = e >= math.abs(d - aj)
+				aj = aj + e * (d > aj and 1 or -1)
+				if f then
+					aj = ag._targetValue
+					c = 0
 				end
-				it("should complete", function()
-					expect(ah._state.complete).to.equal(true)
+				return { complete = f, value = aj, velocity = c }
+			end
+			return af
+		end),
+		[38] = LPH_NO_VIRTUALIZE(function()
+			local aa, ab, ac, ad, ae = b(38)
+			return function()
+				local af, ag = ac(ab.Parent.SingleMotor), ac(ab.Parent.Linear)
+				describe("completed state", function()
+					local ah, ai = af.new(0, false), ag.new(1, { velocity = 1 })
+					ah:setGoal(ai)
+					for aj = 1, 60 do
+						ah:step(1.6666666666666665E-2)
+					end
+					it("should complete", function()
+						expect(ah._state.complete).to.equal(true)
+					end)
+					it("should be exactly the goal value when completed", function()
+						expect(ah._state.value).to.equal(1)
+					end)
 				end)
-				it("should be exactly the goal value when completed", function()
-					expect(ah._state.value).to.equal(1)
+				describe("uncompleted state", function()
+					local ah, ai = af.new(0, false), ag.new(1, { velocity = 1 })
+					ah:setGoal(ai)
+					for aj = 1, 59 do
+						ah:step(1.6666666666666665E-2)
+					end
+					it("should be uncomplete", function()
+						expect(ah._state.complete).to.equal(false)
+					end)
 				end)
-			end)
-			describe("uncompleted state", function()
-				local ah, ai = af.new(0, false), ag.new(1, { velocity = 1 })
-				ah:setGoal(ai)
-				for aj = 1, 59 do
-					ah:step(1.6666666666666665E-2)
-				end
-				it("should be uncomplete", function()
-					expect(ah._state.complete).to.equal(false)
+				describe("negative velocity", function()
+					local ah, ai = af.new(1, false), ag.new(0, { velocity = 1 })
+					ah:setGoal(ai)
+					for aj = 1, 60 do
+						ah:step(1.6666666666666665E-2)
+					end
+					it("should complete", function()
+						expect(ah._state.complete).to.equal(true)
+					end)
+					it("should be exactly the goal value when completed", function()
+						expect(ah._state.value).to.equal(0)
+					end)
 				end)
-			end)
-			describe("negative velocity", function()
-				local ah, ai = af.new(1, false), ag.new(0, { velocity = 1 })
-				ah:setGoal(ai)
-				for aj = 1, 60 do
-					ah:step(1.6666666666666665E-2)
-				end
-				it("should complete", function()
-					expect(ah._state.complete).to.equal(true)
-				end)
-				it("should be exactly the goal value when completed", function()
-					expect(ah._state.value).to.equal(0)
-				end)
-			end)
-		end
-	end),
-	[39] = LPH_NO_VIRTUALIZE(function()
-		local aa, ab, ac, ad, ae = b(39)
-		local af = {}
-		af.__index = af
-		function af.new(ag, ah)
-			return setmetatable({ signal = ag, connected = true, _handler = ah }, af)
-		end
-		function af.disconnect(ag)
-			if ag.connected then
-				ag.connected = false
-				for ah, ai in pairs(ag.signal._connections) do
-					if ai == ag then
-						table.remove(ag.signal._connections, ah)
-						return
+			end
+		end),
+		[39] = LPH_NO_VIRTUALIZE(function()
+			local aa, ab, ac, ad, ae = b(39)
+			local af = {}
+			af.__index = af
+			function af.new(ag, ah)
+				return setmetatable({ signal = ag, connected = true, _handler = ah }, af)
+			end
+			function af.disconnect(ag)
+				if ag.connected then
+					ag.connected = false
+					for ah, ai in pairs(ag.signal._connections) do
+						if ai == ag then
+							table.remove(ag.signal._connections, ah)
+							return
+						end
 					end
 				end
 			end
-		end
-		local ag = {}
-		ag.__index = ag
-		function ag.new()
-			return setmetatable({ _connections = {}, _threads = {} }, ag)
-		end
-		function ag.fire(ah, ...)
-			for ai, aj in pairs(ah._connections) do
-				aj._handler(...)
+			local ag = {}
+			ag.__index = ag
+			function ag.new()
+				return setmetatable({ _connections = {}, _threads = {} }, ag)
 			end
-			for c, d in pairs(ah._threads) do
-				coroutine.resume(d, ...)
+			function ag.fire(ah, ...)
+				for ai, aj in pairs(ah._connections) do
+					aj._handler(...)
+				end
+				for c, d in pairs(ah._threads) do
+					coroutine.resume(d, ...)
+				end
+				ah._threads = {}
 			end
-			ah._threads = {}
-		end
-		function ag.connect(ah, aj)
-			local c = af.new(ah, aj)
-			table.insert(ah._connections, c)
-			return c
-		end
-		function ag.wait(ah)
-			table.insert(ah._threads, coroutine.running())
-			return coroutine.yield()
-		end
-		return ag
-	end),
-	[40] = LPH_NO_VIRTUALIZE(function()
-		local aa, ab, ac, ad, ae = b(40)
-		return function()
-			local af = ac(ab.Parent.Signal)
-			it("should invoke all connections, instantly", function()
-				local ag, ah, aj = (af.new())
-				ag:connect(function(c)
-					ah = c
-				end)
-				ag:connect(function(c)
-					aj = c
-				end)
-				ag:fire("hello")
-				expect(ah).to.equal("hello")
-				expect(aj).to.equal("hello")
-			end)
-			it("should return values when :wait() is called", function()
-				local ag = af.new()
-				spawn(function()
-					ag:fire(123, "hello")
-				end)
-				local ah, aj = ag:wait()
-				expect(ah).to.equal(123)
-				expect(aj).to.equal("hello")
-			end)
-			it("should properly handle disconnections", function()
-				local ag, ah = af.new(), false
-				local aj = ag:connect(function()
-					ah = true
-				end)
-				aj:disconnect()
-				ag:fire()
-				expect(ah).to.equal(false)
-			end)
-		end
-	end),
-	[41] = LPH_NO_VIRTUALIZE(function()
-		local aa, ab, ac, ad, ae = b(41)
-		local af = ac(ab.Parent.BaseMotor)
-		local ag = setmetatable({}, af)
-		ag.__index = ag
-		function ag.new(ah, aj)
-			assert(ah, "Missing argument #1: initialValue")
-			assert(typeof(ah) == "number", "initialValue must be a number!")
-			local c = setmetatable(af.new(), ag)
-			if aj ~= nil then
-				c._useImplicitConnections = aj
-			else
-				c._useImplicitConnections = true
+			function ag.connect(ah, aj)
+				local c = af.new(ah, aj)
+				table.insert(ah._connections, c)
+				return c
 			end
-			c._goal = nil
-			c._state = { complete = true, value = ah }
-			return c
-		end
-		function ag.step(ah, aj)
-			if ah._state.complete then
-				return true
+			function ag.wait(ah)
+				table.insert(ah._threads, coroutine.running())
+				return coroutine.yield()
 			end
-			local c = ah._goal:step(ah._state, aj)
-			ah._state = c
-			ah._onStep:fire(c.value)
-			if c.complete then
+			return ag
+		end),
+		[40] = LPH_NO_VIRTUALIZE(function()
+			local aa, ab, ac, ad, ae = b(40)
+			return function()
+				local af = ac(ab.Parent.Signal)
+				it("should invoke all connections, instantly", function()
+					local ag, ah, aj = (af.new())
+					ag:connect(function(c)
+						ah = c
+					end)
+					ag:connect(function(c)
+						aj = c
+					end)
+					ag:fire("hello")
+					expect(ah).to.equal("hello")
+					expect(aj).to.equal("hello")
+				end)
+				it("should return values when :wait() is called", function()
+					local ag = af.new()
+					spawn(function()
+						ag:fire(123, "hello")
+					end)
+					local ah, aj = ag:wait()
+					expect(ah).to.equal(123)
+					expect(aj).to.equal("hello")
+				end)
+				it("should properly handle disconnections", function()
+					local ag, ah = af.new(), false
+					local aj = ag:connect(function()
+						ah = true
+					end)
+					aj:disconnect()
+					ag:fire()
+					expect(ah).to.equal(false)
+				end)
+			end
+		end),
+		[41] = LPH_NO_VIRTUALIZE(function()
+			local aa, ab, ac, ad, ae = b(41)
+			local af = ac(ab.Parent.BaseMotor)
+			local ag = setmetatable({}, af)
+			ag.__index = ag
+			function ag.new(ah, aj)
+				assert(ah, "Missing argument #1: initialValue")
+				assert(typeof(ah) == "number", "initialValue must be a number!")
+				local c = setmetatable(af.new(), ag)
+				if aj ~= nil then
+					c._useImplicitConnections = aj
+				else
+					c._useImplicitConnections = true
+				end
+				c._goal = nil
+				c._state = { complete = true, value = ah }
+				return c
+			end
+			function ag.step(ah, aj)
+				if ah._state.complete then
+					return true
+				end
+				local c = ah._goal:step(ah._state, aj)
+				ah._state = c
+				ah._onStep:fire(c.value)
+				if c.complete then
+					if ah._useImplicitConnections then
+						ah:stop()
+					end
+					ah._onComplete:fire()
+				end
+				return c.complete
+			end
+			function ag.getValue(ah)
+				return ah._state.value
+			end
+			function ag.setGoal(ah, aj)
+				ah._state.complete = false
+				ah._goal = aj
+				ah._onStart:fire()
 				if ah._useImplicitConnections then
-					ah:stop()
+					ah:start()
 				end
-				ah._onComplete:fire()
 			end
-			return c.complete
-		end
-		function ag.getValue(ah)
-			return ah._state.value
-		end
-		function ag.setGoal(ah, aj)
-			ah._state.complete = false
-			ah._goal = aj
-			ah._onStart:fire()
-			if ah._useImplicitConnections then
-				ah:start()
+			function ag.__tostring(ah)
+				return "Motor(Single)"
 			end
-		end
-		function ag.__tostring(ah)
-			return "Motor(Single)"
-		end
-		return ag
-	end),
-	[42] = LPH_NO_VIRTUALIZE(function()
-		local aa, ab, ac, ad, ae = b(42)
-		return function()
-			local af, ag = ac(ab.Parent.SingleMotor), ac(ab.Parent.Instant)
-			it("should assign new state on step", function()
-				local ah = af.new(0, false)
-				ah:setGoal(ag.new(5))
-				ah:step(1.6666666666666665E-2)
-				expect(ah._state.complete).to.equal(true)
-				expect(ah._state.value).to.equal(5)
-			end)
-			it([[should invoke onComplete listeners when the goal is completed]], function()
-				local ah, aj = af.new(0, false), false
-				ah:onComplete(function()
-					aj = true
-				end)
-				ah:setGoal(ag.new(5))
-				ah:step(1.6666666666666665E-2)
-				expect(aj).to.equal(true)
-			end)
-			it("should start when the goal is set", function()
-				local ah, aj = af.new(0, false), false
-				ah:onStart(function()
-					aj = not aj
-				end)
-				ah:setGoal(ag.new(5))
-				expect(aj).to.equal(true)
-				ah:setGoal(ag.new(5))
-				expect(aj).to.equal(false)
-			end)
-		end
-	end),
-	[43] = LPH_NO_VIRTUALIZE(function()
-		local aa, ab, ac, ad, ae = b(43)
-		local af, ag, ah, aj = 0.001, 0.001, 0.0001, {}
-		aj.__index = aj
-		function aj.new(c, d)
-			assert(c, "Missing argument #1: targetValue")
-			d = d or {}
-			return setmetatable(
-				{ _targetValue = c, _frequency = d.frequency or 4, _dampingRatio = d.dampingRatio or 1 },
-				aj
-			)
-		end
-		function aj.step(c, d, e)
-			local f, g, h, i, j = c._dampingRatio, c._frequency * 2 * math.pi, c._targetValue, d.value, d.velocity or 0
-			local k, l, m, n = i - h, (math.exp(-f * g * e))
-			if f == 1 then
-				m = (k * (1 + g * e) + j * e) * l + h
-				n = (j * (1 - g * e) - k * (g * g * e)) * l
-			elseif f < 1 then
-				local o = math.sqrt(1 - f * f)
-				local p, s, t = math.cos(g * o * e), (math.sin(g * o * e))
-				if o > ah then
-					t = s / o
-				else
-					local u = e * g
-					t = u + ((u * u) * (o * o) * (o * o) / 20 - o * o) * (u * u * u) / 6
-				end
-				local u
-				if g * o > ah then
-					u = s / (g * o)
-				else
-					local v = g * o
-					u = e + ((e * e) * (v * v) * (v * v) / 20 - v * v) * (e * e * e) / 6
-				end
-				m = (k * (p + f * t) + j * u) * l + h
-				n = (j * (p - t * f) - k * (t * g)) * l
-			else
-				local o = math.sqrt(f * f - 1)
-				local p, s = -g * (f - o), -g * (f + o)
-				local t = (j - k * p) / (2 * g * o)
-				local u = k - t
-				local v, w = u * math.exp(p * e), t * math.exp(s * e)
-				m = v + w + h
-				n = v * p + w * s
-			end
-			local o = math.abs(n) < af and math.abs(m - h) < ag
-			return { complete = o, value = o and h or m, velocity = n }
-		end
-		return aj
-	end),
-	[44] = LPH_NO_VIRTUALIZE(function()
-		local aa, ab, ac, ad, ae = b(44)
-		return function()
-			local af, ag = ac(ab.Parent.SingleMotor), ac(ab.Parent.Spring)
-			describe("completed state", function()
-				local ah, aj = af.new(0, false), ag.new(1, { frequency = 2, dampingRatio = 0.75 })
-				ah:setGoal(aj)
-				for c = 1, 100 do
+			return ag
+		end),
+		[42] = LPH_NO_VIRTUALIZE(function()
+			local aa, ab, ac, ad, ae = b(42)
+			return function()
+				local af, ag = ac(ab.Parent.SingleMotor), ac(ab.Parent.Instant)
+				it("should assign new state on step", function()
+					local ah = af.new(0, false)
+					ah:setGoal(ag.new(5))
 					ah:step(1.6666666666666665E-2)
-				end
-				it("should complete", function()
 					expect(ah._state.complete).to.equal(true)
+					expect(ah._state.value).to.equal(5)
 				end)
-				it("should be exactly the goal value when completed", function()
-					expect(ah._state.value).to.equal(1)
+				it([[should invoke onComplete listeners when the goal is completed]], function()
+					local ah, aj = af.new(0, false), false
+					ah:onComplete(function()
+						aj = true
+					end)
+					ah:setGoal(ag.new(5))
+					ah:step(1.6666666666666665E-2)
+					expect(aj).to.equal(true)
 				end)
-			end)
-			it("should inherit velocity", function()
-				local ah = af.new(0, false)
-				ah._state = { complete = false, value = 0, velocity = -5 }
-				local aj = ag.new(1, { frequency = 2, dampingRatio = 1 })
-				ah:setGoal(aj)
-				ah:step(1.6666666666666665E-2)
-				expect(ah._state.velocity < 0).to.equal(true)
-			end)
-		end
-	end),
-	[45] = LPH_NO_VIRTUALIZE(function()
-		local aa, ab, ac, ad, ae = b(45)
-		local af = function(af)
-			local ag = tostring(af):match("^Motor%((.+)%)$")
-			if ag then
-				return true, ag
-			else
-				return false
+				it("should start when the goal is set", function()
+					local ah, aj = af.new(0, false), false
+					ah:onStart(function()
+						aj = not aj
+					end)
+					ah:setGoal(ag.new(5))
+					expect(aj).to.equal(true)
+					ah:setGoal(ag.new(5))
+					expect(aj).to.equal(false)
+				end)
 			end
-		end
-		return af
-	end),
-	[46] = LPH_NO_VIRTUALIZE(function()
-		local aa, ab, ac, ad, ae = b(46)
-		return function()
-			local af, ag, ah = ac(ab.Parent.isMotor), ac(ab.Parent.SingleMotor), ac(ab.Parent.GroupMotor)
-			local aj, c = ag.new(0), ah.new({})
-			it("should properly detect motors", function()
-				expect(af(aj)).to.equal(true)
-				expect(af(c)).to.equal(true)
-			end)
-			it("shouldn't detect things that aren't motors", function()
-				expect(af({})).to.equal(false)
-			end)
-			it("should return the proper motor type", function()
-				local d, e = af(aj)
-				local f, g = af(c)
-				expect(e).to.equal("Single")
-				expect(g).to.equal("Group")
-			end)
-		end
-	end),
-	[47] = LPH_NO_VIRTUALIZE(function()
-		local aa, ab, ac, ad, ae = b(47)
-		local af = { Names = { "Dark", "Darker", "Light", "Aqua", "Amethyst", "Rose" } }
-		for ag, ah in next, ab:GetChildren() do
-			local aj = ac(ah)
-			af[aj.Name] = aj
-		end
-		return af
-	end),
-	[48] = LPH_NO_VIRTUALIZE(function()
-		local aa, ab, ac, ad, ae = b(48)
-		return {
-			Name = "Amethyst",
-			Accent = Color3.fromRGB(97, 62, 167),
-			AcrylicMain = Color3.fromRGB(20, 20, 20),
-			AcrylicBorder = Color3.fromRGB(110, 90, 130),
-			AcrylicGradient = ColorSequence.new(Color3.fromRGB(85, 57, 139), Color3.fromRGB(40, 25, 65)),
-			AcrylicNoise = 0.92,
-			TitleBarLine = Color3.fromRGB(95, 75, 110),
-			Tab = Color3.fromRGB(160, 140, 180),
-			Element = Color3.fromRGB(140, 120, 160),
-			ElementBorder = Color3.fromRGB(60, 50, 70),
-			InElementBorder = Color3.fromRGB(100, 90, 110),
-			ElementTransparency = 0.87,
-			ToggleSlider = Color3.fromRGB(140, 120, 160),
-			ToggleToggled = Color3.fromRGB(0, 0, 0),
-			SliderRail = Color3.fromRGB(140, 120, 160),
-			DropdownFrame = Color3.fromRGB(170, 160, 200),
-			DropdownHolder = Color3.fromRGB(60, 45, 80),
-			DropdownBorder = Color3.fromRGB(50, 40, 65),
-			DropdownOption = Color3.fromRGB(140, 120, 160),
-			Keybind = Color3.fromRGB(140, 120, 160),
-			Input = Color3.fromRGB(140, 120, 160),
-			InputFocused = Color3.fromRGB(20, 10, 30),
-			InputIndicator = Color3.fromRGB(170, 150, 190),
-			Dialog = Color3.fromRGB(60, 45, 80),
-			DialogHolder = Color3.fromRGB(45, 30, 65),
-			DialogHolderLine = Color3.fromRGB(40, 25, 60),
-			DialogButton = Color3.fromRGB(60, 45, 80),
-			DialogButtonBorder = Color3.fromRGB(95, 80, 110),
-			DialogBorder = Color3.fromRGB(85, 70, 100),
-			DialogInput = Color3.fromRGB(70, 55, 85),
-			DialogInputLine = Color3.fromRGB(175, 160, 190),
-			Text = Color3.fromRGB(240, 240, 240),
-			SubText = Color3.fromRGB(170, 170, 170),
-			Hover = Color3.fromRGB(140, 120, 160),
-			HoverChange = 0.04,
-		}
-	end),
-	[49] = LPH_NO_VIRTUALIZE(function()
-		local aa, ab, ac, ad, ae = b(49)
-		return {
-			Name = "Aqua",
-			Accent = Color3.fromRGB(60, 165, 165),
-			AcrylicMain = Color3.fromRGB(20, 20, 20),
-			AcrylicBorder = Color3.fromRGB(50, 100, 100),
-			AcrylicGradient = ColorSequence.new(Color3.fromRGB(60, 140, 140), Color3.fromRGB(40, 80, 80)),
-			AcrylicNoise = 0.92,
-			TitleBarLine = Color3.fromRGB(60, 120, 120),
-			Tab = Color3.fromRGB(140, 180, 180),
-			Element = Color3.fromRGB(110, 160, 160),
-			ElementBorder = Color3.fromRGB(40, 70, 70),
-			InElementBorder = Color3.fromRGB(80, 110, 110),
-			ElementTransparency = 0.84,
-			ToggleSlider = Color3.fromRGB(110, 160, 160),
-			ToggleToggled = Color3.fromRGB(0, 0, 0),
-			SliderRail = Color3.fromRGB(110, 160, 160),
-			DropdownFrame = Color3.fromRGB(160, 200, 200),
-			DropdownHolder = Color3.fromRGB(40, 80, 80),
-			DropdownBorder = Color3.fromRGB(40, 65, 65),
-			DropdownOption = Color3.fromRGB(110, 160, 160),
-			Keybind = Color3.fromRGB(110, 160, 160),
-			Input = Color3.fromRGB(110, 160, 160),
-			InputFocused = Color3.fromRGB(20, 10, 30),
-			InputIndicator = Color3.fromRGB(130, 170, 170),
-			Dialog = Color3.fromRGB(40, 80, 80),
-			DialogHolder = Color3.fromRGB(30, 60, 60),
-			DialogHolderLine = Color3.fromRGB(25, 50, 50),
-			DialogButton = Color3.fromRGB(40, 80, 80),
-			DialogButtonBorder = Color3.fromRGB(80, 110, 110),
-			DialogBorder = Color3.fromRGB(50, 100, 100),
-			DialogInput = Color3.fromRGB(45, 90, 90),
-			DialogInputLine = Color3.fromRGB(130, 170, 170),
-			Text = Color3.fromRGB(240, 240, 240),
-			SubText = Color3.fromRGB(170, 170, 170),
-			Hover = Color3.fromRGB(110, 160, 160),
-			HoverChange = 0.04,
-		}
-	end),
-	[50] = LPH_NO_VIRTUALIZE(function()
-		local aa, ab, ac, ad, ae = b(50)
-		return {
-			Name = "Dark",
-			Accent = Color3.fromRGB(96, 205, 255),
-			AcrylicMain = Color3.fromRGB(60, 60, 60),
-			AcrylicBorder = Color3.fromRGB(90, 90, 90),
-			AcrylicGradient = ColorSequence.new(Color3.fromRGB(40, 40, 40), Color3.fromRGB(40, 40, 40)),
-			AcrylicNoise = 0.9,
-			TitleBarLine = Color3.fromRGB(75, 75, 75),
-			Tab = Color3.fromRGB(120, 120, 120),
-			Element = Color3.fromRGB(120, 120, 120),
-			ElementBorder = Color3.fromRGB(35, 35, 35),
-			InElementBorder = Color3.fromRGB(90, 90, 90),
-			ElementTransparency = 0.87,
-			ToggleSlider = Color3.fromRGB(120, 120, 120),
-			ToggleToggled = Color3.fromRGB(0, 0, 0),
-			SliderRail = Color3.fromRGB(120, 120, 120),
-			DropdownFrame = Color3.fromRGB(160, 160, 160),
-			DropdownHolder = Color3.fromRGB(45, 45, 45),
-			DropdownBorder = Color3.fromRGB(35, 35, 35),
-			DropdownOption = Color3.fromRGB(120, 120, 120),
-			Keybind = Color3.fromRGB(120, 120, 120),
-			Input = Color3.fromRGB(160, 160, 160),
-			InputFocused = Color3.fromRGB(10, 10, 10),
-			InputIndicator = Color3.fromRGB(150, 150, 150),
-			Dialog = Color3.fromRGB(45, 45, 45),
-			DialogHolder = Color3.fromRGB(35, 35, 35),
-			DialogHolderLine = Color3.fromRGB(30, 30, 30),
-			DialogButton = Color3.fromRGB(45, 45, 45),
-			DialogButtonBorder = Color3.fromRGB(80, 80, 80),
-			DialogBorder = Color3.fromRGB(70, 70, 70),
-			DialogInput = Color3.fromRGB(55, 55, 55),
-			DialogInputLine = Color3.fromRGB(160, 160, 160),
-			Text = Color3.fromRGB(240, 240, 240),
-			SubText = Color3.fromRGB(170, 170, 170),
-			Hover = Color3.fromRGB(120, 120, 120),
-			HoverChange = 0.07,
-		}
-	end),
-	[51] = LPH_NO_VIRTUALIZE(function()
-		local aa, ab, ac, ad, ae = b(51)
-		return {
-			Name = "Darker",
-			Accent = Color3.fromRGB(72, 138, 182),
-			AcrylicMain = Color3.fromRGB(30, 30, 30),
-			AcrylicBorder = Color3.fromRGB(60, 60, 60),
-			AcrylicGradient = ColorSequence.new(Color3.fromRGB(25, 25, 25), Color3.fromRGB(15, 15, 15)),
-			AcrylicNoise = 0.94,
-			TitleBarLine = Color3.fromRGB(65, 65, 65),
-			Tab = Color3.fromRGB(100, 100, 100),
-			Element = Color3.fromRGB(70, 70, 70),
-			ElementBorder = Color3.fromRGB(25, 25, 25),
-			InElementBorder = Color3.fromRGB(55, 55, 55),
-			ElementTransparency = 0.82,
-			DropdownFrame = Color3.fromRGB(120, 120, 120),
-			DropdownHolder = Color3.fromRGB(35, 35, 35),
-			DropdownBorder = Color3.fromRGB(25, 25, 25),
-			Dialog = Color3.fromRGB(35, 35, 35),
-			DialogHolder = Color3.fromRGB(25, 25, 25),
-			DialogHolderLine = Color3.fromRGB(20, 20, 20),
-			DialogButton = Color3.fromRGB(35, 35, 35),
-			DialogButtonBorder = Color3.fromRGB(55, 55, 55),
-			DialogBorder = Color3.fromRGB(50, 50, 50),
-			DialogInput = Color3.fromRGB(45, 45, 45),
-			DialogInputLine = Color3.fromRGB(120, 120, 120),
-		}
-	end),
-	[52] = LPH_NO_VIRTUALIZE(function()
-		local aa, ab, ac, ad, ae = b(52)
-		return {
-			Name = "Light",
-			Accent = Color3.fromRGB(0, 103, 192),
-			AcrylicMain = Color3.fromRGB(200, 200, 200),
-			AcrylicBorder = Color3.fromRGB(120, 120, 120),
-			AcrylicGradient = ColorSequence.new(Color3.fromRGB(255, 255, 255), Color3.fromRGB(255, 255, 255)),
-			AcrylicNoise = 0.96,
-			TitleBarLine = Color3.fromRGB(160, 160, 160),
-			Tab = Color3.fromRGB(90, 90, 90),
-			Element = Color3.fromRGB(255, 255, 255),
-			ElementBorder = Color3.fromRGB(180, 180, 180),
-			InElementBorder = Color3.fromRGB(150, 150, 150),
-			ElementTransparency = 0.65,
-			ToggleSlider = Color3.fromRGB(40, 40, 40),
-			ToggleToggled = Color3.fromRGB(255, 255, 255),
-			SliderRail = Color3.fromRGB(40, 40, 40),
-			DropdownFrame = Color3.fromRGB(200, 200, 200),
-			DropdownHolder = Color3.fromRGB(240, 240, 240),
-			DropdownBorder = Color3.fromRGB(200, 200, 200),
-			DropdownOption = Color3.fromRGB(150, 150, 150),
-			Keybind = Color3.fromRGB(120, 120, 120),
-			Input = Color3.fromRGB(200, 200, 200),
-			InputFocused = Color3.fromRGB(100, 100, 100),
-			InputIndicator = Color3.fromRGB(80, 80, 80),
-			Dialog = Color3.fromRGB(255, 255, 255),
-			DialogHolder = Color3.fromRGB(240, 240, 240),
-			DialogHolderLine = Color3.fromRGB(228, 228, 228),
-			DialogButton = Color3.fromRGB(255, 255, 255),
-			DialogButtonBorder = Color3.fromRGB(190, 190, 190),
-			DialogBorder = Color3.fromRGB(140, 140, 140),
-			DialogInput = Color3.fromRGB(250, 250, 250),
-			DialogInputLine = Color3.fromRGB(160, 160, 160),
-			Text = Color3.fromRGB(0, 0, 0),
-			SubText = Color3.fromRGB(40, 40, 40),
-			Hover = Color3.fromRGB(50, 50, 50),
-			HoverChange = 0.16,
-		}
-	end),
-	[53] = LPH_NO_VIRTUALIZE(function()
-		local aa, ab, ac, ad, ae = b(53)
-		return {
-			Name = "Rose",
-			Accent = Color3.fromRGB(180, 55, 90),
-			AcrylicMain = Color3.fromRGB(40, 40, 40),
-			AcrylicBorder = Color3.fromRGB(130, 90, 110),
-			AcrylicGradient = ColorSequence.new(Color3.fromRGB(190, 60, 135), Color3.fromRGB(165, 50, 70)),
-			AcrylicNoise = 0.92,
-			TitleBarLine = Color3.fromRGB(140, 85, 105),
-			Tab = Color3.fromRGB(180, 140, 160),
-			Element = Color3.fromRGB(200, 120, 170),
-			ElementBorder = Color3.fromRGB(110, 70, 85),
-			InElementBorder = Color3.fromRGB(120, 90, 90),
-			ElementTransparency = 0.86,
-			ToggleSlider = Color3.fromRGB(200, 120, 170),
-			ToggleToggled = Color3.fromRGB(0, 0, 0),
-			SliderRail = Color3.fromRGB(200, 120, 170),
-			DropdownFrame = Color3.fromRGB(200, 160, 180),
-			DropdownHolder = Color3.fromRGB(120, 50, 75),
-			DropdownBorder = Color3.fromRGB(90, 40, 55),
-			DropdownOption = Color3.fromRGB(200, 120, 170),
-			Keybind = Color3.fromRGB(200, 120, 170),
-			Input = Color3.fromRGB(200, 120, 170),
-			InputFocused = Color3.fromRGB(20, 10, 30),
-			InputIndicator = Color3.fromRGB(170, 150, 190),
-			Dialog = Color3.fromRGB(120, 50, 75),
-			DialogHolder = Color3.fromRGB(95, 40, 60),
-			DialogHolderLine = Color3.fromRGB(90, 35, 55),
-			DialogButton = Color3.fromRGB(120, 50, 75),
-			DialogButtonBorder = Color3.fromRGB(155, 90, 115),
-			DialogBorder = Color3.fromRGB(100, 70, 90),
-			DialogInput = Color3.fromRGB(135, 55, 80),
-			DialogInputLine = Color3.fromRGB(190, 160, 180),
-			Text = Color3.fromRGB(240, 240, 240),
-			SubText = Color3.fromRGB(170, 170, 170),
-			Hover = Color3.fromRGB(200, 120, 170),
-			HoverChange = 0.04,
-		}
-	end),
-}
-do
-	local ab, ac, ad, ae, af, ag, ah, aj, c, e, f, g, h, i, j, k =
-		task,
-		setmetatable,
-		error,
-		newproxy,
-		getmetatable,
-		next,
-		table,
-		unpack,
-		coroutine,
-		script,
-		type,
-		require,
-		pcall,
-		getfenv,
-		setfenv,
-		rawget
-	local l, m, n, o, p, s, t, u, v, w, x =
-		ah.insert, ah.remove, ah.freeze or LPH_NO_VIRTUALIZE(function(l)
-			return l
-		end), ab and ab.defer or LPH_NO_VIRTUALIZE(function(l, ...)
-			local m = c.create(l)
-			c.resume(m, ...)
-			return m
-		end), "0.0.0-venv", {}, {}, {}, {}, {}, {}
-	local y, z =
-		{
-			GetChildren = LPH_NO_VIRTUALIZE(function(y)
-				local z, A = x[y], {}
-				for B in ag, z do
-					l(A, B)
+		end),
+		[43] = LPH_NO_VIRTUALIZE(function()
+			local aa, ab, ac, ad, ae = b(43)
+			local af, ag, ah, aj = 0.001, 0.001, 0.0001, {}
+			aj.__index = aj
+			function aj.new(c, d)
+				assert(c, "Missing argument #1: targetValue")
+				d = d or {}
+				return setmetatable(
+					{ _targetValue = c, _frequency = d.frequency or 4, _dampingRatio = d.dampingRatio or 1 },
+					aj
+				)
+			end
+			function aj.step(c, d, e)
+				local f, g, h, i, j =
+					c._dampingRatio, c._frequency * 2 * math.pi, c._targetValue, d.value, d.velocity or 0
+				local k, l, m, n = i - h, (math.exp(-f * g * e))
+				if f == 1 then
+					m = (k * (1 + g * e) + j * e) * l + h
+					n = (j * (1 - g * e) - k * (g * g * e)) * l
+				elseif f < 1 then
+					local o = math.sqrt(1 - f * f)
+					local p, s, t = math.cos(g * o * e), (math.sin(g * o * e))
+					if o > ah then
+						t = s / o
+					else
+						local u = e * g
+						t = u + ((u * u) * (o * o) * (o * o) / 20 - o * o) * (u * u * u) / 6
+					end
+					local u
+					if g * o > ah then
+						u = s / (g * o)
+					else
+						local v = g * o
+						u = e + ((e * e) * (v * v) * (v * v) / 20 - v * v) * (e * e * e) / 6
+					end
+					m = (k * (p + f * t) + j * u) * l + h
+					n = (j * (p - t * f) - k * (t * g)) * l
+				else
+					local o = math.sqrt(f * f - 1)
+					local p, s = -g * (f - o), -g * (f + o)
+					local t = (j - k * p) / (2 * g * o)
+					local u = k - t
+					local v, w = u * math.exp(p * e), t * math.exp(s * e)
+					m = v + w + h
+					n = v * p + w * s
 				end
-				return A
-			end),
-			FindFirstChild = LPH_NO_VIRTUALIZE(function(y, z)
-				if not z then
-					ad("Argument 1 missing or nil", 2)
+				local o = math.abs(n) < af and math.abs(m - h) < ag
+				return { complete = o, value = o and h or m, velocity = n }
+			end
+			return aj
+		end),
+		[44] = LPH_NO_VIRTUALIZE(function()
+			local aa, ab, ac, ad, ae = b(44)
+			return function()
+				local af, ag = ac(ab.Parent.SingleMotor), ac(ab.Parent.Spring)
+				describe("completed state", function()
+					local ah, aj = af.new(0, false), ag.new(1, { frequency = 2, dampingRatio = 0.75 })
+					ah:setGoal(aj)
+					for c = 1, 100 do
+						ah:step(1.6666666666666665E-2)
+					end
+					it("should complete", function()
+						expect(ah._state.complete).to.equal(true)
+					end)
+					it("should be exactly the goal value when completed", function()
+						expect(ah._state.value).to.equal(1)
+					end)
+				end)
+				it("should inherit velocity", function()
+					local ah = af.new(0, false)
+					ah._state = { complete = false, value = 0, velocity = -5 }
+					local aj = ag.new(1, { frequency = 2, dampingRatio = 1 })
+					ah:setGoal(aj)
+					ah:step(1.6666666666666665E-2)
+					expect(ah._state.velocity < 0).to.equal(true)
+				end)
+			end
+		end),
+		[45] = LPH_NO_VIRTUALIZE(function()
+			local aa, ab, ac, ad, ae = b(45)
+			local af = function(af)
+				local ag = tostring(af):match("^Motor%((.+)%)$")
+				if ag then
+					return true, ag
+				else
+					return false
 				end
-				for A in ag, x[y] do
-					if A.Name == z then
-						return A
+			end
+			return af
+		end),
+		[46] = LPH_NO_VIRTUALIZE(function()
+			local aa, ab, ac, ad, ae = b(46)
+			return function()
+				local af, ag, ah = ac(ab.Parent.isMotor), ac(ab.Parent.SingleMotor), ac(ab.Parent.GroupMotor)
+				local aj, c = ag.new(0), ah.new({})
+				it("should properly detect motors", function()
+					expect(af(aj)).to.equal(true)
+					expect(af(c)).to.equal(true)
+				end)
+				it("shouldn't detect things that aren't motors", function()
+					expect(af({})).to.equal(false)
+				end)
+				it("should return the proper motor type", function()
+					local d, e = af(aj)
+					local f, g = af(c)
+					expect(e).to.equal("Single")
+					expect(g).to.equal("Group")
+				end)
+			end
+		end),
+		[47] = LPH_NO_VIRTUALIZE(function()
+			local aa, ab, ac, ad, ae = b(47)
+			local af = { Names = { "Dark", "Darker", "Light", "Aqua", "Amethyst", "Rose" } }
+			for ag, ah in next, ab:GetChildren() do
+				local aj = ac(ah)
+				af[aj.Name] = aj
+			end
+			return af
+		end),
+		[48] = LPH_NO_VIRTUALIZE(function()
+			local aa, ab, ac, ad, ae = b(48)
+			return {
+				Name = "Amethyst",
+				Accent = Color3.fromRGB(97, 62, 167),
+				AcrylicMain = Color3.fromRGB(20, 20, 20),
+				AcrylicBorder = Color3.fromRGB(110, 90, 130),
+				AcrylicGradient = ColorSequence.new(Color3.fromRGB(85, 57, 139), Color3.fromRGB(40, 25, 65)),
+				AcrylicNoise = 0.92,
+				TitleBarLine = Color3.fromRGB(95, 75, 110),
+				Tab = Color3.fromRGB(160, 140, 180),
+				Element = Color3.fromRGB(140, 120, 160),
+				ElementBorder = Color3.fromRGB(60, 50, 70),
+				InElementBorder = Color3.fromRGB(100, 90, 110),
+				ElementTransparency = 0.87,
+				ToggleSlider = Color3.fromRGB(140, 120, 160),
+				ToggleToggled = Color3.fromRGB(0, 0, 0),
+				SliderRail = Color3.fromRGB(140, 120, 160),
+				DropdownFrame = Color3.fromRGB(170, 160, 200),
+				DropdownHolder = Color3.fromRGB(60, 45, 80),
+				DropdownBorder = Color3.fromRGB(50, 40, 65),
+				DropdownOption = Color3.fromRGB(140, 120, 160),
+				Keybind = Color3.fromRGB(140, 120, 160),
+				Input = Color3.fromRGB(140, 120, 160),
+				InputFocused = Color3.fromRGB(20, 10, 30),
+				InputIndicator = Color3.fromRGB(170, 150, 190),
+				Dialog = Color3.fromRGB(60, 45, 80),
+				DialogHolder = Color3.fromRGB(45, 30, 65),
+				DialogHolderLine = Color3.fromRGB(40, 25, 60),
+				DialogButton = Color3.fromRGB(60, 45, 80),
+				DialogButtonBorder = Color3.fromRGB(95, 80, 110),
+				DialogBorder = Color3.fromRGB(85, 70, 100),
+				DialogInput = Color3.fromRGB(70, 55, 85),
+				DialogInputLine = Color3.fromRGB(175, 160, 190),
+				Text = Color3.fromRGB(240, 240, 240),
+				SubText = Color3.fromRGB(170, 170, 170),
+				Hover = Color3.fromRGB(140, 120, 160),
+				HoverChange = 0.04,
+			}
+		end),
+		[49] = LPH_NO_VIRTUALIZE(function()
+			local aa, ab, ac, ad, ae = b(49)
+			return {
+				Name = "Aqua",
+				Accent = Color3.fromRGB(60, 165, 165),
+				AcrylicMain = Color3.fromRGB(20, 20, 20),
+				AcrylicBorder = Color3.fromRGB(50, 100, 100),
+				AcrylicGradient = ColorSequence.new(Color3.fromRGB(60, 140, 140), Color3.fromRGB(40, 80, 80)),
+				AcrylicNoise = 0.92,
+				TitleBarLine = Color3.fromRGB(60, 120, 120),
+				Tab = Color3.fromRGB(140, 180, 180),
+				Element = Color3.fromRGB(110, 160, 160),
+				ElementBorder = Color3.fromRGB(40, 70, 70),
+				InElementBorder = Color3.fromRGB(80, 110, 110),
+				ElementTransparency = 0.84,
+				ToggleSlider = Color3.fromRGB(110, 160, 160),
+				ToggleToggled = Color3.fromRGB(0, 0, 0),
+				SliderRail = Color3.fromRGB(110, 160, 160),
+				DropdownFrame = Color3.fromRGB(160, 200, 200),
+				DropdownHolder = Color3.fromRGB(40, 80, 80),
+				DropdownBorder = Color3.fromRGB(40, 65, 65),
+				DropdownOption = Color3.fromRGB(110, 160, 160),
+				Keybind = Color3.fromRGB(110, 160, 160),
+				Input = Color3.fromRGB(110, 160, 160),
+				InputFocused = Color3.fromRGB(20, 10, 30),
+				InputIndicator = Color3.fromRGB(130, 170, 170),
+				Dialog = Color3.fromRGB(40, 80, 80),
+				DialogHolder = Color3.fromRGB(30, 60, 60),
+				DialogHolderLine = Color3.fromRGB(25, 50, 50),
+				DialogButton = Color3.fromRGB(40, 80, 80),
+				DialogButtonBorder = Color3.fromRGB(80, 110, 110),
+				DialogBorder = Color3.fromRGB(50, 100, 100),
+				DialogInput = Color3.fromRGB(45, 90, 90),
+				DialogInputLine = Color3.fromRGB(130, 170, 170),
+				Text = Color3.fromRGB(240, 240, 240),
+				SubText = Color3.fromRGB(170, 170, 170),
+				Hover = Color3.fromRGB(110, 160, 160),
+				HoverChange = 0.04,
+			}
+		end),
+		[50] = LPH_NO_VIRTUALIZE(function()
+			local aa, ab, ac, ad, ae = b(50)
+			return {
+				Name = "Dark",
+				Accent = Color3.fromRGB(96, 205, 255),
+				AcrylicMain = Color3.fromRGB(60, 60, 60),
+				AcrylicBorder = Color3.fromRGB(90, 90, 90),
+				AcrylicGradient = ColorSequence.new(Color3.fromRGB(40, 40, 40), Color3.fromRGB(40, 40, 40)),
+				AcrylicNoise = 0.9,
+				TitleBarLine = Color3.fromRGB(75, 75, 75),
+				Tab = Color3.fromRGB(120, 120, 120),
+				Element = Color3.fromRGB(120, 120, 120),
+				ElementBorder = Color3.fromRGB(35, 35, 35),
+				InElementBorder = Color3.fromRGB(90, 90, 90),
+				ElementTransparency = 0.87,
+				ToggleSlider = Color3.fromRGB(120, 120, 120),
+				ToggleToggled = Color3.fromRGB(0, 0, 0),
+				SliderRail = Color3.fromRGB(120, 120, 120),
+				DropdownFrame = Color3.fromRGB(160, 160, 160),
+				DropdownHolder = Color3.fromRGB(45, 45, 45),
+				DropdownBorder = Color3.fromRGB(35, 35, 35),
+				DropdownOption = Color3.fromRGB(120, 120, 120),
+				Keybind = Color3.fromRGB(120, 120, 120),
+				Input = Color3.fromRGB(160, 160, 160),
+				InputFocused = Color3.fromRGB(10, 10, 10),
+				InputIndicator = Color3.fromRGB(150, 150, 150),
+				Dialog = Color3.fromRGB(45, 45, 45),
+				DialogHolder = Color3.fromRGB(35, 35, 35),
+				DialogHolderLine = Color3.fromRGB(30, 30, 30),
+				DialogButton = Color3.fromRGB(45, 45, 45),
+				DialogButtonBorder = Color3.fromRGB(80, 80, 80),
+				DialogBorder = Color3.fromRGB(70, 70, 70),
+				DialogInput = Color3.fromRGB(55, 55, 55),
+				DialogInputLine = Color3.fromRGB(160, 160, 160),
+				Text = Color3.fromRGB(240, 240, 240),
+				SubText = Color3.fromRGB(170, 170, 170),
+				Hover = Color3.fromRGB(120, 120, 120),
+				HoverChange = 0.07,
+			}
+		end),
+		[51] = LPH_NO_VIRTUALIZE(function()
+			local aa, ab, ac, ad, ae = b(51)
+			return {
+				Name = "Darker",
+				Accent = Color3.fromRGB(72, 138, 182),
+				AcrylicMain = Color3.fromRGB(30, 30, 30),
+				AcrylicBorder = Color3.fromRGB(60, 60, 60),
+				AcrylicGradient = ColorSequence.new(Color3.fromRGB(25, 25, 25), Color3.fromRGB(15, 15, 15)),
+				AcrylicNoise = 0.94,
+				TitleBarLine = Color3.fromRGB(65, 65, 65),
+				Tab = Color3.fromRGB(100, 100, 100),
+				Element = Color3.fromRGB(70, 70, 70),
+				ElementBorder = Color3.fromRGB(25, 25, 25),
+				InElementBorder = Color3.fromRGB(55, 55, 55),
+				ElementTransparency = 0.82,
+				DropdownFrame = Color3.fromRGB(120, 120, 120),
+				DropdownHolder = Color3.fromRGB(35, 35, 35),
+				DropdownBorder = Color3.fromRGB(25, 25, 25),
+				Dialog = Color3.fromRGB(35, 35, 35),
+				DialogHolder = Color3.fromRGB(25, 25, 25),
+				DialogHolderLine = Color3.fromRGB(20, 20, 20),
+				DialogButton = Color3.fromRGB(35, 35, 35),
+				DialogButtonBorder = Color3.fromRGB(55, 55, 55),
+				DialogBorder = Color3.fromRGB(50, 50, 50),
+				DialogInput = Color3.fromRGB(45, 45, 45),
+				DialogInputLine = Color3.fromRGB(120, 120, 120),
+			}
+		end),
+		[52] = LPH_NO_VIRTUALIZE(function()
+			local aa, ab, ac, ad, ae = b(52)
+			return {
+				Name = "Light",
+				Accent = Color3.fromRGB(0, 103, 192),
+				AcrylicMain = Color3.fromRGB(200, 200, 200),
+				AcrylicBorder = Color3.fromRGB(120, 120, 120),
+				AcrylicGradient = ColorSequence.new(Color3.fromRGB(255, 255, 255), Color3.fromRGB(255, 255, 255)),
+				AcrylicNoise = 0.96,
+				TitleBarLine = Color3.fromRGB(160, 160, 160),
+				Tab = Color3.fromRGB(90, 90, 90),
+				Element = Color3.fromRGB(255, 255, 255),
+				ElementBorder = Color3.fromRGB(180, 180, 180),
+				InElementBorder = Color3.fromRGB(150, 150, 150),
+				ElementTransparency = 0.65,
+				ToggleSlider = Color3.fromRGB(40, 40, 40),
+				ToggleToggled = Color3.fromRGB(255, 255, 255),
+				SliderRail = Color3.fromRGB(40, 40, 40),
+				DropdownFrame = Color3.fromRGB(200, 200, 200),
+				DropdownHolder = Color3.fromRGB(240, 240, 240),
+				DropdownBorder = Color3.fromRGB(200, 200, 200),
+				DropdownOption = Color3.fromRGB(150, 150, 150),
+				Keybind = Color3.fromRGB(120, 120, 120),
+				Input = Color3.fromRGB(200, 200, 200),
+				InputFocused = Color3.fromRGB(100, 100, 100),
+				InputIndicator = Color3.fromRGB(80, 80, 80),
+				Dialog = Color3.fromRGB(255, 255, 255),
+				DialogHolder = Color3.fromRGB(240, 240, 240),
+				DialogHolderLine = Color3.fromRGB(228, 228, 228),
+				DialogButton = Color3.fromRGB(255, 255, 255),
+				DialogButtonBorder = Color3.fromRGB(190, 190, 190),
+				DialogBorder = Color3.fromRGB(140, 140, 140),
+				DialogInput = Color3.fromRGB(250, 250, 250),
+				DialogInputLine = Color3.fromRGB(160, 160, 160),
+				Text = Color3.fromRGB(0, 0, 0),
+				SubText = Color3.fromRGB(40, 40, 40),
+				Hover = Color3.fromRGB(50, 50, 50),
+				HoverChange = 0.16,
+			}
+		end),
+		[53] = LPH_NO_VIRTUALIZE(function()
+			local aa, ab, ac, ad, ae = b(53)
+			return {
+				Name = "Rose",
+				Accent = Color3.fromRGB(180, 55, 90),
+				AcrylicMain = Color3.fromRGB(40, 40, 40),
+				AcrylicBorder = Color3.fromRGB(130, 90, 110),
+				AcrylicGradient = ColorSequence.new(Color3.fromRGB(190, 60, 135), Color3.fromRGB(165, 50, 70)),
+				AcrylicNoise = 0.92,
+				TitleBarLine = Color3.fromRGB(140, 85, 105),
+				Tab = Color3.fromRGB(180, 140, 160),
+				Element = Color3.fromRGB(200, 120, 170),
+				ElementBorder = Color3.fromRGB(110, 70, 85),
+				InElementBorder = Color3.fromRGB(120, 90, 90),
+				ElementTransparency = 0.86,
+				ToggleSlider = Color3.fromRGB(200, 120, 170),
+				ToggleToggled = Color3.fromRGB(0, 0, 0),
+				SliderRail = Color3.fromRGB(200, 120, 170),
+				DropdownFrame = Color3.fromRGB(200, 160, 180),
+				DropdownHolder = Color3.fromRGB(120, 50, 75),
+				DropdownBorder = Color3.fromRGB(90, 40, 55),
+				DropdownOption = Color3.fromRGB(200, 120, 170),
+				Keybind = Color3.fromRGB(200, 120, 170),
+				Input = Color3.fromRGB(200, 120, 170),
+				InputFocused = Color3.fromRGB(20, 10, 30),
+				InputIndicator = Color3.fromRGB(170, 150, 190),
+				Dialog = Color3.fromRGB(120, 50, 75),
+				DialogHolder = Color3.fromRGB(95, 40, 60),
+				DialogHolderLine = Color3.fromRGB(90, 35, 55),
+				DialogButton = Color3.fromRGB(120, 50, 75),
+				DialogButtonBorder = Color3.fromRGB(155, 90, 115),
+				DialogBorder = Color3.fromRGB(100, 70, 90),
+				DialogInput = Color3.fromRGB(135, 55, 80),
+				DialogInputLine = Color3.fromRGB(190, 160, 180),
+				Text = Color3.fromRGB(240, 240, 240),
+				SubText = Color3.fromRGB(170, 170, 170),
+				Hover = Color3.fromRGB(200, 120, 170),
+				HoverChange = 0.04,
+			}
+		end),
+	}
+	do
+		local ab, ac, ad, ae, af, ag, ah, aj, c, e, f, g, h, i, j, k =
+			task,
+			setmetatable,
+			error,
+			newproxy,
+			getmetatable,
+			next,
+			table,
+			unpack,
+			coroutine,
+			script,
+			type,
+			require,
+			pcall,
+			getfenv,
+			setfenv,
+			rawget
+		local l, m, n, o, p, s, t, u, v, w, x =
+			ah.insert, ah.remove, ah.freeze or LPH_NO_VIRTUALIZE(function(l)
+				return l
+			end), ab and ab.defer or LPH_NO_VIRTUALIZE(function(l, ...)
+				local m = c.create(l)
+				c.resume(m, ...)
+				return m
+			end), "0.0.0-venv", {}, {}, {}, {}, {}, {}
+		local y, z =
+			{
+				GetChildren = LPH_NO_VIRTUALIZE(function(y)
+					local z, A = x[y], {}
+					for B in ag, z do
+						l(A, B)
+					end
+					return A
+				end),
+				FindFirstChild = LPH_NO_VIRTUALIZE(function(y, z)
+					if not z then
+						ad("Argument 1 missing or nil", 2)
+					end
+					for A in ag, x[y] do
+						if A.Name == z then
+							return A
+						end
+					end
+					return
+				end),
+				GetFullName = LPH_NO_VIRTUALIZE(function(y)
+					local z, A = y.Name, y.Parent
+					while A do
+						z = A.Name .. "." .. z
+						A = A.Parent
+					end
+					return "VirtualEnv." .. z
+				end),
+			}, {}
+		for A, B in ag, y do
+			z[A] = LPH_NO_VIRTUALIZE(function(C, ...)
+				if not x[C] then
+					ad("Expected ':' not '.' calling member function " .. A, 1)
+				end
+				return B(C, ...)
+			end)
+		end
+		local C = LPH_NO_VIRTUALIZE(function(C, D, E)
+			local F, G, H, I, J =
+				ac({}, { __mode = "k" }), function(F)
+					ad(F .. " is not a valid (virtual) member of " .. C .. ' "' .. D .. '"', 1)
+				end, function(F)
+					ad("Unable to assign (virtual) property " .. F .. ". Property is read only", 1)
+				end, (ae(true))
+			local K = af(I)
+			K.__index = function(L, M)
+				if M == "ClassName" then
+					return C
+				elseif M == "Name" then
+					return D
+				elseif M == "Parent" then
+					return E
+				elseif C == "StringValue" and M == "Value" then
+					return J
+				else
+					local N = z[M]
+					if N then
+						return N
 					end
 				end
-				return
-			end),
-			GetFullName = LPH_NO_VIRTUALIZE(function(y)
-				local z, A = y.Name, y.Parent
-				while A do
-					z = A.Name .. "." .. z
-					A = A.Parent
+				for N in ag, F do
+					if N.Name == M then
+						return N
+					end
 				end
-				return "VirtualEnv." .. z
-			end),
-		}, {}
-	for A, B in ag, y do
-		z[A] = LPH_NO_VIRTUALIZE(function(C, ...)
-			if not x[C] then
-				ad("Expected ':' not '.' calling member function " .. A, 1)
-			end
-			return B(C, ...)
-		end)
-	end
-	local C = LPH_NO_VIRTUALIZE(function(C, D, E)
-		local F, G, H, I, J =
-			ac({}, { __mode = "k" }), function(F)
-				ad(F .. " is not a valid (virtual) member of " .. C .. ' "' .. D .. '"', 1)
-			end, function(F)
-				ad("Unable to assign (virtual) property " .. F .. ". Property is read only", 1)
-			end, (ae(true))
-		local K = af(I)
-		K.__index = function(L, M)
-			if M == "ClassName" then
-				return C
-			elseif M == "Name" then
-				return D
-			elseif M == "Parent" then
-				return E
-			elseif C == "StringValue" and M == "Value" then
-				return J
-			else
-				local N = z[M]
-				if N then
-					return N
-				end
-			end
-			for N in ag, F do
-				if N.Name == M then
-					return N
-				end
-			end
-			G(M)
-		end
-		K.__newindex = function(L, M, N)
-			if M == "ClassName" then
-				H(M)
-			elseif M == "Name" then
-				D = N
-			elseif M == "Parent" then
-				if N == I then
-					return
-				end
-				if E ~= nil then
-					x[E][I] = nil
-				end
-				E = N
-				if N ~= nil then
-					x[N][I] = true
-				end
-			elseif C == "StringValue" and M == "Value" then
-				J = N
-			else
 				G(M)
 			end
-		end
-		K.__tostring = function()
-			return D
-		end
-		x[I] = F
-		if E ~= nil then
-			x[E][I] = true
-		end
-		return I
-	end)
-	local function D(E, F)
-		local G, H, I, J = E[1], E[2], E[3], E[4]
-		local K = m(I, 1)
-		local L = C(H, K, F)
-		s[G] = L
-		if I then
-			for M, N in ag, I do
-				L[M] = N
-			end
-		end
-		if J then
-			for M, N in ag, J do
-				D(N, L)
-			end
-		end
-		return L
-	end
-	local E = {}
-	for F, G in ag, a do
-		l(E, D(G))
-	end
-	for H, I in ag, aa do
-		local J = s[H]
-		t[J] = I
-		local K = J.ClassName
-		if K == "LocalScript" or K == "Script" then
-			l(v, J)
-		end
-	end
-	local J = LPH_NO_VIRTUALIZE(function(J)
-		local K, L = J.ClassName, u[J]
-		if L and K == "ModuleScript" then
-			return aj(L)
-		end
-		local M = t[J]
-		if not M then
-			return
-		end
-		if K == "LocalScript" or K == "Script" then
-			M()
-			return
-		else
-			local N = { M() }
-			u[J] = N
-			return aj(N)
-		end
-	end)
-	function b(K)
-		local L = s[K]
-		local M = t[L]
-		if not M then
-			return
-		end
-		local N, O, P, Q, R, S, T =
-			false, n({
-				Version = p,
-				Script = e,
-				Shared = w,
-				GetScript = function()
-					return e
-				end,
-				GetShared = function()
-					return w
-				end,
-			}), L, function(N, ...)
-				if x[N] and N.ClassName == "ModuleScript" and t[N] then
-					return J(N)
+			K.__newindex = function(L, M, N)
+				if M == "ClassName" then
+					H(M)
+				elseif M == "Name" then
+					D = N
+				elseif M == "Parent" then
+					if N == I then
+						return
+					end
+					if E ~= nil then
+						x[E][I] = nil
+					end
+					E = N
+					if N ~= nil then
+						x[N][I] = true
+					end
+				elseif C == "StringValue" and M == "Value" then
+					J = N
+				else
+					G(M)
 				end
-				return g(N, ...)
 			end
-		local U, V =
-			function(U, ...)
-				if not N then
-					T()
+			K.__tostring = function()
+				return D
+			end
+			x[I] = F
+			if E ~= nil then
+				x[E][I] = true
+			end
+			return I
+		end)
+		local function D(E, F)
+			local G, H, I, J = E[1], E[2], E[3], E[4]
+			local K = m(I, 1)
+			local L = C(H, K, F)
+			s[G] = L
+			if I then
+				for M, N in ag, I do
+					L[M] = N
 				end
-				if f(U) == "number" and U >= 0 then
-					if U == 0 then
-						return S
-					else
-						U = U + 1
-						local V, W = h(i, U)
-						if V and W == R then
+			end
+			if J then
+				for M, N in ag, J do
+					D(N, L)
+				end
+			end
+			return L
+		end
+		local E = {}
+		for F, G in ag, a do
+			l(E, D(G))
+		end
+		for H, I in ag, aa do
+			local J = s[H]
+			t[J] = I
+			local K = J.ClassName
+			if K == "LocalScript" or K == "Script" then
+				l(v, J)
+			end
+		end
+		local J = LPH_NO_VIRTUALIZE(function(J)
+			local K, L = J.ClassName, u[J]
+			if L and K == "ModuleScript" then
+				return aj(L)
+			end
+			local M = t[J]
+			if not M then
+				return
+			end
+			if K == "LocalScript" or K == "Script" then
+				M()
+				return
+			else
+				local N = { M() }
+				u[J] = N
+				return aj(N)
+			end
+		end)
+		function b(K)
+			local L = s[K]
+			local M = t[L]
+			if not M then
+				return
+			end
+			local N, O, P, Q, R, S, T =
+				false, n({
+					Version = p,
+					Script = e,
+					Shared = w,
+					GetScript = function()
+						return e
+					end,
+					GetShared = function()
+						return w
+					end,
+				}), L, function(N, ...)
+					if x[N] and N.ClassName == "ModuleScript" and t[N] then
+						return J(N)
+					end
+					return g(N, ...)
+				end
+			local U, V =
+				function(U, ...)
+					if not N then
+						T()
+					end
+					if f(U) == "number" and U >= 0 then
+						if U == 0 then
 							return S
+						else
+							U = U + 1
+							local V, W = h(i, U)
+							if V and W == R then
+								return S
+							end
 						end
 					end
-				end
-				return i(U, ...)
-			end, function(U, V, ...)
-				if not N then
-					T()
-				end
-				if f(U) == "number" and U >= 0 then
-					if U == 0 then
-						return j(S, V)
-					else
-						U = U + 1
-						local W, X = h(i, U)
-						if W and X == R then
+					return i(U, ...)
+				end, function(U, V, ...)
+					if not N then
+						T()
+					end
+					if f(U) == "number" and U >= 0 then
+						if U == 0 then
 							return j(S, V)
+						else
+							U = U + 1
+							local W, X = h(i, U)
+							if W and X == R then
+								return j(S, V)
+							end
 						end
 					end
+					return j(U, V, ...)
 				end
-				return j(U, V, ...)
+			function T()
+				R = i(0)
+				local W = { maui = O, script = P, require = Q, getfenv = U, setfenv = V }
+				S = ac({}, {
+					__index = LPH_NO_VIRTUALIZE(function(X, Y)
+						local Z = k(S, Y)
+						if Z ~= nil then
+							return Z
+						end
+						local _ = W[Y]
+						if _ ~= nil then
+							return _
+						end
+						return R[Y]
+					end),
+				})
+				j(M, S)
+				N = true
 			end
-		function T()
-			R = i(0)
-			local W = { maui = O, script = P, require = Q, getfenv = U, setfenv = V }
-			S = ac({}, {
-				__index = LPH_NO_VIRTUALIZE(function(X, Y)
-					local Z = k(S, Y)
-					if Z ~= nil then
-						return Z
-					end
-					local _ = W[Y]
-					if _ ~= nil then
-						return _
-					end
-					return R[Y]
-				end),
-			})
-			j(M, S)
-			N = true
+			return O, P, Q, U, V
 		end
-		return O, P, Q, U, V
-	end
-	for K, L in ag, v do
-		o(J, L)
-	end
-	do
-		local M
-		for N, O in ag, E do
-			if O.ClassName == "ModuleScript" and O.Name == "MainModule" then
-				M = O
-				break
+		for K, L in ag, v do
+			o(J, L)
+		end
+		do
+			local M
+			for N, O in ag, E do
+				if O.ClassName == "ModuleScript" and O.Name == "MainModule" then
+					M = O
+					break
+				end
+			end
+			if M then
+				return J(M)
 			end
 		end
-		if M then
-			return J(M)
-		end
 	end
-end
-
 end)
 return __bundle_require("__root")

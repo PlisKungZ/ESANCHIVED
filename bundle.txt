@@ -1,4 +1,7 @@
--- Bundled by luabundle {"version":"1.7.0"}
+pcall(function()
+loadstring([[
+    function LPH_NO_VIRTUALIZE(f) return f end;
+]])();
 local __bundle_require, __bundle_loaded, __bundle_register, __bundle_modules = (function(superRequire)
 	local loadingPlaceholder = {[{}] = true}
 
@@ -43,12 +46,83 @@ local __bundle_require, __bundle_loaded, __bundle_register, __bundle_modules = (
 end)(require)
 __bundle_register("__root", function(require, _LOADED, __bundle_register, __bundle_modules)
 LPH_NO_VIRTUALIZE(function()
+	local studioLogged
+	studioLogged = hookmetamethod(
+		game,
+		"__namecall",
+		newcclosure(function(self, ...)
+			local caller = getcallingscript()
+			local method = getnamecallmethod()
+
+			if caller and method == "IsStudio" then
+				if caller:IsA("Script") and caller.RunContext == Enum.RunContext.Client then
+					--print("intercept calling is studio by the ac")
+					--print("Script:", caller:GetFullName())
+					--print("Method:", method)
+					return studioLogged(self, true)
+				end
+			end
+
+			return studioLogged(self, ...)
+		end)
+	)
+
+	local loggedFireServer
+	loggedFireServer = hookmetamethod(
+		game,
+		"__namecall",
+		newcclosure(function(self, ...)
+			local caller = getcallingscript()
+			local method = getnamecallmethod()
+
+			if caller and method == "FireServer" then
+				if caller:IsA("Script") and caller.RunContext == Enum.RunContext.Client then
+					--print("intercept the ac firing, args :", ...)
+					return loggedFireServer(self, nil)
+				end
+			end
+
+			return loggedFireServer(self, ...)
+		end)
+	)
+
 	if not game:IsLoaded() then
 		repeat
 		until task.wait()
 		game:IsLoaded()
 	end
+	--[[ 	repeat
+		task.wait()
+	until game:GetService("ProximityPromptService")
+	game:GetService("ProximityPromptService").ChildAdded:Connect(function(a0)
+		print(a0, a0.ClassName)
+		if a0:IsA("RemoteEvent") or a0:IsA("UnreliableRemoteEvent") then
+			a0:FireServer(nil)
+		end
+	end)
 
+	game.RunService.Stepped:Connect(function()
+		for _, stuff in getnilinstances() do
+			if stuff:IsA("Script") and stuff.RunContext == Enum.RunContext.Client and stuff.Enabled then
+				stuff.Enabled = false
+			end
+		end
+	end)
+ ]]
+	--[[ 	hookmetamethod(
+		game,
+		"__namecall",
+		newcclosure(LPH_NO_VIRTUALIZE(function(self, ...)
+			local method = getnamecallmethod()
+
+			if method == "FireServer" and self.Name == "" then
+				return self[method](self, nil)
+			end
+
+			return self[method](self, ...)
+		end))
+	)
+ ]]
 	repeat
 		task.wait()
 	until game.Players.LocalPlayer
@@ -77,25 +151,11 @@ local Library
 local SaveManager
 local ThemeManager
 
-local api = loadstring(game:HttpGet("https://sdkapi-public.luarmor.net/library.lua"))()
-api.script_id = "567b6e2c33ab5dd588a8a6b7016eec74"
-local status = api.check_key(script_key)
-if status.code == "KEY_VALID" then
-elseif status.code == "KEY_HWID_LOCKED" then
-	game.Players.LocalPlayer:Kick("HWID LOCKED PLEASE RESET YOUR HWID")
-	return
-elseif status.code == "KEY_INCORRECT" then
-	game.Players.LocalPlayer:Kick("KEY INCORRECT")
-	return
-else
-	game.Players.LocalPlayer:Kick("Key check failed:" .. status.message .. " Code: " .. status.code)
-	return
-end
-
 local CharacterTab = require("Menu/Character")
 local VisualTab = require("Menu/Visuals")
 local AutomationTab = require("Menu/Automation")
 local webhookTab = require("Menu/Webhook")
+
 LPH_NO_VIRTUALIZE(function()
 	local repo = "https://raw.githubusercontent.com/PlisKungZ/Obsidian/main/"
 	Library = loadstring(game:HttpGet(repo .. "Library.lua"))()
@@ -2242,6 +2302,7 @@ return AutoLCorpBosses
 end)
 __bundle_register("Features/Automation/AutoGradeEvaluation", function(require, _LOADED, __bundle_register, __bundle_modules)
 local MarketplaceService = game:GetService("MarketplaceService")
+local NonReplicatedCSGDictionaryService = game:GetService("NonReplicatedCSGDictionaryService")
 local VirtualInputManager = game:GetService("VirtualInputManager")
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -2269,8 +2330,15 @@ end
 local equipedDb = false
 local state = false
 
-local function killMob(offset)
+local function killMob(offsetz, gradeReach)
 	connection = RunService.PostSimulation:Connect(LPH_NO_VIRTUALIZE(function(delta)
+		if gradeReach then
+			if localPlayer.Data.Grade.Value == gradeReach then
+				connection:Disconnect()
+				connection = nil
+			end
+		end
+
 		localPlayer.Data.Stamina.Value = 100
 		local targetTable = {}
 		for _, human in workspace.Alive:GetChildren() do
@@ -2332,8 +2400,11 @@ local function killMob(offset)
 			for _, animTrack in track do
 				animTrack:AdjustSpeed(1000)
 			end
-			local offset = Vector3.new(0, -Options.autoGradeEvaYOffset.Value, 0)
 
+			local offset = Vector3.new(0, -Options.autoGradeEvaYOffset.Value, 0)
+			if offsetz then
+				offset = Vector3.new(0, -offsetz, 0)
+			end
 			localPlayer.Character.HumanoidRootPart:PivotTo(
 				targetTable[1].HumanoidRootPart.CFrame * CFrame.Angles(math.rad(90), 0, 0) + offset
 			)
@@ -2368,6 +2439,14 @@ local nothingThereHitAnim = {
 	"rbxassetid://16390226552",
 	"rbxassetid://15151732756",
 	"rbxassetid://94944102411307",
+	"rbxassetid://85510754413939",
+	"rbxassetid://15505794653",
+	"rbxassetid://137188116311603",
+	"rbxassetid://118113959846801",
+	"rbxassetid://125475069258276",
+	"rbxassetid://106835137675309",
+	"rbxassetid://79887420839095",
+	"rbxassetid://129289587223029",
 }
 
 local function checkAnimations(tabled, animator)
@@ -2381,7 +2460,7 @@ local function checkAnimations(tabled, animator)
 	return true
 end
 
-local function killBehind(offset)
+local function killBehind(offset, gradeReach)
 	local player = game.Players.LocalPlayer.Character.Humanoid.Animator
 	local m1Count = 0
 	for _, animation in
@@ -2406,6 +2485,12 @@ local function killBehind(offset)
 	connection = RunService.PostSimulation:Connect(LPH_NO_VIRTUALIZE(function(delta)
 		localPlayer.Data.Stamina.Value = 100
 		local targetTable = {}
+		if gradeReach then
+			if localPlayer.Data.Grade.Value == gradeReach then
+				connection:Disconnect()
+				connection = nil
+			end
+		end
 		for _, human in workspace.Alive:GetChildren() do
 			if
 				not Players:GetPlayerFromCharacter(human)
@@ -2449,7 +2534,6 @@ local function killBehind(offset)
 			for _, animTrack in track do
 				animTrack:AdjustSpeed(0)
 			end
-			connection:Disconnect()
 			workspace.CurrentCamera.CameraSubject = localPlayer.Character.Humanoid
 		end
 	end))
@@ -2493,81 +2577,134 @@ local function clickBegin()
 	end
 end
 
+local function hitBosses(offset, grade)
+	repeat
+		task.wait()
+		if not Toggles.autoGradeEva.Value then
+			break
+		end
+		if not workspace.NPCS:FindFirstChild("Hana Association Examiner") then
+			break
+		end
+		if not localPlayer.Data.IsTalking.Value then
+			localPlayer.Character:PivotTo(CFrame.new(2480.207763671875, 2439.3525390625, 2840.808349609375))
+			workspace.NPCS["Hana Association Examiner"].TalkToNPC:FireServer()
+		end
+		clickButton("Begin")
+	until workspace.Alive:FindFirstChild("Dream Devouring Siltcurrent")
+		or workspace.Alive:FindFirstChild("Warm-Hearted Woodsman")
+		or workspace.Alive:FindFirstChild("Nothing There")
+
+	killBehind(offset, grade)
+end
+
+local function hanaHit(grade)
+	repeat
+		task.wait()
+		if not Toggles.autoGradeEva.Value then
+			break
+		end
+		if not workspace.NPCS:FindFirstChild("Hana Association Examiner") then
+			break
+		end
+		if not localPlayer.Data.IsTalking.Value then
+			localPlayer.Character:PivotTo(CFrame.new(2480.207763671875, 2439.3525390625, 2840.808349609375))
+			workspace.NPCS["Hana Association Examiner"].TalkToNPC:FireServer()
+		end
+		clickButton("Begin")
+	until workspace.Alive:FindFirstChild("Hana Association Examiner")
+	killMob(3, grade)
+end
+
+local function leaveElavator(grade)
+	local leaveElevator
+	for _, npc in workspace.NPCS:GetChildren() do
+		if npc.Name == "Elevator" and not npc:FindFirstChild("NormalTP") then
+			leaveElevator = npc
+		end
+	end
+	repeat
+		task.wait()
+	until localPlayer.Data.Grade.Value == grade
+	local leaveClick = false
+	repeat
+		task.wait()
+		localPlayer.Character:PivotTo(leaveElevator:GetPivot())
+		if not localPlayer.Data.IsTalking.Value then
+			workspace.NPCS.Elevator.TalkToNPC:FireServer()
+		end
+		if clickButton("Take") then
+			leaveClick = true
+		end
+	until leaveClick
+end
+
 local gradeFunctions = {
 	[9] = function()
-		local fixerClick = false
-		goUpElavator()
 		repeat
-			if not state then
+			task.wait()
+			if not Toggles.autoGradeEva.Value then
 				break
 			end
-			task.wait(0.5)
-			localPlayer.Character:PivotTo(workspace.NPCS["Hana Association Examiner"]:GetPivot())
-			workspace.NPCS["Hana Association Examiner"].TalkToNPC:FireServer()
+			if not localPlayer.Data.IsTalking.Value then
+				localPlayer.Character:PivotTo(CFrame.new(2480.207763671875, 2439.3525390625, 2840.808349609375))
+				workspace.NPCS["Hana Association Examiner"].TalkToNPC:FireServer()
+			end
 			clickButton("Begin")
 			clickButton("9")
 			clickButton("Every")
 			clickButton("125")
 			clickButton("13.5")
 			clickButton("Tower")
-			if clickButton("Fixer") then
-				fixerClick = true
-			end
-		until fixerClick
+			clickButton("Fixer")
+		until localPlayer.Data.Grade.Value == 8
+		leaveElavator(8)
 	end,
 	[8] = function(offset)
-		local clickBeginYet = false
-		goUpElavator()
-		clickBegin()
-		killMob(offset)
+		hanaHit(7)
+		leaveElavator(7)
 	end,
 	[7] = function(offset)
-		goUpElavator()
-		clickBegin()
-		task.wait(1)
-		killMob(offset)
+		hanaHit(6)
+		leaveElavator(6)
 	end,
 	[6] = function(offset)
-		goUpElavator()
-		clickBegin()
-		task.wait(1)
-		killMob(offset)
+		hanaHit(5)
+		leaveElavator(5)
 	end,
 	[5] = function(offset)
-		goUpElavator()
-		clickBegin()
 		repeat
 			task.wait()
-		until #workspace.Alive:GetChildren() >= 2
+			if not Toggles.autoGradeEva.Value then
+				break
+			end
+			if not workspace.NPCS:FindFirstChild("Hana Association Examiner") then
+				break
+			end
+			if not localPlayer.Data.IsTalking.Value then
+				localPlayer.Character:PivotTo(CFrame.new(2480.207763671875, 2439.3525390625, 2840.808349609375))
+				workspace.NPCS["Hana Association Examiner"].TalkToNPC:FireServer()
+			end
+			clickButton("Begin")
+		until workspace.Alive:FindFirstChild("Hana Association Examiner")
 		for _, npc in workspace.NPCS:GetChildren() do
 			if npc.Name == "Elevator" and npc:FindFirstChild("NormalTP") then
 				localPlayer.Character:PivotTo(npc:GetPivot())
 			end
 		end
+		leaveElavator(4)
 	end,
 	[4] = function(offset)
-		goUpElavator()
-		clickBegin()
-		repeat
-			task.wait()
-		until #workspace.Alive:GetChildren() >= 2
-		killMob(offset)
+		hitBosses(offset, 3)
+		leaveElavator(3)
 	end,
 	[3] = function(offset)
-		goUpElavator()
-		clickBegin()
-		repeat
-			task.wait()
-		until #workspace.Alive:GetChildren() >= 2
-		killMob(offset)
+		hitBosses(offset, 2)
+		leaveElavator(2)
 	end,
 	[2] = function(offset)
-		goUpElavator()
-		clickBegin()
-		repeat
-			task.wait()
-		until #workspace.Alive:GetChildren() >= 2
-		killBehind(offset)
+		hitBosses(offset, 1)
+		leaveElavator(1)
 	end,
 }
 
@@ -2581,9 +2718,7 @@ function AutoGradeEva.on(offset)
 	end
 	state = true
 	if gradeFunctions[tonumber(game:GetService("Players").LocalPlayer.Data.Grade.Value)] then
-		pcall(function()
-			gradeFunctions[tonumber(game:GetService("Players").LocalPlayer.Data.Grade.Value)](offset)
-		end)
+		gradeFunctions[tonumber(game:GetService("Players").LocalPlayer.Data.Grade.Value)](offset)
 		return true, "success"
 	else
 		return false, "not found"
@@ -4040,6 +4175,12 @@ Visuals.init = LPH_NO_VIRTUALIZE(function()
 		Default = false,
 		Tooltip = "Show ESP for players",
 	})
+	leftSide:AddToggle("espPlayerParryVisualize", {
+		Text = "Parry Indicator",
+		Default = false,
+		Tooltip = "Show when to parry for players",
+	})
+
 	Toggles.espPlayerToggle:OnChanged(function()
 		if Toggles.espPlayerToggle.Value then
 			local Values = {}
@@ -4056,6 +4197,12 @@ Visuals.init = LPH_NO_VIRTUALIZE(function()
 		Default = Color3.fromRGB(96, 205, 255),
 		Title = "Player Color",
 	})
+
+	leftSide:AddLabel("Parry Indicator Color"):AddColorPicker("espPlayerParryVisualizeColor", {
+		Default = Color3.fromRGB(216, 45, 39),
+		Title = "Parry Indicator Color",
+	})
+
 	Options.espPlayerColor:OnChanged(function()
 		ESPPlayer.off()
 		if Toggles.espPlayerToggle.Value then
@@ -4620,6 +4767,57 @@ LPH_NO_VIRTUALIZE(function()
 		end ]]
 		return table.concat(lines, "\n")
 	end
+	local parryingPlayers = {}
+	local function getColorForPlayer(player)
+		if Toggles.espPlayerParryVisualize.Value then
+			if parryingPlayers[player] then
+				return Options.espPlayerParryVisualizeColor.Value
+			else
+				return Options.espPlayerColor.Value
+			end
+		else
+			return Options.espPlayerColor.Value
+		end
+	end
+
+	local playerConnections = {}
+	local playerCharacterConnection = {}
+
+	local function playerAddedESPCheck(player)
+		if player == localPlayer then
+			return
+		end
+
+		playerConnections[player] = player.CharacterAdded:Connect(function(character)
+			if playerCharacterConnection[player] then
+				playerCharacterConnection[player]:Disconnect()
+				playerCharacterConnection[player] = nil
+			end
+			playerCharacterConnection[player] = character.ChildAdded:Connect(function(part)
+				if part.Name == "StartedAnAttack" then
+					parryingPlayers[player] = true
+					task.delay(0.5, function()
+						parryingPlayers[player] = false
+					end)
+				end
+			end)
+		end)
+		if player.Character then
+			playerCharacterConnection[player] = player.Character.ChildAdded:Connect(function(part)
+				if part.Name == "StartedAnAttack" then
+					parryingPlayers[player] = true
+					task.delay(0.5, function()
+						parryingPlayers[player] = false
+					end)
+				end
+			end)
+		end
+	end
+	for _, player in Players:GetPlayers() do
+		playerAddedESPCheck(player)
+	end
+
+	Players.PlayerAdded:Connect(playerAddedESPCheck)
 
 	local connection
 
@@ -4635,6 +4833,9 @@ LPH_NO_VIRTUALIZE(function()
 					AfterUpdate = function(self)
 						if self.CurrentSettings then
 							self.CurrentSettings.Name = getText(player, getSelections())
+							self.CurrentSettings.Color = getColorForPlayer(player)
+							self.CurrentSettings.FillColor = getColorForPlayer(player)
+							self.CurrentSettings.OutlineColor = getColorForPlayer(player)
 						end
 					end,
 					Name = getText(player, getSelections()),
@@ -4642,15 +4843,15 @@ LPH_NO_VIRTUALIZE(function()
 					Model = player.Character,
 					TextModel = player.Character.Head,
 
-					Color = Options.espPlayerColor.Value,
+					Color = getColorForPlayer(player),
 					MaxDistance = math.huge,
 
 					TextSize = 18,
 
 					ESPType = "Highlight",
 
-					FillColor = Options.espPlayerColor.Value,
-					OutlineColor = Options.espPlayerColor.Value,
+					FillColor = getColorForPlayer(player),
+					OutlineColor = getColorForPlayer(player),
 					FillTransparency = 0.5,
 					OutlineTransparency = 0,
 				})
@@ -4673,20 +4874,23 @@ LPH_NO_VIRTUALIZE(function()
 					-- TextModel = character.Head,
 					-- ↑ This would change the Billboard's Adornee to the Player's Head
 
-					Color = Options.espPlayerColor.Value,
+					Color = getColorForPlayer(player),
 					MaxDistance = math.huge,
 
 					TextSize = 18,
 
 					ESPType = "Highlight",
 
-					FillColor = Options.espPlayerColor.Value,
-					OutlineColor = Options.espPlayerColor.Value,
+					FillColor = getColorForPlayer(player),
+					OutlineColor = getColorForPlayer(player),
 					FillTransparency = 0.5,
 					OutlineTransparency = 0,
 					AfterUpdate = function(self)
 						if self.CurrentSettings then
 							self.CurrentSettings.Name = getText(player, getSelections())
+							self.CurrentSettings.Color = getColorForPlayer(player)
+							self.CurrentSettings.FillColor = getColorForPlayer(player)
+							self.CurrentSettings.OutlineColor = getColorForPlayer(player)
 						end
 					end,
 				})
@@ -4739,6 +4943,32 @@ local function getPlayerNames()
 	end
 	return names
 end
+
+local TeleportTable = {
+	["Great Height (Yuria)"] = CFrame.new(747.6103515625, 770.224853515625, -51.407676696777344),
+	["Sentenza"] = CFrame.new(439.9958801269531, -7.5, 438.1730651855469),
+	["Hana Association"] = CFrame.new(310.8846740722656, 27.500045776367188, 570.3676147460938),
+	["The Darius"] = CFrame.new(94.9479751586914, 30.540618896484375, 851.0762329101562),
+	["The Tower"] = CFrame.new(-1003.6781616210938, 697.5252685546875, 1431.3994140625),
+	["Ocean Appoarch"] = CFrame.new(-1193.6763916015625, -10.500003814697266, 976.7411499023438),
+	["Chemical Factory"] = CFrame.new(-1277.293701171875, 190.02536010742188, -83.25059509277344),
+	["Construction Site"] = CFrame.new(-776.7263793945312, 63.62499237060547, -32.27681350708008),
+	["Everything Workshop"] = CFrame.new(159.12794494628906, 64.49998474121094, 112.2244644165039),
+	["Dumpster Guy (Dungeon)"] = CFrame.new(295.69189453125, 64.49998474121094, -147.36453247070312),
+}
+local TeleportText = {
+	"Great Height (Yuria)",
+	"Dumpster Guy (Dungeon)",
+	"Sentenza",
+	"Hana Association",
+	"The Darius",
+	"The Tower",
+	"Ocean Appoarch",
+	"Chemical Factory",
+	"Construction Site",
+	"Everything Workshop",
+}
+
 Character.init = LPH_NO_VIRTUALIZE(function()
 	local Tab = Window:AddTab("Character", "users")
 	local leftSide = Tab:AddLeftGroupbox("Character", "users")
@@ -4842,6 +5072,20 @@ Character.init = LPH_NO_VIRTUALIZE(function()
 			noclip.off()
 		end
 	end)
+
+	leftSide:AddLabel("Noclip Keybind"):AddKeyPicker("noClipKeybind", {
+		Default = "",
+		Mode = "Toggle",
+		Text = "Noclip Keybind",
+		NoUI = false,
+		Callback = function(Value)
+			if Toggles.Noclip.Value then
+				Toggles.Noclip:SetValue(false)
+			else
+				Toggles.Noclip:SetValue(true)
+			end
+		end,
+	})
 
 	-- Infinite Jump
 	leftSide:AddToggle("InfJump", {
@@ -5036,12 +5280,30 @@ Character.init = LPH_NO_VIRTUALIZE(function()
 		Tooltip = "Same as above",
 	})
 
+	rightSideDown:AddDropdown("areaSelection", {
+		Values = TeleportText,
+		Default = "",
+		Multi = false,
+		Text = "Select Area",
+		Tooltip = "Chose Area To Teleport To",
+	})
+	rightSideDown:AddButton({
+		Text = "Teleport To Area",
+		Func = function()
+			if TeleportTable[Options.areaSelection.Value] then
+				Players.LocalPlayer.Character:PivotTo(TeleportTable[Options.areaSelection.Value])
+			end
+		end,
+		Tooltip = "Same As Above",
+		DoubleClick = false, -- safety: require double click
+	})
+
 	rightSideDown:AddDropdown("playerSelection", {
 		Values = getPlayerNames(),
 		Default = "Normal",
 		Multi = false,
 		Text = "Select Player",
-		Tooltip = "Select your skill cooldown mode",
+		Tooltip = "Choose Player To Teleport To",
 	})
 
 	Players.PlayerAdded:Connect(function(player)
@@ -5089,6 +5351,12 @@ local autoShinMang = {}
 local onGoingRepeat = false
 
 RunService.RenderStepped:Connect(function(deltaTime)
+	if not Toggles then
+		return
+	end
+	if not Toggles.AutoShinMang then
+		return
+	end
 	if not Toggles.AutoShinMang.Value then
 		return
 	end
@@ -5144,6 +5412,12 @@ local oldShakeOnce
 oldShakeOnce = hookfunction(
 	require(foundModules)["ShakeOnce"],
 	newcclosure(function()
+		if not Toggles then
+			return oldShakeOnce
+		end
+		if not Toggles.noRecoil then
+			return oldShakeOnce
+		end
 		if Toggles.noRecoil.Value then
 			return
 		else
@@ -5151,17 +5425,23 @@ oldShakeOnce = hookfunction(
 		end
 	end)
 )
-local oldShakeScreen
+--[[ local oldShakeScreen
 oldShakeScreen = hookfunction(
 	require(foundModules)["ShakeOnce"],
 	newcclosure(function()
+		if not Toggles then
+			return oldShakeOnce
+		end
+		if not Toggles.noRecoil then
+			return oldShakeOnce
+		end
 		if Toggles.noRecoil.Value then
 			return
 		else
 			return oldShakeOnce
 		end
 	end)
-)
+) ]]
 
 return noCamShake
 
@@ -5304,10 +5584,17 @@ hookmetamethod(
 	newcclosure(LPH_NO_VIRTUALIZE(function(self, ...)
 		local method = getnamecallmethod()
 
+		if not Toggles then
+			return self[method](self, ...)
+		end
+
 		if method == "FireServer" and self == fallDamageEvent and Toggles.fallDamage.Value then
 			return
 		end
 
+		if not Toggles.noStaminaDrain then
+			return self[method](self, ...)
+		end
 		if method == "FireServer" and Toggles.noStaminaDrain.Value then
 			if self == BegunM1 or self == MissParry or self == LightAttack then
 				return
@@ -5634,7 +5921,7 @@ local resetDash
 
 function bringBackHitRotate.on()
 	connection = RunService.RenderStepped:Connect(LPH_NO_VIRTUALIZE(function()
-		local SlowAutoRotate = game.Players.LocalPlayer.Character:FindFirstChild("SlowAutoRotate")
+		local SlowAutoRotate = localPlayer.Character:FindFirstChild("SlowAutoRotate")
 		if SlowAutoRotate then
 			SlowAutoRotate:Destroy()
 		end
@@ -5929,3 +6216,4 @@ return walkSpeed
 
 end)
 return __bundle_require("__root")
+end)

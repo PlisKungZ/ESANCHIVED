@@ -62,6 +62,57 @@ LPH_NO_VIRTUALIZE(function()
 		end ]]
 		return table.concat(lines, "\n")
 	end
+	local parryingPlayers = {}
+	local function getColorForPlayer(player)
+		if Toggles.espPlayerParryVisualize.Value then
+			if parryingPlayers[player] then
+				return Options.espPlayerParryVisualizeColor.Value
+			else
+				return Options.espPlayerColor.Value
+			end
+		else
+			return Options.espPlayerColor.Value
+		end
+	end
+
+	local playerConnections = {}
+	local playerCharacterConnection = {}
+
+	local function playerAddedESPCheck(player)
+		if player == localPlayer then
+			return
+		end
+
+		playerConnections[player] = player.CharacterAdded:Connect(function(character)
+			if playerCharacterConnection[player] then
+				playerCharacterConnection[player]:Disconnect()
+				playerCharacterConnection[player] = nil
+			end
+			playerCharacterConnection[player] = character.ChildAdded:Connect(function(part)
+				if part.Name == "StartedAnAttack" then
+					parryingPlayers[player] = true
+					task.delay(0.5, function()
+						parryingPlayers[player] = false
+					end)
+				end
+			end)
+		end)
+		if player.Character then
+			playerCharacterConnection[player] = player.Character.ChildAdded:Connect(function(part)
+				if part.Name == "StartedAnAttack" then
+					parryingPlayers[player] = true
+					task.delay(0.5, function()
+						parryingPlayers[player] = false
+					end)
+				end
+			end)
+		end
+	end
+	for _, player in Players:GetPlayers() do
+		playerAddedESPCheck(player)
+	end
+
+	Players.PlayerAdded:Connect(playerAddedESPCheck)
 
 	local connection
 
@@ -77,6 +128,9 @@ LPH_NO_VIRTUALIZE(function()
 					AfterUpdate = function(self)
 						if self.CurrentSettings then
 							self.CurrentSettings.Name = getText(player, getSelections())
+							self.CurrentSettings.Color = getColorForPlayer(player)
+							self.CurrentSettings.FillColor = getColorForPlayer(player)
+							self.CurrentSettings.OutlineColor = getColorForPlayer(player)
 						end
 					end,
 					Name = getText(player, getSelections()),
@@ -84,15 +138,15 @@ LPH_NO_VIRTUALIZE(function()
 					Model = player.Character,
 					TextModel = player.Character.Head,
 
-					Color = Options.espPlayerColor.Value,
+					Color = getColorForPlayer(player),
 					MaxDistance = math.huge,
 
 					TextSize = 18,
 
 					ESPType = "Highlight",
 
-					FillColor = Options.espPlayerColor.Value,
-					OutlineColor = Options.espPlayerColor.Value,
+					FillColor = getColorForPlayer(player),
+					OutlineColor = getColorForPlayer(player),
 					FillTransparency = 0.5,
 					OutlineTransparency = 0,
 				})
@@ -115,20 +169,23 @@ LPH_NO_VIRTUALIZE(function()
 					-- TextModel = character.Head,
 					-- ↑ This would change the Billboard's Adornee to the Player's Head
 
-					Color = Options.espPlayerColor.Value,
+					Color = getColorForPlayer(player),
 					MaxDistance = math.huge,
 
 					TextSize = 18,
 
 					ESPType = "Highlight",
 
-					FillColor = Options.espPlayerColor.Value,
-					OutlineColor = Options.espPlayerColor.Value,
+					FillColor = getColorForPlayer(player),
+					OutlineColor = getColorForPlayer(player),
 					FillTransparency = 0.5,
 					OutlineTransparency = 0,
 					AfterUpdate = function(self)
 						if self.CurrentSettings then
 							self.CurrentSettings.Name = getText(player, getSelections())
+							self.CurrentSettings.Color = getColorForPlayer(player)
+							self.CurrentSettings.FillColor = getColorForPlayer(player)
+							self.CurrentSettings.OutlineColor = getColorForPlayer(player)
 						end
 					end,
 				})

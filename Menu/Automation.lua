@@ -1,12 +1,12 @@
-local autoLib = require("Features/Automation/AutoLibrary")
-local autoWarp = require("Features/Automation/AutoWarp")
-local autoRailway = require("Features/Automation/AutoRailway")
-local autoGrade = require("Features/Automation/AutoGradeEvaluation")
-local autoLCorp = require("Features/Automation/AutoLCorpBosses")
-local autoRicardo = require("Features/Automation/AutoRicardo")
-local AutoOpenContainerReq = require("Features/AutoOpenContainer/AutoOpenContainer")
-local autoSellReq = require("Features/AutoSell/AutoSell")
-local AutoTradeBooks = require("Features/AutoTradeBooks/AutoTradeBooks")
+local autoLib = require("../Features/Automation/AutoLibrary")
+local autoWarp = require("../Features/Automation/AutoWarp")
+local autoRailway = require("../Features/Automation/AutoRailway")
+local autoGrade = require("../Features/Automation/AutoGradeEvaluation")
+local autoLCorp = require("../Features/Automation/AutoLCorpBosses")
+local autoRicardo = require("../Features/Automation/AutoRicardo")
+local AutoOpenContainerReq = require("../Features/AutoOpenContainer/AutoOpenContainer")
+local autoSellReq = require("../Features/AutoSell/AutoSell")
+local AutoTradeBooks = require("../Features/AutoTradeBooks/AutoTradeBooks")
 
 local Automation = {}
 
