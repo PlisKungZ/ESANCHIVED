@@ -1,2 +1,2 @@
-Compiled With Darklua\n
-Code is so shitty I'd say
+Compiled With Darklua
+Code is messy
